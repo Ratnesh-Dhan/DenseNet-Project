@@ -23,3 +23,6 @@ __pycache__/
 # Ignoring some additional files and directories
 /TrainedModels
 *.h5
+
+# Ignoring "image" folders
+/src/img

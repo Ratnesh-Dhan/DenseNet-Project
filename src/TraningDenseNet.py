@@ -8,6 +8,10 @@ Created on Tue Jan 28 10:27:20 2025
 
 import tensorflow as tf
 
+#SETTING THE NUMBER OF THREADS FOR MORE CPU UTILIZATION (not nessasary step. can be commented out but required for better performance)
+tf.config.threading.set_intra_op_parallelism_threads(12) #can be adjusted according to cpu cores
+tf.config.threading.set_inter_op_parallelism_threads(12) #can be adjusted according to cpu cores
+
 # We will use the CIFAR-10 dataset, which consists of 60,000 32x32 color images in 10 classes.
 # There are 50,000 training images and 10,000 test images. 
 # The dataset is available in the TensorFlow Keras API, so we can load it directly.
@@ -103,7 +107,8 @@ model.fit(
   train_images, 
   train_labels, 
   epochs=100, 
-  batch_size=64, 
+  # batch_size=64, 
+  batch_size=128, 
   validation_data=(test_images, test_labels)
 )
 
