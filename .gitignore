@@ -1,0 +1,25 @@
+# Ignore log files
+*.log
+
+# Ignore environment variables file
+.env
+
+# Ignore build directory
+/build
+
+# venv file
+/venv
+/.spyproject
+.spyproject
+
+# photo files
+/photo
+
+# Igonre cache files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignoring some additional files and directories
+/TrainedModels
+*.h5
