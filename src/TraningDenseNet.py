@@ -6,7 +6,7 @@ Created on Tue Jan 28 10:27:20 2025
 @author: Paddy King
 """
 
-import tensorFlow as tf
+import tensorflow as tf
 
 # We will use the CIFAR-10 dataset, which consists of 60,000 32x32 color images in 10 classes.
 # There are 50,000 training images and 10,000 test images. 
