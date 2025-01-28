@@ -107,6 +107,9 @@ model.fit(
   validation_data=(test_images, test_labels)
 )
 
+# Save the model
+model.save('../TrainedModel/densenet_cifar10.h5')
+
 # Evaluation
 test_loss, test_acc = model.evaluate(test_images, test_labels)
 
