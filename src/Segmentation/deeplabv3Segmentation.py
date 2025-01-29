@@ -6,7 +6,7 @@ import tensorflow as tf
 import numpy as np
 from matplotlib import pyplot as plt
 
-model_path = "../../TrainedModel/2.tflite"
+model_path = "../../TrainedModel/1.tflite"
 
 #We cant use this syntax because "load_model" wont work with "tflite" models. but will work with .keras
 # model = tf.keras.models.load_model(model_path)
@@ -23,6 +23,9 @@ try:
 
     def preprocess_image(image_path):
         img = cv2.imread(image_path)
+        #TESTING
+        # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
         # img = cv2.resize(img, (512,512))
         img = cv2.resize(img, (257,257)) # modified according to .tflite model
         img = img/255.0
