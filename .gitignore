@@ -14,6 +14,7 @@
 
 # photo files
 /photo
+/img
 
 # Igonre cache files
 *.pyc
@@ -21,7 +22,7 @@
 __pycache__/
 
 # Ignoring some additional files and directories
-/TrainedModels
+/TrainedModel
 *.h5
 
 # Ignoring "image" folders
