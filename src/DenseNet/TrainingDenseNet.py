@@ -23,6 +23,11 @@ test_images = test_images.astype('float32') / 255
 train_labels = tf.keras.utils.to_categorical(train_labels)
 test_labels = tf.keras.utils.to_categorical(test_labels)
 
+# #ADDING CODE TO IMPROVE EFFICIENCY
+# train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels))
+# train_dataset = train_dataset.shuffle(buffer_size-50000).batch(64).prefetch(tf.data.autotune)
+# #/ ADDING CODE TO IMPROVE EFFICIENCY
+
 #BUILDING THE MODEL
 class DenseLayer(tf.keras.layers.Layer):
     def __init__(self, growth_rate):
@@ -106,14 +111,14 @@ model.compile(
 model.fit(
   train_images, 
   train_labels, 
-  epochs=100, 
-  # batch_size=64, 
-  batch_size=128, 
+  epochs=4, 
+  batch_size=64, 
+  # batch_size=128, 
   validation_data=(test_images, test_labels)
 )
 
 # Save the model
-model.save('../TrainedModel/densenet_cifar10.h5')
+model.save('../../TrainedModel/TestDensenet_cifar10.h5')
 
 # Evaluation
 test_loss, test_acc = model.evaluate(test_images, test_labels)
