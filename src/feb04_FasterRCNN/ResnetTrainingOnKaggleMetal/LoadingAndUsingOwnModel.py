@@ -6,7 +6,7 @@ Created on Tue Feb  4 18:15:14 2025
 """
 import tensorflow as tf
 import numpy as np
-import cv2
+import matplotlib.pyplot as plt
 
 def load_and_predict(image_path):
     # Load saved model
@@ -31,6 +31,10 @@ def load_and_predict(image_path):
 # image_path = "../../img/"
 # image_path = "../../img/Metal/testImage.bmp"
 image_path = "../../img/Metal/Pincher.jpg"
-image = cv2.imread(image_path)
+image = plt.imread(image_path)
 predicted_class, confidence = load_and_predict(image_path)
 print(f"Class: {predicted_class}, Confidence: {confidence}")
+plt.imshow(image)
+plt.title(f"Class: {predicted_class}, Confidence: {confidence}")
+plt.axis("off")
+plt.show()
