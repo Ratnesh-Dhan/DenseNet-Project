@@ -4,6 +4,8 @@ Created on Tue Feb  4 18:15:56 2025
 
 Training our own resnet Model with kaggle Metal surface dataset
 
+THIS CODE IS NOT WORKING . BECAUSE OF FOLDER STRUCTURE DEFINED
+
 @author: NDT Lab
 """
 

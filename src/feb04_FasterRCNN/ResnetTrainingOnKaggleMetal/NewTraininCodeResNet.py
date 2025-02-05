@@ -1,7 +1,6 @@
 import tensorflow as tf
 import os
 import numpy as np
-# from sklearn.model_selection import train_test_split
 
 # Set TensorFlow to use CPU optimizations
 tf.config.threading.set_intra_op_parallelism_threads(12)  # Your CPU threads
@@ -68,7 +67,8 @@ def train_model(train_dataset, val_dataset, epochs=epoch):
     # Callbacks for model saving and early stopping
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(
-            'best_model.h5',
+            # 'best_model.h5',
+            'best_model.keras',
             monitor='val_accuracy',
             save_best_only=True,
             mode='max',
@@ -98,7 +98,7 @@ def train_model(train_dataset, val_dataset, epochs=epoch):
     )
     
     # Save final model
-    model.save('final_model.h5')
+    model.save('final_model.keras')
     
     return model, history
 
