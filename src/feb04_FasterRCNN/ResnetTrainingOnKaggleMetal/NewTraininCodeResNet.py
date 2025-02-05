@@ -74,11 +74,12 @@ def train_model(train_dataset, val_dataset, epochs=epoch):
             mode='max',
             verbose=1
         ),
-        tf.keras.callbacks.EarlyStopping(
-            monitor='val_accuracy',
-            patience=10,
-            restore_best_weights=True
-        ),
+        ## This is for early stoping
+        # tf.keras.callbacks.EarlyStopping(
+        #     monitor='val_accuracy',
+        #     patience=10,
+        #     restore_best_weights=True
+        # ),
         tf.keras.callbacks.ReduceLROnPlateau(
             monitor='val_loss',
             factor=0.5,
