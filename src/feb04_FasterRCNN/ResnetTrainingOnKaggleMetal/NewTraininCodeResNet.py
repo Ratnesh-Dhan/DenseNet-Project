@@ -1,16 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb  4 18:38:15 2025
-
-@author: NDT Lab
-"""
-
 import tensorflow as tf
 import os
-import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-import multiprocessing
+# from sklearn.model_selection import train_test_split
 
 # Set TensorFlow to use CPU optimizations
 tf.config.threading.set_intra_op_parallelism_threads(12)  # Your CPU threads
@@ -41,7 +32,7 @@ def create_model():
 # Data preprocessing function
 def preprocess_data(image_path, label):
     image = tf.io.read_file(image_path)
-    image = tf.image.decode_jpeg(image, channels=3)
+    image = tf.image.decode_bmp(image, channels=3)
     image = tf.image.resize(image, [224, 224])
     image = tf.keras.applications.resnet50.preprocess_input(image)
     return image, label
@@ -99,8 +90,8 @@ def train_model(train_dataset, val_dataset, epochs=50):
         validation_data=val_dataset,
         epochs=epochs,
         callbacks=callbacks,
-        workers=6,  # Number of CPU cores
-        use_multiprocessing=True
+        # worker=6,  # Number of CPU cores
+        # use_multiprocessing=True
     )
     
     # Save final model
@@ -116,10 +107,22 @@ def load_dataset(base_path, split_folder):
     
     for idx, class_name in enumerate(class_names):
         class_path = os.path.join(base_path, split_folder, class_name)
+        if not os.path.exists(class_path):
+            print(f"Warning: Directory {class_path} does not exist. Skipping.")
+            continue
+        
         for img_name in os.listdir(class_path):
-            if img_name.endswith('.jpg'):
-                image_paths.append(os.path.join(class_path, img_name))
-                labels.append(idx)
+            if img_name.endswith('.bmp') or img_name.endswith('.png'):
+                image_path = os.path.join(class_path, img_name)
+                if os.path.isfile(image_path):  # Ensure it's a valid file
+                    image_paths.append(image_path)
+                    labels.append(idx)
+                else:
+                    print(f"Warning: {image_path} is not a valid file. Skipping.")
+    
+    # Convert to numpy arrays for compatibility with TensorFlow
+    image_paths = np.array(image_paths, dtype=np.str_)
+    labels = np.array(labels, dtype=np.int32)
     
     return image_paths, labels
 
@@ -131,6 +134,10 @@ def main():
     # Load training and validation data
     train_images, train_labels = load_dataset(base_path, 'train')
     val_images, val_labels = load_dataset(base_path, 'valid')
+    
+    # Debug: Print first 5 image paths and labels
+    print("Sample training image paths:", train_images[:5])
+    print("Sample training labels:", train_labels[:5])
     
     # Create datasets
     train_dataset = create_dataset(train_images, train_labels)
