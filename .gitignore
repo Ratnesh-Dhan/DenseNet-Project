@@ -24,8 +24,8 @@ __pycache__/
 # Ignoring some additional files and directories
 /TrainedModel
 /pre-Trained_model
-/src/feb04_FasterRCNN/ResnetTrainingOnKaggleMetal/best_model.keras
-/src/feb04_FasterRCNN/ResnetTrainingOnKaggleMetal/final_model.keras
+/MyTrained_Models
+/src/feb04_FasterRCNN/ResnetTrainingOnKaggleMetal/NEU Metal Surface Defects Data
 
 # Ignoring "image" folders
 /src/img
