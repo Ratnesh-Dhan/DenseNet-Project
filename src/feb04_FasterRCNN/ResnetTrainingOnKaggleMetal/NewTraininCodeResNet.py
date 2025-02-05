@@ -7,6 +7,9 @@ import numpy as np
 tf.config.threading.set_intra_op_parallelism_threads(12)  # Your CPU threads
 tf.config.threading.set_inter_op_parallelism_threads(6)   # Your CPU cores
 
+epoch = 10
+
+
 # Define model architecture with ResNet50
 def create_model():
     base_model = tf.keras.applications.ResNet50(
@@ -52,7 +55,7 @@ def create_dataset(images, labels, batch_size=32, is_training=True):
     return dataset
 
 # Training function with model saving
-def train_model(train_dataset, val_dataset, epochs=50):
+def train_model(train_dataset, val_dataset, epochs=epoch):
     model = create_model()
     
     # Compile model
