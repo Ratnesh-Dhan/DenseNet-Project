@@ -1,11 +1,13 @@
 import tensorflow as tf
 import os
 import numpy as np
-# from sklearn.model_selection import train_test_split
 
 # Set TensorFlow to use CPU optimizations
 tf.config.threading.set_intra_op_parallelism_threads(12)  # Your CPU threads
 tf.config.threading.set_inter_op_parallelism_threads(6)   # Your CPU cores
+
+epoch = 30
+
 
 # Define model architecture with ResNet50
 def create_model():
@@ -52,7 +54,7 @@ def create_dataset(images, labels, batch_size=32, is_training=True):
     return dataset
 
 # Training function with model saving
-def train_model(train_dataset, val_dataset, epochs=50):
+def train_model(train_dataset, val_dataset, epochs=epoch):
     model = create_model()
     
     # Compile model
@@ -65,17 +67,19 @@ def train_model(train_dataset, val_dataset, epochs=50):
     # Callbacks for model saving and early stopping
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(
-            'best_model.h5',
+            # 'best_model.h5',
+            'best_model.keras',
             monitor='val_accuracy',
             save_best_only=True,
             mode='max',
             verbose=1
         ),
-        tf.keras.callbacks.EarlyStopping(
-            monitor='val_accuracy',
-            patience=10,
-            restore_best_weights=True
-        ),
+        ## This is for early stoping
+        # tf.keras.callbacks.EarlyStopping(
+        #     monitor='val_accuracy',
+        #     patience=10,
+        #     restore_best_weights=True
+        # ),
         tf.keras.callbacks.ReduceLROnPlateau(
             monitor='val_loss',
             factor=0.5,
@@ -95,7 +99,7 @@ def train_model(train_dataset, val_dataset, epochs=50):
     )
     
     # Save final model
-    model.save('final_model.h5')
+    model.save('final_model.keras')
     
     return model, history
 

@@ -24,7 +24,7 @@ __pycache__/
 # Ignoring some additional files and directories
 /TrainedModel
 /pre-Trained_model
-
+/MyTrained_Models
 
 # Ignoring "image" folders
 /src/img
