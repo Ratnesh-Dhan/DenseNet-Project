@@ -11,7 +11,7 @@ import cv2
 
 def load_and_predict(image_path):
     # Load saved model
-    model = tf.keras.models.load_model('../../../MyTrained_Models/best_model.keras')
+    model = tf.keras.models.load_model('../../../MyTrained_Models/final_model.keras')
     
     # Preprocess single image
     image = tf.keras.preprocessing.image.load_img(
@@ -31,7 +31,7 @@ def load_and_predict(image_path):
 
 # image_path = "../../img/"
 # image_path = "../../img/Metal/testImage.bmp"
-image_path = "../../img/Metal/new1.bmp"
+image_path = "../../img/Metal/scratches.webp"
 image = plt.imread(image_path)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 predicted_class, confidence = load_and_predict(image_path)
