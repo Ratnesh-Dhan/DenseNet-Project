@@ -8,8 +8,8 @@ from sklearn.model_selection import train_test_split
 
 # Define dataset root
 DATASET_DIR = '../../../Datasets/PASCAL VOC 2012/'
-IMAGE_DIR = os.path.join(DATASET_DIR, 'train/img/')  # Directory containing images
-JSON_DIR = os.path.join(DATASET_DIR, 'train/ann/')    # Directory containing JSON files
+IMAGE_DIR = os.path.join(DATASET_DIR, 'train/img/')
+JSON_DIR = os.path.join(DATASET_DIR, 'train/ann/')
 
 def decode_bitmap(bitmap_data):
     """Decode base64 bitmap data from JSON"""
@@ -20,28 +20,37 @@ def decode_bitmap(bitmap_data):
     except:
         return np.frombuffer(decoded, dtype=np.uint8)
 
-def create_mask_from_json(json_path, image_size=(500, 375)):
+def create_mask_from_json(json_path):
     """Create segmentation mask from JSON file"""
     with open(json_path, 'r') as f:
         data = json.load(f)
     
-    # Create a multi-class mask (you can adjust number of classes as needed)
-    mask = np.zeros(image_size, dtype=np.uint8)
+    # Get original image size from JSON
+    original_size = (data['size']['height'], data['size']['width'])
+    mask = np.zeros(original_size, dtype=np.uint8)
     
     for obj in data['objects']:
-        class_name = obj['classTitle']
         bitmap_data = obj['bitmap']['data']
+        origin = obj['bitmap']['origin']
         
         try:
             mask_data = decode_bitmap(bitmap_data)
-            obj_mask = np.unpackbits(mask_data)[:image_size[0] * image_size[1]]
-            obj_mask = obj_mask.reshape(image_size)
+            # Calculate the actual size of this object's mask
+            mask_size = len(mask_data) * 8  # 8 bits per byte
+            obj_mask = np.unpackbits(mask_data)[:mask_size]
             
-            # You can assign different values for different classes
-            # For now, setting all objects to 1
-            mask = np.logical_or(mask, obj_mask)
+            # Calculate dimensions for this specific object
+            width = int(np.sqrt(mask_size))
+            height = mask_size // width
+            obj_mask = obj_mask.reshape((height, width))
+            
+            # Place the object mask at its origin
+            y, x = origin[1], origin[0]
+            h, w = obj_mask.shape
+            mask[y:y+h, x:x+w] = np.logical_or(mask[y:y+h, x:x+w], obj_mask)
+            
         except Exception as e:
-            print(f"Error processing mask in {json_path}: {e}")
+            print(f"Error processing object in {json_path}: {e}")
     
     return mask.astype(np.uint8) * 255
 
@@ -72,28 +81,22 @@ def data_generator(image_list, json_list, image_dir, json_dir):
 
         yield image, mask
 
-# Creating generators for training and validation
-train_gen = data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR)
-val_gen = data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR)
-
 def train_generator():
     for image, mask in data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR):
         image = cv2.resize(image, (512, 512))
+        image = image / 255.0  # Normalize image
         mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+        mask = np.expand_dims(mask, axis=-1)  # Add channel dimension
         yield image, mask
 
 def val_generator():
     for image, mask in data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR):
         image = cv2.resize(image, (512, 512))
+        image = image / 255.0  # Normalize image
         mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+        mask = np.expand_dims(mask, axis=-1)  # Add channel dimension
         yield image, mask
 
-# Example usage:
-'''
-# Get a batch of data
-for image, mask in train_gen:
-    # Process your image and mask
-    # image shape: (height, width, 3)
-    # mask shape: (height, width)
-    break  # Remove this if you want to process all images
-'''
+# Creating generators for training and validation
+train_gen = train_generator()
+val_gen = val_generator()

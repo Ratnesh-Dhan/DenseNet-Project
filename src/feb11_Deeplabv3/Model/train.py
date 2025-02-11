@@ -1,4 +1,3 @@
-import numpy as np
 from model import model
 from data_loader import train_generator, val_generator, train_images, val_images
 
