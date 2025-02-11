@@ -20,30 +20,125 @@ def decode_bitmap(bitmap_data):
     except:
         return np.frombuffer(decoded, dtype=np.uint8)
 
-def create_mask_from_json(json_path, image_size=(500, 375)):
-    """Create segmentation mask from JSON file"""
+# def create_mask_from_json(json_path, image_size=(500, 375)):
+#     """Create segmentation mask from JSON file"""
+#     with open(json_path, 'r') as f:
+#         data = json.load(f)
+    
+#     # Create a multi-class mask (you can adjust number of classes as needed)
+#     mask = np.zeros(image_size, dtype=np.uint8)
+    
+#     for obj in data['objects']:
+#         class_name = obj['classTitle']
+#         bitmap_data = obj['bitmap']['data']
+        
+#         try:
+#             mask_data = decode_bitmap(bitmap_data)
+#             obj_mask = np.unpackbits(mask_data)[:image_size[0] * image_size[1]]
+#             obj_mask = obj_mask.reshape(image_size)
+            
+#             # You can assign different values for different classes
+#             # For now, setting all objects to 1
+#             mask = np.logical_or(mask, obj_mask)
+#         except Exception as e:
+#             print(f"Error processing mask in {json_path}: {e}")
+    
+#     return mask.astype(np.uint8) * 255
+
+# def create_mask_from_json(json_path):
+#     """Create segmentation mask from JSON file"""
+#     with open(json_path, 'r') as f:
+#         data = json.load(f)
+    
+#     # Get image size from JSON data
+#     height = data['size']['height']
+#     width = data['size']['width']
+#     mask = np.zeros((height, width), dtype=np.uint8)
+    
+#     for obj in data['objects']:
+#         try:
+#             # Get bitmap data and origin coordinates
+#             bitmap_data = obj['bitmap']['data']
+#             origin = obj['bitmap']['origin']  # [x, y]
+            
+#             # Decode bitmap
+#             mask_data = decode_bitmap(bitmap_data)
+            
+#             # Calculate actual object dimensions
+#             total_pixels = len(mask_data) * 8  # Each byte is 8 bits
+            
+#             # Create object mask with correct dimensions
+#             obj_mask = np.unpackbits(mask_data)[:total_pixels]
+#             width_obj = origin[0] + int(np.sqrt(total_pixels))
+#             height_obj = total_pixels // width_obj if width_obj > 0 else 0
+            
+#             try:
+#                 obj_mask = obj_mask.reshape((height_obj, width_obj))
+                
+#                 # Place object mask at correct position
+#                 y_start = origin[1]
+#                 x_start = origin[0]
+#                 y_end = min(y_start + height_obj, height)
+#                 x_end = min(x_start + width_obj, width)
+                
+#                 obj_height = y_end - y_start
+#                 obj_width = x_end - x_start
+                
+#                 if obj_height > 0 and obj_width > 0:
+#                     mask[y_start:y_end, x_start:x_end] = np.logical_or(
+#                         mask[y_start:y_end, x_start:x_end],
+#                         obj_mask[:obj_height, :obj_width]
+#                     )
+#             except Exception as e:
+#                 print(f"Skipping object in {json_path} due to reshape error: {e}")
+#                 continue
+                
+#         except Exception as e:
+#             print(f"Error processing object in {json_path}: {e}")
+#             continue
+    
+#     return mask.astype(np.uint8) * 255
+
+def create_mask_from_json(json_path):
     with open(json_path, 'r') as f:
         data = json.load(f)
     
-    # Create a multi-class mask (you can adjust number of classes as needed)
-    mask = np.zeros(image_size, dtype=np.uint8)
+    height = data['size']['height']
+    width = data['size']['width']
+    mask = np.zeros((height, width), dtype=np.uint8)
     
     for obj in data['objects']:
-        class_name = obj['classTitle']
-        bitmap_data = obj['bitmap']['data']
-        
         try:
-            mask_data = decode_bitmap(bitmap_data)
-            obj_mask = np.unpackbits(mask_data)[:image_size[0] * image_size[1]]
-            obj_mask = obj_mask.reshape(image_size)
+            bitmap_data = obj['bitmap']['data']
+            origin = obj['bitmap']['origin']  # [x, y]
             
-            # You can assign different values for different classes
-            # For now, setting all objects to 1
-            mask = np.logical_or(mask, obj_mask)
+            mask_data = decode_bitmap(bitmap_data)
+            total_pixels = len(mask_data) * 8  # Each byte is 8 bits
+            
+            obj_mask = np.unpackbits(mask_data)[:total_pixels]
+            width_obj = int(np.sqrt(total_pixels))
+            height_obj = total_pixels // width_obj if width_obj > 0 else 0
+            
+            obj_mask = np.reshape(obj_mask, (height_obj, width_obj))
+            
+            y_start = origin[1]
+            x_start = origin[0]
+            y_end = min(y_start + height_obj, height)
+            x_end = min(x_start + width_obj, width)
+            
+            obj_height = y_end - y_start
+            obj_width = x_end - x_start
+            
+            if obj_height > 0 and obj_width > 0:
+                mask[y_start:y_end, x_start:x_end] = np.logical_or(
+                    mask[y_start:y_end, x_start:x_end],
+                    obj_mask[:obj_height, :obj_width]
+                )
         except Exception as e:
-            print(f"Error processing mask in {json_path}: {e}")
+            print(f"Error processing object in {json_path}: {e}")
     
     return mask.astype(np.uint8) * 255
+
 
 # Load image and JSON filenames
 images = sorted([f for f in os.listdir(IMAGE_DIR) if f.endswith(('.jpg', '.png'))])
@@ -80,12 +175,14 @@ def train_generator():
     for image, mask in data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR):
         image = cv2.resize(image, (512, 512))
         mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+        # image = np.reshape(image, (512, 512, 3))  # Add this line
         yield image, mask
 
 def val_generator():
     for image, mask in data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR):
         image = cv2.resize(image, (512, 512))
         mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+        # image = np.reshape(image, (512, 512, 3))  # Add this line
         yield image, mask
 
 # Example usage:
