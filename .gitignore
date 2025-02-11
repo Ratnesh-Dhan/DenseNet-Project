@@ -25,6 +25,7 @@ __pycache__/
 /TrainedModel
 /pre-Trained_model
 /MyTrained_Models
+/Datasets
 
 # Ignoring "image" folders
 /src/img
