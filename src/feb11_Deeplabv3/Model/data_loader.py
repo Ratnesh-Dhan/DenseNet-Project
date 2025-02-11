@@ -76,6 +76,18 @@ def data_generator(image_list, json_list, image_dir, json_dir):
 train_gen = data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR)
 val_gen = data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR)
 
+def train_generator():
+    for image, mask in data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR):
+        image = cv2.resize(image, (512, 512))
+        mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+        yield image, mask
+
+def val_generator():
+    for image, mask in data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR):
+        image = cv2.resize(image, (512, 512))
+        mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+        yield image, mask
+        
 # Example usage:
 '''
 # Get a batch of data
