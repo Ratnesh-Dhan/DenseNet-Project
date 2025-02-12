@@ -1,6 +1,8 @@
 import torch
 from PIL import Image
 import torchvision.transforms as transforms
+from DeepLabV3Plus import DeepLabV3Plus
+import matplotlib.pyplot as plt
 
 def predict_segmentation(image_path, model_path, num_classes):
     # Load the trained model
@@ -25,11 +27,16 @@ def predict_segmentation(image_path, model_path, num_classes):
         output = model(input_tensor)
         prediction = torch.argmax(output, dim=1).squeeze().numpy()
     
+    plt.figure(figsize=(8, 8))
+    plt.imshow(prediction, cmap='viridis')
+    plt.axis('off')
+    plt.show()
+
     return prediction
 
 # Example usage
-image_path = 'path/to/your/test/image.jpg'
-model_path = 'deeplabv3_efficientnet.pth'
+image_path = './test/test.jpg'
+model_path = '../../MyTrained_Models/deeplabv3EfficientNet/deeplabv3_efficientnet_final.pth'
 num_classes = 21 # Update based on your classes
 
 # Get prediction

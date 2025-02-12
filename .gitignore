@@ -15,6 +15,9 @@
 # photo files
 /photo
 /img
+*.jpg
+*.jpeg
+*.png
 
 # Igonre cache files
 *.pyc
