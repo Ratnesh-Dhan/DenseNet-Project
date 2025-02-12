@@ -53,6 +53,7 @@ def create_mask_from_json(json_path):
     # Get image size from JSON data
     height = data['size']['height']
     width = data['size']['width']
+    # Creating empty mask
     mask = np.zeros((height, width), dtype=np.uint8)
     
     for obj in data['objects']:
@@ -171,21 +172,124 @@ def data_generator(image_list, json_list, image_dir, json_dir):
 train_gen = data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR)
 val_gen = data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR)
 
-def train_generator():
-    for image, mask in data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR):
-        image = cv2.resize(image, (512, 512))
-        mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
-        image = np.reshape(image, (512, 512, 3))  # Add this line
-        mask = np.reshape(mask, (512, 512, 1))  # Add this line
-        yield image, mask
+# def train_generator():
+#     for image, mask in data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR):
+#         image = cv2.resize(image, (512, 512))
+#         mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+#         image = np.reshape(image, (512, 512, 3))  # Add this line
+#         mask = np.reshape(mask, (512, 512, 1))  # Add this line
+#         yield image, mask
 
-def val_generator():
-    for image, mask in data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR):
-        image = cv2.resize(image, (512, 512))
-        mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
-        image = np.reshape(image, (512, 512, 3))  # Add this line
-        mask = np.reshape(mask, (512, 512, 1))  # Add this line
-        yield image, mask
+# def val_generator():
+#     for image, mask in data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR):
+#         image = cv2.resize(image, (512, 512))
+#         mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+#         image = np.reshape(image, (512, 512, 3))  # Add this line
+#         mask = np.reshape(mask, (512, 512, 1))  # Add this line
+#         yield image, mask
+
+def train_generator(batch_size=1):
+    while True:
+        batch_images = []
+        batch_masks = []
+        for image, mask in data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR):
+            # Resize to 1024x1024 to match model output
+            image = cv2.resize(image, (1024, 1024))
+            mask = cv2.resize(mask, (1024, 1024), interpolation=cv2.INTER_NEAREST)
+            
+            # Normalize image
+            image = image.astype(np.float32) / 255.0
+            
+            # Ensure mask is integer type for sparse categorical crossentropy
+            mask = mask.astype(np.int32)
+            
+            batch_images.append(image)
+            batch_masks.append(mask)
+            
+            if len(batch_images) == batch_size:
+                X = np.array(batch_images)
+                y = np.array(batch_masks)
+                yield X, y
+                batch_images = []
+                batch_masks = []
+
+def val_generator(batch_size=1):
+    while True:
+        batch_images = []
+        batch_masks = []
+        for image, mask in data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR):
+            # Resize to 1024x1024 to match model output
+            image = cv2.resize(image, (1024, 1024))
+            mask = cv2.resize(mask, (1024, 1024), interpolation=cv2.INTER_NEAREST)
+            
+            # Normalize image
+            image = image.astype(np.float32) / 255.0
+            
+            # Ensure mask is integer type for sparse categorical crossentropy
+            mask = mask.astype(np.int32)
+            
+            batch_images.append(image)
+            batch_masks.append(mask)
+            
+            if len(batch_images) == batch_size:
+                X = np.array(batch_images)
+                y = np.array(batch_masks)
+                yield X, y
+                batch_images = []
+                batch_masks = []
+# def train_generator(batch_size=1):
+#     while True:  # Make the generator infinite for training
+#         batch_images = []
+#         batch_masks = []
+#         for image, mask in data_generator(train_images, train_jsons, IMAGE_DIR, JSON_DIR):
+#             # Preprocess image and mask
+#             image = cv2.resize(image, (512, 512))
+#             mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+            
+#             # Normalize image
+#             image = image.astype(np.float32) / 255.0
+            
+#             # Reshape and add to batch
+#             image = np.reshape(image, (512, 512, 3))
+#             mask = np.reshape(mask, (512, 512, 1))
+            
+#             batch_images.append(image)
+#             batch_masks.append(mask)
+            
+#             if len(batch_images) == batch_size:
+#                 # Convert to numpy arrays with explicit shapes
+#                 X = np.array(batch_images)
+#                 y = np.array(batch_masks)
+#                 yield X, y
+#                 batch_images = []
+#                 batch_masks = []
+
+# def val_generator(batch_size=1):
+#     while True:  # Make the generator infinite for validation
+#         batch_images = []
+#         batch_masks = []
+#         for image, mask in data_generator(val_images, val_jsons, IMAGE_DIR, JSON_DIR):
+#             # Preprocess image and mask
+#             image = cv2.resize(image, (512, 512))
+#             mask = cv2.resize(mask, (512, 512), interpolation=cv2.INTER_NEAREST)
+            
+#             # Normalize image
+#             image = image.astype(np.float32) / 255.0
+            
+#             # Reshape and add to batch
+#             image = np.reshape(image, (512, 512, 3))
+#             mask = np.reshape(mask, (512, 512, 1))
+            
+#             batch_images.append(image)
+#             batch_masks.append(mask)
+            
+#             if len(batch_images) == batch_size:
+#                 # Convert to numpy arrays with explicit shapes
+#                 X = np.array(batch_images)
+#                 y = np.array(batch_masks)
+#                 yield X, y
+#                 batch_images = []
+#                 batch_masks = []
 
 # Example usage:
 '''
