@@ -194,7 +194,7 @@ def create_model(num_classes: int):
     model = models.Sequential([
         base_model,
         layers.GlobalAveragePooling2D(),
-        layers.BatchNormalizeation(),
+        layers.BatchNormalization(),
         layers.Dropout(0.4),
         layers.Dense(512, activation='relu'),
         layers.BatchNormalization(),
@@ -214,7 +214,7 @@ def create_model(num_classes: int):
 
 if __name__ == "__main__":
     dataset_path = "../../Datasets/pcbDataset/"
-    model, history = create_and_train_model(dataset_path=dataset_path)
+    model, history = create_and_train_model(dataset_path=dataset_path, epochs=50)
 
     # Save the model
     model.save('pcb_component_classifier.h5')

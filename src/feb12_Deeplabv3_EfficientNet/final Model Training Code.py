@@ -234,7 +234,7 @@ def train_model(model, train_loader, criterion, optimizer, num_epochs, device):
 def main():
     # Hyperparameters
     batch_size = 4
-    num_epochs = 50
+    num_epochs = 100
     learning_rate = 0.001
 
     target_size = (512, 512)  # Fixed size for all images

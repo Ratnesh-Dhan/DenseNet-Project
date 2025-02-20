@@ -7,6 +7,11 @@ import matplotlib.pyplot as plt
 def predict_segmentation(image_path, model_path, num_classes):
     # Load the trained model
     model = DeepLabV3Plus(num_classes)
+    # ## // added code
+    # model.backbone = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 
+    #                            'nvidia_efficientnet_b0', 
+    #                            pretrained=True)
+    # ## // added code
     model.load_state_dict(torch.load(model_path))
     model.eval()
     
@@ -36,7 +41,8 @@ def predict_segmentation(image_path, model_path, num_classes):
 
 # Example usage
 image_path = './test/test.jpg'
-model_path = '../../MyTrained_Models/deeplabv3EfficientNet/deeplabv3_efficientnet_final.pth'
+# model_path = '../../MyTrained_Models/deeplabv3EfficientNet/deeplabv3_efficientnet_final.pth'
+model_path = './checkpoint_epoch_90.pth'
 num_classes = 21 # Update based on your classes
 
 # Get prediction

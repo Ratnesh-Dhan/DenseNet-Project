@@ -236,7 +236,7 @@ def main():
                            std=[0.229, 0.224, 0.225])
     ])
     
-    dataset_path = '../../Datasets/PASCAL VOC 2012/train/'
+    dataset_path = '../../../Datasets/PASCAL VOC 2012/train/'
     
     print("Initializing dataset...")
     dataset = SegmentationDataset(dataset_path, transform=transform, target_size=target_size)

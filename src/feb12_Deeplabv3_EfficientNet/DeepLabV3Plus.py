@@ -6,7 +6,7 @@ class DeepLabV3Plus(nn.Module):
         super(DeepLabV3Plus, self).__init__()
         self.backbone = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 
                                      'nvidia_efficientnet_b0', 
-                                     pretrained=True)
+                                     pretrained=True, force_reload=True)
         self.aspp = ASPP(1280, 256)
         self.decoder = Decoder(num_classes)
         
