@@ -1,4 +1,5 @@
 import tensorflow as tf
+tf.get_logger().setLevel('INFO') # Set TensorFlow logging level to INFO
 from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import layers, models
@@ -98,6 +99,7 @@ class PCBDataset:
         ann_path = split_path / 'ann'
 
         def generator():
+            print('WE ARE AT THE STARTING OF THE WHILE LOOP') # REMOVE AFTER DEBUGIN
             while True:
                 # Get all image files
                 image_files = list(img_path.glob('*.jpg'))
@@ -108,12 +110,17 @@ class PCBDataset:
 
                 for img_file in image_files:
                     # Get corresponding annotation file
-                    ann_file = ann_path / f"{img_file.stem}.json"
+                    # ann_file = ann_path / f"{img_file.stem}.json"
+                    ann_file = ann_path / f"{img_file.name}.json"
                     if not ann_file.exists():
+                        print(f"Annotation file not found: {ann_file}")
                         continue
 
                     # Load image and annotations
                     image = cv2.imread(str(img_file))
+                    if image is None:
+                        print(f"Image not found or could not be loaded: {img_file}")
+                        continue
                     components = self.load_annotation(ann_file)
 
                     # Process each component in the image
@@ -135,13 +142,14 @@ class PCBDataset:
                         batch_labels.append(label)
 
                         if len(batch_images) == batch_size:
+                            print(f"Yielding batch of size: {len(batch_images)}")
                             yield np.array(batch_images), np.array(batch_labels)
                             batch_images = []
                             batch_labels = []
                 # Yield remaining samples
                 if batch_images:
+                    print(f"Yielding remaining batch of size: {len(batch_images)}")
                     yield np.array(batch_images), np.array(batch_labels)
-        
         # Create tf.data.Dataset
         dataset = tf.data.Dataset.from_generator(
             generator,
@@ -151,6 +159,7 @@ class PCBDataset:
                 tf.TensorSpec(shape=(None, self.num_classes), dtype=tf.float32)
             )
         )
+        print('WE ARE AFTER THE COMPLETION OF THE WHILE LOOP') # REMOVE THIS after code completion
         return dataset.prefetch(tf.data.AUTOTUNE)
     
 def create_and_train_model(dataset_path: str, batch_size: int = 32, epochs: int = 30):
@@ -213,8 +222,8 @@ def create_model(num_classes: int):
     return model
 
 if __name__ == "__main__":
-    dataset_path = "../../Datasets/pcbDataset/"
-    model, history = create_and_train_model(dataset_path=dataset_path, epochs=50)
+    dataset_path = "../../Datasets/pcbDataset"
+    model, history = create_and_train_model(dataset_path=dataset_path,batch_size=32 , epochs=100)
 
     # Save the model
     model.save('pcb_component_classifier.h5')
