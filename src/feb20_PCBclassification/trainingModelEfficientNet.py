@@ -149,7 +149,24 @@ class PCBDataset:
             components = self.load_annotation(ann_file)
             total_samples += sum(1 for comp in components if comp['class'] in self.class_mapping)
         return total_samples
-    
+
+# export TF_ENABLE_ONEDNN_OPTS=0  # For Linux
+# set TF_ENABLE_ONEDNN_OPTS=0     # For Windows
+
+# Set threading options
+tf.config.threading.set_intra_op_parallelism_threads(12)  # Number of threads for parallelism within an individual operation
+tf.config.threading.set_inter_op_parallelism_threads(6)   # Number of threads for parallelism between independent operations
+
+# Set environment variables to optimize performance
+os.environ['OMP_NUM_THREADS'] = '12'  # OpenMP threads
+os.environ['TF_NUM_INTRAOP_THREADS'] = '12'
+os.environ['TF_NUM_INTEROP_THREADS'] = '6'
+
+
+#4. Enable XLA (Accelerated Linear Algebra)
+#XLA can improve performance by compiling subgraphs into optimized kernels:
+tf.config.optimizer.set_jit(True)  # Enable XLA
+
 def create_and_train_model(dataset_path: str, batch_size: int = 32, epochs: int = 30):
     """Create and Train model"""
 
@@ -219,7 +236,7 @@ def create_model(num_classes: int):
 
 if __name__ == "__main__":
     dataset_path = "../../Datasets/pcbDataset"
-    model, history = create_and_train_model(dataset_path=dataset_path,batch_size=32 , epochs=50)
+    model, history = create_and_train_model(dataset_path=dataset_path,batch_size=32 , epochs=20)
 
     # Save the model
     model.save('pcb_component_classifier.h5')
