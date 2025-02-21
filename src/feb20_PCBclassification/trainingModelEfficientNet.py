@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras import mixed_precision
 from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras import layers, models
 from typing import List, Tuple, Dict
@@ -162,6 +163,10 @@ os.environ['OMP_NUM_THREADS'] = '12'  # OpenMP threads
 os.environ['TF_NUM_INTRAOP_THREADS'] = '12'
 os.environ['TF_NUM_INTEROP_THREADS'] = '6'
 
+# Set the global mixed precision policy to 'mixed_float16'
+# policy = mixed_precision.Policy('mixed_float16')
+# mixed_precision.set_global_policy(policy)
+mixed_precision.set_global_policy('float32')
 
 #4. Enable XLA (Accelerated Linear Algebra)
 #XLA can improve performance by compiling subgraphs into optimized kernels:
