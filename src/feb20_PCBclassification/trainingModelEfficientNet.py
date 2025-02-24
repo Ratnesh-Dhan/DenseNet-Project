@@ -96,7 +96,7 @@ def create_model(num_classes: int):
 
 if __name__ == "__main__":
     dataset_path = "../../Datasets/pcbDataset"
-    model, history = create_and_train_model(dataset_path=dataset_path,batch_size=32 , epochs=20)
+    model, history = create_and_train_model(dataset_path=dataset_path,batch_size=32 , epochs=15)
 
     # Save the model
     model.save('pcb_component_classifier.h5')
