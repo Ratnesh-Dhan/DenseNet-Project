@@ -1,11 +1,6 @@
 import tensorflow as tf
-import numpy as np
-import json
-import os
+import numpy as np, json, os, io, base64, matplotlib.pyplot as plt, sys
 from tensorflow.keras import layers, Model
-import matplotlib.pyplot as plt
-import base64
-import io
 from PIL import Image
 
 # Constants
@@ -29,6 +24,11 @@ def decode_bitmap_mask(bitmap_data, origin, height, width):
 
 def process_example(image_path, annotation_path):
     """Process a single image and its annotations."""
+    print(annotation_path)
+    sys.exit(0)
+    # Convert annotation_path to string
+    annotation_path = tf.strings.to_string(annotation_path)  # {{ edit_1 }}
+    
     # Read image
     image = tf.io.read_file(image_path)
     image = tf.image.decode_jpeg(image, channels=3)
@@ -211,7 +211,7 @@ def create_dataset(image_paths, annotations_dir):
 def train_model():
     """Train the Mask R-CNN model."""
     # Setup paths
-    dataset_dir = 'dataset'
+    dataset_dir = '../../Datasets/testDataset/'
     image_dir = os.path.join(dataset_dir, 'img')
     annotations_dir = os.path.join(dataset_dir, 'ann')
     
@@ -265,7 +265,7 @@ if __name__ == "__main__":
     model, history = train_model()
     
     # Save model
-    model.save('mask_rcnn_model')
+    model.save('mask_rcnn_model.keras')
     
     # Plot training history
     plt.figure(figsize=(10, 6))
