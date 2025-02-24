@@ -7,7 +7,7 @@ from PIL import Image
 IMG_SIZE = 512
 BATCH_SIZE = 2  # Smaller batch size due to memory requirements
 NUM_CLASSES = 21  # Including background
-EPOCHS = 50
+EPOCHS = 10
 
 def decode_bitmap_mask(bitmap_data, origin, height, width):
     """Decode base64 bitmap data to numpy array mask."""

@@ -122,6 +122,7 @@ def main():
     dataset_dir = '../../Datasets/testDataset/'
     image_dir = os.path.join(dataset_dir, 'img')
     metadata_path = os.path.join(dataset_dir, 'meta.json')
+    print(metadata_path)
     
     # Get all image paths
     image_paths = glob.glob(os.path.join(image_dir, '*.jpg'))
