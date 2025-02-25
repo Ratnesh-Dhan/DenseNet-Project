@@ -57,4 +57,3 @@ def visualize_segmentation(image_path, json_path):
 image_path = '../../Datasets/testDataset/img/2007_007948.jpg'
 annotation_path = '../../Datasets/testDataset/ann/2007_007948.jpg.json'
 visualize_segmentation(image_path, annotation_path)
-# visualize_segmentation('path/to/image.jpg', 'path/to/annotation.json')

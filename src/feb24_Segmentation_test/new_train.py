@@ -9,10 +9,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Only show warnings and errors
 with open("../../Datasets/testDataset/meta.json", "r") as file:
         data = json.load(file)
 # Constants
-IMG_SIZE = 512
-BATCH_SIZE = 1
+IMG_SIZE = 256 #512
+BATCH_SIZE = 2
 NUM_CLASSES = len(data['classes']) #number of classes
-EPOCHS = 20
+EPOCHS = 10
 
 
 def parse_tfrecord(example_proto):
@@ -44,12 +44,13 @@ def parse_tfrecord(example_proto):
 def create_dataset(tfrecord_path):
     dataset = tf.data.TFRecordDataset(tfrecord_path)
     dataset = dataset.map(parse_tfrecord, num_parallel_calls=tf.data.AUTOTUNE)
-    dataset = dataset.repeat(2).batch(BATCH_SIZE)
+    dataset = dataset.repeat().batch(BATCH_SIZE) # Leaving repeat() without value will make it run indefenietly . with value like "repeat(2)" will make dataset run for 2 times
     dataset = dataset.prefetch(tf.data.AUTOTUNE)
     return dataset
 
 
 def create_mask_rcnn_model():
+    # backbone = tf.keras.applications.MobileNetV2(
     backbone = tf.keras.applications.ResNet50(
         include_top=False,
         weights='imagenet',
@@ -59,15 +60,17 @@ def create_mask_rcnn_model():
     x = tf.keras.layers.Conv2D(256, (3, 3), padding='same', activation='relu')(x)
     x = tf.keras.layers.Conv2D(256, (3, 3), padding='same', activation='relu')(x)
     # Upsample to match the target mask size (512x512)
-    x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 64x64
-    x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 128x128
-    x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 256x256
-    x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 512x512
 
-    # x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #64*64
-    # x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #128*128
-    # x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #256*256
-    # x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #512*512
+    # x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 64x64
+    # x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 128x128
+    # x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 256x256
+    # x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 512x512
+
+    x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #64*64
+    x = tf.keras.layers.Conv2DTranspose(128, (2, 2), strides=2, activation='relu')(x) #64*64
+    x = tf.keras.layers.Conv2DTranspose(64, (2, 2), strides=2, activation='relu')(x) #128*128
+    x = tf.keras.layers.Conv2DTranspose(32, (2, 2), strides=2, activation='relu')(x) #256*256
+    x = tf.keras.layers.Conv2DTranspose(16, (2, 2), strides=2, activation='relu')(x) #512*512
     # x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #512*512
 
     mask_output = tf.keras.layers.Conv2D(NUM_CLASSES, (1, 1), activation='softmax')(x)

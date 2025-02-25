@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 model = tf.keras.models.load_model("mask_rcnn_model.keras")
-
+image_size = 256 # 512
 def load_and_process_image(path):
     image = Image.open(path).convert("RGB")
-    image = image.resize((512, 512))
+    image = image.resize((image_size, image_size))
     image_array = np.array(image)/255.0  # Normalizing
     image_batch = np.expand_dims(image_array, axis=0)  # Adding batch dimension
     return image_array, image_batch  # Return both original and batched versions

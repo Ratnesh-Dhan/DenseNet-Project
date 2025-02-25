@@ -36,11 +36,13 @@ def create_tfrecord(image_paths, output_path, metadata_path):
         metadata = json.load(f)
 
     class_id_to_index = {cls['id']: i for i, cls in enumerate(metadata['classes'])}
-
+    i = 0
     with tf.io.TFRecordWriter(output_path) as writer:
         for image_path in image_paths:
+            i = i+1
+            print(f"{i} out of {len(image_paths)}")
             image_name = os.path.basename(image_path)
-            img = Image.open(image_path)
+            # img = Image.open(image_path)
             with tf.io.gfile.GFile(image_path, 'rb') as f:
                 image_data = f.read()
 

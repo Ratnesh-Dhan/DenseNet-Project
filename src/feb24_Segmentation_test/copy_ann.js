@@ -27,7 +27,11 @@ img_array.forEach((element) => {
     dist + element + ".json",
     fs.constants.COPYFILE_EXCL,
     (err) => {
-      console.log("error on copy : " + err);
+      if (err) {
+        console.error("Error copying file:", err);
+      } else {
+        console.log("File copied successfully!");
+      }
     }
   );
 });
