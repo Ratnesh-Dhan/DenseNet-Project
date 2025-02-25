@@ -9,8 +9,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Only show warnings and errors
 with open("../../Datasets/testDataset/meta.json", "r") as file:
         data = json.load(file)
 # Constants
-IMG_SIZE = 256 #512
-BATCH_SIZE = 2
+IMG_SIZE = 512
+BATCH_SIZE = 16
 NUM_CLASSES = len(data['classes']) #number of classes
 EPOCHS = 10
 
@@ -66,12 +66,14 @@ def create_mask_rcnn_model():
     # x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 256x256
     # x = tf.keras.layers.UpSampling2D(size=(2, 2), interpolation='bilinear')(x)  # 512x512
 
-    x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #64*64
-    x = tf.keras.layers.Conv2DTranspose(128, (2, 2), strides=2, activation='relu')(x) #64*64
-    x = tf.keras.layers.Conv2DTranspose(64, (2, 2), strides=2, activation='relu')(x) #128*128
-    x = tf.keras.layers.Conv2DTranspose(32, (2, 2), strides=2, activation='relu')(x) #256*256
-    x = tf.keras.layers.Conv2DTranspose(16, (2, 2), strides=2, activation='relu')(x) #512*512
-    # x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #512*512
+    # x = tf.keras.layers.Conv2DTranspose(128, (2, 2), strides=2, activation='relu')(x) #64*64
+    # x = tf.keras.layers.Conv2DTranspose(64, (2, 2), strides=2, activation='relu')(x) #128*128
+    # x = tf.keras.layers.Conv2DTranspose(32, (2, 2), strides=2, activation='relu')(x) #256*256
+    # x = tf.keras.layers.Conv2DTranspose(16, (2, 2), strides=2, activation='relu')(x) #512*512
+    x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #512*512
+    x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #512*512
+    x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #512*512
+    x = tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=2, activation='relu')(x) #512*512
 
     mask_output = tf.keras.layers.Conv2D(NUM_CLASSES, (1, 1), activation='softmax')(x)
     
@@ -93,23 +95,29 @@ def train_model():
         metrics=['accuracy']
     )
     
+    # Get the dataset size for steps_per_epoch
+    train_size = sum(1 for _ in tf.data.TFRecordDataset(train_tfrecord))
+    val_size = sum(1 for _ in tf.data.TFRecordDataset(val_tfrecord))
+
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(
             'best_mask_rcnn_model.keras',
             save_best_only=True,
             monitor='val_loss'
         ),
-        # tf.keras.callbacks.EarlyStopping(
-        #     monitor='val_loss',
-        #     patience=10,
-        #     restore_best_weights=True
-        # )
+        tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss',
+            patience=10,
+            restore_best_weights=True
+        )
     ]
     
     history = model.fit(
         train_dataset,
         validation_data=val_dataset,
         epochs=EPOCHS,
+        steps_per_epoch=train_size // BATCH_SIZE,
+        validation_steps=val_size // BATCH_SIZE,
         callbacks=callbacks
     )
     
