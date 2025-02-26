@@ -1,18 +1,17 @@
 import tensorflow as tf
-import numpy as np
 import os, json
 import matplotlib.pyplot as plt
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Only show warnings and errors
 
-with open("../../Datasets/testDataset/meta.json", "r") as file:
+with open("../../Datasets/PASCAL VOC 2012/meta.json", "r") as file:
         data = json.load(file)
 # Constants
 IMG_SIZE = 512
 BATCH_SIZE = 16
 NUM_CLASSES = len(data['classes']) #number of classes
-EPOCHS = 10
+EPOCHS = 100
 
 
 def parse_tfrecord(example_proto):
@@ -82,8 +81,8 @@ def create_mask_rcnn_model():
 
 
 def train_model():
-    train_tfrecord = '../../Datasets/testDataset/tfrecords/train.tfrecord'
-    val_tfrecord = '../../Datasets/testDataset/tfrecords/val.tfrecord'
+    train_tfrecord = '../../Datasets/PASCAL VOC 2012/train/tfrecords/train.tfrecord'
+    val_tfrecord = '../../Datasets/PASCAL VOC 2012/train/tfrecords/val.tfrecord'
     
     train_dataset = create_dataset(train_tfrecord)
     val_dataset = create_dataset(val_tfrecord)
