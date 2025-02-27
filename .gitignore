@@ -32,6 +32,7 @@ __pycache__/
 *.pth
 *.h5
 *.keras
+*.tfrecord
 
 # Ignoring "image" folders
 /src/img
