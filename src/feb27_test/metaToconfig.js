@@ -7,7 +7,7 @@ function readJsonFile(filePath) {
     // Writing label_map.pbtxt file
     const labelMapContent = data.classes
       .map((element) => {
-        return `item {\n id: ${element.id} \n name: '${element.title}' \n color: '${element.color}'\n}`;
+        return `item {\n id: ${element.id} \n name: '${element.title}' \n}`;
       })
       .join("\n");
 

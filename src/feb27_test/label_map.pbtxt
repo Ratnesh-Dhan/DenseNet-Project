@@ -1,45 +1,36 @@
 item {
  id: 8337 
  name: 'Cap1' 
- color: '#E6194B'
 }
 item {
  id: 8338 
  name: 'Cap2' 
- color: '#FFE119'
 }
 item {
  id: 8339 
  name: 'Cap3' 
- color: '#0082C8'
 }
 item {
  id: 8340 
  name: 'Cap4' 
- color: '#F58230'
 }
 item {
  id: 8341 
  name: 'MOSFET' 
- color: '#911EB4'
 }
 item {
  id: 8342 
  name: 'Mov' 
- color: '#46F0F0'
 }
 item {
  id: 8343 
  name: 'Resestor' 
- color: '#F032E6'
 }
 item {
  id: 8344 
  name: 'Resistor' 
- color: '#D2F53C'
 }
 item {
  id: 8345 
  name: 'Transformer' 
- color: '#FABED4'
 }

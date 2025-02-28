@@ -35,6 +35,16 @@ for i in data['objects']:
     cv2.rectangle(image, (box[0][0], box[0][1]), (box[1][0], box[1][1]), color_bgr, 2)
     print(color_bgr)
 
-# sys.exit(0)
 plt.imshow(image)
 plt.show()
+
+sys.exit(0)
+python model_main_tf2.py \
+    --model_dir=efficientdet_d1_coco17_tpu-32\
+    --pipeline_config_path=efficientdet_d1_coco17_tpu-32/pipeline.config
+
+
+tensorboard --logdir=efficientdet_d1_coco17_tpu-32
+
+
+
