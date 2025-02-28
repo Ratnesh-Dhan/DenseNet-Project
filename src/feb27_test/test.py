@@ -39,12 +39,32 @@ plt.imshow(image)
 plt.show()
 
 sys.exit(0)
+
+"""
 python model_main_tf2.py \
-    --model_dir=efficientdet_d1_coco17_tpu-32\
-    --pipeline_config_path=efficientdet_d1_coco17_tpu-32/pipeline.config
+    --model_dir=./efficientdet_d1_coco17_tpu-32\
+    --pipeline_config_path=./efficientdet_d1_coco17_tpu-32/pipeline.config
+
+
+python models/research/object_detection/model_main_tf2.py `
+    --model_dir=efficientdet_d1_coco17_tpu-32 `
+    --pipeline_config_path=efficientdet_d1_coco17_tpu-32/pipeline.config `
+    --num_train_steps=5000 `
+    --sample_1_of_n_eval_examples=1 `
+    --alsologtostderr
+
+
+
+python models/research/object_detection/model_main_tf2.py `
+    --model_dir=efficientdet_d1_coco17_tpu-32 `
+    --pipeline_config_path=efficientdet_d1_coco17_tpu-32/pipeline.config `
+    --num_train_steps=5000 `
+    --sample_1_of_n_eval_examples=1 `
+    --alsologtostderr
 
 
 tensorboard --logdir=efficientdet_d1_coco17_tpu-32
 
+"""
 
 
