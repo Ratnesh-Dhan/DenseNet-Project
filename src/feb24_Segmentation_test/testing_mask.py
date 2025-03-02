@@ -54,6 +54,6 @@ def visualize_segmentation(image_path, json_path):
     plt.show()
 
 # Example usage
-image_path = '../../Datasets/testDataset/img/2007_007948.jpg'
-annotation_path = '../../Datasets/testDataset/ann/2007_007948.jpg.json'
+image_path = '../../Datasets/testDataset/img/2007_000250.jpg'
+annotation_path = '../../Datasets/testDataset/ann/2007_000250.jpg.json'
 visualize_segmentation(image_path, annotation_path)

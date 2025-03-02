@@ -10,8 +10,8 @@ import os
 # set TF_ENABLE_ONEDNN_OPTS=0     # For Windows
 
 # Set threading options
-tf.config.threading.set_intra_op_parallelism_threads(12)  # Number of threads for parallelism within an individual operation
-tf.config.threading.set_inter_op_parallelism_threads(6)   # Number of threads for parallelism between independent operations
+# tf.config.threading.set_intra_op_parallelism_threads(12)  # Number of threads for parallelism within an individual operation
+# tf.config.threading.set_inter_op_parallelism_threads(6)   # Number of threads for parallelism between independent operations
 
 # Set environment variables to optimize performance
 os.environ['OMP_NUM_THREADS'] = '12'  # OpenMP threads
