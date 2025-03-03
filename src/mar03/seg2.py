@@ -53,7 +53,7 @@ IMG_SIZE = (256, 256)  # Resize images to this size
 #             mask = np.maximum(mask, mask_resized)  # Merge masks
     
 #     return image, np.expand_dims(mask, axis=-1)  # Add channel dimension
-
+ 
 
 def load_image_and_mask(image_path, annotation_path):
     # Load image
