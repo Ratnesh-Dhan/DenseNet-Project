@@ -57,7 +57,10 @@ IMG_SIZE = (256, 256)  # Resize images to this size
 
 def load_image_and_mask(image_path, annotation_path):
     # Load image
-    image = Image.open(image_path).convert("RGB").resize(IMG_SIZE)
+    image = Image.open(image_path).convert("RGB")
+    p_height, p_width = image.height, image.width
+    print(f"p_height: {p_height}, p_width: {p_width}")
+    image = image.resize(IMG_SIZE)
     image = np.array(image) / 255.0  # Normalize
 
     # Load annotation JSON
@@ -82,16 +85,16 @@ def load_image_and_mask(image_path, annotation_path):
             origin = obj['bitmap']['origin']
             h, w = mask_data.shape
 
+            # Original mask size by Paddy
+            full_mask = np.zeros((p_height, p_width), dtype=np.uint8)
+            h, w = mask.shape
+            full_mask[origin[1]:origin[1]+h, origin[0]:origin[0]+w] = mask_data
+
             # Ensure mask fits within IMG_SIZE boundaries
             x1, y1 = origin[0], origin[1]
             x2, y2 = min(x1 + w, IMG_SIZE[0]), min(y1 + h, IMG_SIZE[1])
 
-            # Resize mask to fit the target region
-            target_w, target_h = x2 - x1, y2 - y1
-            print(f"target_w: {target_w}, target_h: {target_h}")
-            print(f"mask_data.shape: {mask_data.shape}")
-            print(f"x2: {x2}, y2: {y2}, x1: {x1}, y1: {y1}")
-            mask_data = cv2.resize(mask_data, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+            mask_data = cv2.resize(full_mask, (IMG_SIZE[1], IMG_SIZE[0]), interpolation=cv2.INTER_NEAREST)
 
             # Ensure valid assignment by checking shapes
             mask[y1:y2, x1:x2] = np.maximum(mask[y1:y2, x1:x2], mask_data)
