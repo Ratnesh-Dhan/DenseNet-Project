@@ -159,3 +159,8 @@ model.fit(train_generator, validation_data=val_generator, epochs=100)
 
 # Save model
 model.save("segmentation_model.h5")
+
+
+# https://medium.com/@alfred.weirich/transfer-learning-with-keras-tensorflow-an-introduction-51d2766c30ca
+# https://www.youtube.com/watch?v=8cN0PiZQl18
+# link to study transfer learning
