@@ -17,3 +17,8 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dense(10)
 ])
 
+predictions = model(x_train[:1]).numpy()
+predictions
+# Defining loss function
+lossFunction = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+lossFunction(y_train[:1], predictions).numpy()
