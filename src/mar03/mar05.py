@@ -17,6 +17,26 @@ VAL_ANN_DIR = "../../Datasets/PASCAL VOC 2012/val/ann"
 
 IMG_SIZE = (256, 256)  # Resize images to this size 
 
+def augment_image_and_mask(image, mask):
+    if random.random() > 0.5:
+        image = tf.image.flip_left_right(image)
+        mask = tf.image.flip_left_right(mask)
+
+    if random.random() > 0.5:
+        image = tf.image.flip_up_down(image)
+        mask = tf.image.flip_up_down(mask)
+
+    # if random.random() > 0.5:
+    #     angle = random.uniform(-10, 10)  # Random rotation (-10 to 10 degrees)
+    #     image = tf.keras.preprocessing.image.random_rotation(image, angle, row_axis=0, col_axis=1, channel_axis=2, fill_mode='nearest') 
+    #     mask = tf.keras.preprocessing.image.random_rotation(image, angle, row_axis=0, col_axis=1, channel_axis=2, fill_mode='nearest') 
+
+
+    if random.random() > 0.5:
+        image = tf.image.adjust_brightness(image, delta=random.uniform(-0.2, 0.2))
+
+    return image, mask
+
 def load_image_and_mask(image_path, annotation_path):
     # Load image at original size first to get dimensions
     original_image = Image.open(image_path).convert("RGB")
@@ -77,11 +97,11 @@ def load_image_and_mask(image_path, annotation_path):
     resized_image = np.array(original_image.resize(IMG_SIZE)) / 255.0
     resized_mask = cv2.resize(original_mask, IMG_SIZE, interpolation=cv2.INTER_NEAREST)
     # Return the resized image and mask
-    return resized_image, np.expand_dims(resized_mask, axis=-1)
+    return augment_image_and_mask(resized_image, np.expand_dims(resized_mask, axis=-1))
 # Data generator class
 class SegmentationDataGenerator(keras.utils.Sequence):
     def __init__(self, img_dir, ann_dir, batch_size=8, shuffle=True, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(workers=6)
         # super().__init__(workers=6, use_multiprocessing=True, max_queue_size=12)
         self.img_dir = img_dir
         self.ann_dir = ann_dir
