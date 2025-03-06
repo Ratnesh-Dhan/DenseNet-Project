@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 
 # Load the trained model
-model = keras.models.load_model("segmentation_model_Epoch_100.h5")
+model = keras.models.load_model("mar_4_segmentation_model.h5")
 
 def predict_mask(image_path, threshold=0.5):
     """

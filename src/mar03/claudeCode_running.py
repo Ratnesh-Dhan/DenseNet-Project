@@ -6,7 +6,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-import tensorflow.keras.backend as K
 from PIL import Image
 import io, matplotlib.pyplot as plt
 
@@ -17,15 +16,6 @@ VAL_IMG_DIR = "../../Datasets/PASCAL VOC 2012/val/img"
 VAL_ANN_DIR = "../../Datasets/PASCAL VOC 2012/val/ann"
 
 IMG_SIZE = (256, 256)  # Resize images to this size 
-
-
-# 🔹 Dice Loss Function
-def dice_loss(y_true, y_pred, smooth=1e-6):
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-    intersection = K.sum(y_true_f * y_pred_f)
-    return 1 - ((2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth))
-
 
 def load_image_and_mask(image_path, annotation_path):
     # Load image at original size first to get dimensions
@@ -109,62 +99,71 @@ class SegmentationDataGenerator(keras.utils.Sequence):
             ann_path = os.path.join(self.ann_dir, img_name + ".json")
             if os.path.exists(ann_path):
                 image, mask = load_image_and_mask(img_path, ann_path)
+
+                # Visualize mask
+                # plt.figure(figsize=(8, 6))
+                # plt.subplot(1,2,1)
+                # plt.imshow(image)
+                # plt.title("masks")
+                # plt.axis('off')
+
+                # plt.subplot(1,2,2)
+                # plt.imshow(mask, alpha=1, cmap='jet')
+                # # plt.imshow(image)
+                # plt.title("original")
+                # plt.axis("off")
+                # plt.show()
+                # /Visualize mask
+
                 batch_images.append(image)
                 batch_masks.append(mask)
         return np.array(batch_images), np.array(batch_masks)
 
 # Model using EfficientNet as backbone with corrected output dimensions
-def conv_block(x, filters):
-    """Convolutional Block with BatchNorm and ReLU"""
-    x = layers.Conv2D(filters, (3, 3), padding="same")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.ReLU()(x)
-    return x
-
-def upsample_block(x, skip, filters):
-    """Upsampling Block with Skip Connection"""
-    x = layers.Conv2DTranspose(filters, (3, 3), strides=2, padding="same")(x)  # Upsample
-    x = layers.Concatenate()([x, skip])  # Add skip connection
-    x = conv_block(x, filters)
-    return x
-
 def build_model():
     inputs = keras.Input(shape=(256, 256, 3))
     
-    # 🔹 Use EfficientNetB3 instead of B0
-    base_model = keras.applications.EfficientNetB3(include_top=False, input_tensor=inputs, weights="imagenet")
-    
-    # Extract encoder features for skip connections
-    skips = [
-        base_model.get_layer("block2a_expand_activation").output,  # 128x128
-        base_model.get_layer("block3a_expand_activation").output,  # 64x64
-        base_model.get_layer("block4a_expand_activation").output,  # 32x32
-        base_model.get_layer("block6a_expand_activation").output,  # 16x16
-    ]
-    
-    encoder_output = base_model.output  # 8x8 feature map
-    
-    # 🔹 Decoder with skip connections
-    x = upsample_block(encoder_output, skips[3], 512)  # 8x8 → 16x16
-    x = upsample_block(x, skips[2], 256)  # 16x16 → 32x32
-    x = upsample_block(x, skips[1], 128)  # 32x32 → 64x64
-    x = upsample_block(x, skips[0], 64)   # 64x64 → 128x128
-    
-    # Final upsampling (128x128 → 256x256)
-    x = layers.Conv2DTranspose(32, (3, 3), strides=2, padding="same")(x)
-    x = conv_block(x, 32)
-    
-    # 🔹 Final segmentation mask output
-    outputs = layers.Conv2D(1, (1, 1), activation="sigmoid")(x)  # Binary segmentation mask
-    
-    # Compile model
-    model = keras.Model(inputs, outputs)
-    model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=1e-4),
-        loss=dice_loss,
-        metrics=["accuracy"]
+    # Use EfficientNetB0 as the encoder (backbone)
+    base_model = keras.applications.EfficientNetB0(
+        include_top=False, 
+        input_tensor=inputs,
+        weights='imagenet'
     )
     
+    # Get the output from the backbone
+    # EfficientNetB0 has a reduction factor of 32, so 256x256 becomes 8x8
+    encoder_output = base_model.output  # Shape: (None, 8, 8, 1280)
+    
+    # Decoder pathway with skip connections to ensure correct upsampling
+    # Upsampling 1: 8x8 -> 16x16
+    x = layers.Conv2D(256, (3, 3), activation="relu", padding="same")(encoder_output)
+    x = layers.UpSampling2D((2, 2))(x)  # Now 16x16
+    
+    # Upsampling 2: 16x16 -> 32x32
+    x = layers.Conv2D(128, (3, 3), activation="relu", padding="same")(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Now 32x32
+    
+    # Upsampling 3: 32x32 -> 64x64
+    x = layers.Conv2D(64, (3, 3), activation="relu", padding="same")(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Now 64x64
+    
+    # Upsampling 4: 64x64 -> 128x128
+    x = layers.Conv2D(32, (3, 3), activation="relu", padding="same")(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Now 128x128
+    
+    # Upsampling 5: 128x128 -> 256x256
+    x = layers.Conv2D(16, (3, 3), activation="relu", padding="same")(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Now 256x256
+    
+    # Final layer to produce the segmentation mask
+    outputs = layers.Conv2D(1, (1, 1), activation="sigmoid")(x)  # Single-channel mask at 256x256
+    
+    model = keras.Model(inputs, outputs)
+    model.compile(
+        optimizer="adam", 
+        loss="binary_crossentropy", 
+        metrics=["accuracy"]
+    )
     return model
 
 # Prepare dataset
@@ -173,7 +172,7 @@ val_generator = SegmentationDataGenerator(VAL_IMG_DIR, VAL_ANN_DIR)
 
 # Build and train model
 model = build_model()
-history = model.fit(train_generator, validation_data=val_generator, epochs=100)
+history = model.fit(train_generator, validation_data=val_generator, epochs=50)
 # Plot training and validation loss
 plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
