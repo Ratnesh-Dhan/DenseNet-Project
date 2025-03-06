@@ -1,7 +1,7 @@
 import os
 import json, cv2
 import base64
-import zlib
+import zlib, random
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -75,16 +75,22 @@ def load_image_and_mask(image_path, annotation_path):
     
     # Now resize both image and mask to target size
     resized_image = np.array(original_image.resize(IMG_SIZE)) / 255.0
-    resized_mask = cv2.resize(original_mask, IMG_SIZE, interpolation=cv2.INTER_NEAREST)q
+    resized_mask = cv2.resize(original_mask, IMG_SIZE, interpolation=cv2.INTER_NEAREST)
     # Return the resized image and mask
     return resized_image, np.expand_dims(resized_mask, axis=-1)
 # Data generator class
 class SegmentationDataGenerator(keras.utils.Sequence):
-    def __init__(self, img_dir, ann_dir, batch_size=8):
+    def __init__(self, img_dir, ann_dir, batch_size=8, shuffle=True, **kwargs):
+        super().__init__(**kwargs)
+        # super().__init__(workers=6, use_multiprocessing=True, max_queue_size=12)
         self.img_dir = img_dir
         self.ann_dir = ann_dir
         self.batch_size = batch_size
         self.image_filenames = os.listdir(img_dir)
+        # Settings for shuffle
+        self.shuffle = shuffle
+        if self.shuffle:
+            random.shuffle(self.image_filenames) # Initial shuffling
 
     def __len__(self):
         return len(self.image_filenames) // self.batch_size
@@ -101,6 +107,10 @@ class SegmentationDataGenerator(keras.utils.Sequence):
                 batch_images.append(image)
                 batch_masks.append(mask)
         return np.array(batch_images), np.array(batch_masks)
+    
+    def on_epoch_end(self):
+        if self.shuffle:
+            random.shuffle(self.image_filenames)
 
 # Model using EfficientNet as backbone with corrected output dimensions
 def build_model():
@@ -143,7 +153,7 @@ def build_model():
     
     model = keras.Model(inputs, outputs)
     model.compile(
-        optimizer="adam", 
+        optimizer=keras.optimizers.Adam(), 
         loss="binary_crossentropy", 
         metrics=["accuracy"]
     )
