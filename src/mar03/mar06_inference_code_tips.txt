@@ -1,0 +1,44 @@
+For Single Image Segmentation:
+
+Load your trained model:
+pythonCopymodel = keras.models.load_model("best_segmentation_model.h5", compile=False)
+
+Call the segment_image function with your image path:
+pythonCopyimage_path = "path/to/your/image.jpg"
+mask, overlay = segment_image(image_path, model)
+This will:
+
+Preprocess the image to match your model's input format
+Run the prediction
+Create a binary mask
+Generate a visualization with the original image, mask, and overlay
+Return both the mask and the overlay for further use
+
+
+
+For Batch Processing Multiple Images:
+If you have a directory of images you want to segment:
+pythonCopysegment_directory(
+    "path/to/image_directory", 
+    model, 
+    output_dir="path/to/save_results",
+    threshold=0.5  # Adjust this threshold as needed
+)
+This will:
+
+Process each image in the directory
+Save the masks and overlays to separate folders in the output directory
+Handle errors gracefully if any image fails to process
+
+Tips for Better Results:
+
+Adjust the threshold: The default threshold is 0.5, but you may need to adjust it based on your specific model and dataset:
+pythonCopymask, overlay = segment_image(image_path, model, threshold=0.7)  # Higher threshold for more confident predictions
+
+Change visualization color: You can modify the overlay color in the segment_image function:
+pythonCopy# Change the line in segment_image function:
+colored_mask[binary_mask > 0] = [255, 0, 0]  # Change to red mask instead of green
+
+For production use: If you're using this in production, you might want to remove the visualization code and just return the processed masks.
+
+Remember to use images similar to your training dataset for the best results, as the model's performance will be optimal on data with characteristics similar to what it was trained on.
