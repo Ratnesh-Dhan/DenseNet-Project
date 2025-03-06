@@ -1,0 +1,6 @@
+83
+Epoch 63: val_iou_score did not improve from 0.59201
+366/366 ━━━━━━━━━━━━━━━━━━━━ 29s 79ms/step - accuracy: 0.8842 - iou_score: 0.6316 - loss: 0.2883 - val_accuracy: 0.8677 - val_iou_score: 0.5884 - val_loss: 0.3178 - learning_rate: 1.0000e-06
+Epoch 63: early stopping
+Restoring model weights from the end of the best epoch: 48.
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 

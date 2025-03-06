@@ -127,7 +127,7 @@ def segment_directory(directory_path, model, output_dir=None, threshold=0.5):
 # Example usage:
 if __name__ == "__main__":
     # Single image segmentation
-    image_path = "path/to/your/test_image.jpg"  # Replace with path to your test image
+    image_path = "test2.jpg"  # Replace with path to your test image
     mask, overlay = segment_image(image_path, model)
     
     # Optionally process a directory of images

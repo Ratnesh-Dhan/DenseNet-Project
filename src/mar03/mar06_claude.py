@@ -294,7 +294,7 @@ try:
     history = model.fit(
         train_generator, 
         validation_data=val_generator, 
-        epochs=50,             # Continue for more epochs
+        epochs=100,             # Continue for more epochs
         initial_epoch=5,       # Start from epoch 5
         callbacks=callbacks,
         verbose=1
