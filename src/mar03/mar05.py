@@ -8,6 +8,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from PIL import Image
 import io, matplotlib.pyplot as plt
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 # Paths to dataset
 TRAIN_IMG_DIR = "../../Datasets/PASCAL VOC 2012/train/img"
@@ -97,7 +98,8 @@ def load_image_and_mask(image_path, annotation_path):
     resized_image = np.array(original_image.resize(IMG_SIZE)) / 255.0
     resized_mask = cv2.resize(original_mask, IMG_SIZE, interpolation=cv2.INTER_NEAREST)
     # Return the resized image and mask
-    return augment_image_and_mask(resized_image, np.expand_dims(resized_mask, axis=-1))
+    # return augment_image_and_mask(resized_image, np.expand_dims(resized_mask, axis=-1))
+    return resized_image, np.expand_dims(resized_mask, axis=-1)
 # Data generator class
 class SegmentationDataGenerator(keras.utils.Sequence):
     def __init__(self, img_dir, ann_dir, batch_size=8, shuffle=True, **kwargs):
@@ -185,10 +187,61 @@ val_generator = SegmentationDataGenerator(VAL_IMG_DIR, VAL_ANN_DIR)
 
 # Build and train model
 model = build_model()
-model.fit(train_generator, validation_data=val_generator, epochs=100)
+
+# Define callbacks for early stopping and model checkpoint
+early_stopping = EarlyStopping(
+    monitor='val_loss',  # Monitor validation loss
+    patience=10,         # Number of epochs with no improvement after which training will stop
+    verbose=1,           # Print messages
+    restore_best_weights=True  # Restore model weights from the epoch with the best value of the monitored quantity
+)
+
+# Create a ModelCheckpoint callback to save the best model during training
+model_checkpoint = ModelCheckpoint(
+    filepath='march_06_best_segmentation_model.h5',  # Path to save the best model
+    monitor='val_loss',           # Monitor validation loss
+    save_best_only=True,          # Only save the best model
+    mode='min',                   # The smaller the loss the better
+    verbose=1                     # Print messages
+)
+
+# Define callbacks list
+callbacks = [early_stopping, model_checkpoint]
+
+history = model.fit(
+    train_generator, 
+    validation_data=val_generator, 
+    epochs=100,
+    callbacks=callbacks
+    )
 
 # Save model
-model.save("segmentation_model.h5")
+model.save("march_06_segmentation_model.h5")
+
+# Plot training history
+plt.figure(figsize=(12, 4))
+
+# Plot training & validation loss
+plt.subplot(1, 2, 1)
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model Loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper right')
+
+# Plot training & validation accuracy
+plt.subplot(1, 2, 2)
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model Accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='lower right')
+
+plt.tight_layout()
+plt.savefig('training_history.png')
+plt.show()
 
 
 # https://medium.com/@alfred.weirich/transfer-learning-with-keras-tensorflow-an-introduction-51d2766c30ca
