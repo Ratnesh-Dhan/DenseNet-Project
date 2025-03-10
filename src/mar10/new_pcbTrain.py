@@ -93,7 +93,7 @@ def load_dataset(base_dir, id_to_index):
     return image_paths, all_boxes, all_classes
 
 # Data generator for training
-def data_generator(image_paths, all_boxes, all_classes, batch_size=8, augment=False):
+def data_generator(image_paths, all_boxes, all_classes, batch_size=8, max_objects=10):
     num_samples = len(image_paths)
     indices = np.arange(num_samples)
     
@@ -102,62 +102,57 @@ def data_generator(image_paths, all_boxes, all_classes, batch_size=8, augment=Fa
         
         for start_idx in range(0, num_samples, batch_size):
             batch_indices = indices[start_idx:start_idx + batch_size]
+            actual_batch_size = len(batch_indices)  # In case we have a partial batch at the end
             
-            batch_images = []
-            batch_targets = []
+            # Pre-allocate arrays with correct shapes
+            batch_images = np.zeros((actual_batch_size, *IMG_SIZE, 3), dtype=np.float32)
+            batch_targets = np.zeros((actual_batch_size, max_objects, 5 + NUM_CLASSES), dtype=np.float32)
             
-            for i in batch_indices:
+            for i, idx in enumerate(batch_indices):
                 # Load and preprocess image
-                img = cv2.imread(image_paths[i])
+                img = cv2.imread(image_paths[idx])
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 img = cv2.resize(img, IMG_SIZE)
                 img = img.astype(np.float32) / 255.0
                 
+                # Store the image
+                batch_images[i] = img
+                
                 # Get boxes and classes for this image
-                boxes = all_boxes[i]
-                classes = all_classes[i]
+                boxes = all_boxes[idx]
+                classes = all_classes[idx]
                 
-                # Create target tensor
-                # For each box: [x, y, width, height, class_one_hot]
-                target = np.zeros((len(boxes), 5 + NUM_CLASSES))
-                
-                for j, (box, cls) in enumerate(zip(boxes, classes)):
+                # Fill in actual objects (up to max_objects)
+                num_boxes = min(len(boxes), max_objects)
+                for j in range(num_boxes):
+                    box = boxes[j]
+                    cls = classes[j]
+                    
                     # Convert from [xmin, ymin, xmax, ymax] to [x_center, y_center, width, height]
                     x_center = (box[0] + box[2]) / 2
                     y_center = (box[1] + box[3]) / 2
                     width = box[2] - box[0]
                     height = box[3] - box[1]
                     
-                    target[j, 0] = x_center
-                    target[j, 1] = y_center
-                    target[j, 2] = width
-                    target[j, 3] = height
-                    target[j, 4] = 1.0  # Object confidence
-                    target[j, 5 + cls] = 1.0  # Class one-hot
-                
-                batch_images.append(img)
-                batch_targets.append(target)
+                    batch_targets[i, j, 0] = x_center
+                    batch_targets[i, j, 1] = y_center
+                    batch_targets[i, j, 2] = width
+                    batch_targets[i, j, 3] = height
+                    batch_targets[i, j, 4] = 1.0  # Object confidence
+                    batch_targets[i, j, 5 + cls] = 1.0  # Class one-hot
             
-            # Pad targets to same length
-            max_objects = max(target.shape[0] for target in batch_targets)
-            padded_targets = np.zeros((len(batch_indices), max_objects, 5 + NUM_CLASSES))
-            
-            for i, target in enumerate(batch_targets):
-                if target.shape[0] > 0:
-                    padded_targets[i, :target.shape[0]] = target
-            
-            yield np.array(batch_images), padded_targets
+            yield batch_images, batch_targets
 
 # Custom loss function for object detection
-def backup_detection_loss(y_true, y_pred):
-    # Reshape to [batch, max_objects, 5+num_classes]
+def detection_loss(y_true, y_pred):
+    # Make sure both tensors have the same shape
     shape = tf.shape(y_pred)
-    y_pred = tf.reshape(y_pred, [shape[0], -1, 5 + NUM_CLASSES])
+    y_true = tf.reshape(y_true, shape)
     
     # Object confidence loss
     obj_mask = y_true[..., 4:5]
     obj_loss = tf.keras.losses.binary_crossentropy(obj_mask, y_pred[..., 4:5])
-    obj_loss = tf.reduce_sum(obj_loss * obj_mask) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
+    obj_loss = tf.reduce_sum(obj_loss) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
     
     # Class prediction loss
     class_loss = tf.keras.losses.categorical_crossentropy(
@@ -178,37 +173,6 @@ def backup_detection_loss(y_true, y_pred):
     total_loss = obj_loss + class_loss + xy_loss + wh_loss
     
     return total_loss
-
-def detection_loss(y_true, y_pred):
-    # Only consider objects that have a confidence score > 0 in ground truth
-    obj_mask = y_true[..., 4:5]
-    
-    # Object confidence loss
-    obj_loss = tf.keras.losses.binary_crossentropy(obj_mask, y_pred[..., 4:5])
-    obj_loss = tf.reduce_sum(obj_loss) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
-    
-    # Only calculate the following losses where objects exist (obj_mask > 0)
-    
-    # Class prediction loss
-    class_loss = tf.keras.losses.categorical_crossentropy(
-        y_true[..., 5:], y_pred[..., 5:], from_logits=False
-    )
-    class_loss = tf.reduce_sum(class_loss * obj_mask) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
-    
-    # Bounding box coordinates loss - only for real objects
-    xy_loss = tf.reduce_sum(
-        tf.square(y_true[..., 0:2] - y_pred[..., 0:2]) * obj_mask
-    ) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
-    
-    wh_loss = tf.reduce_sum(
-        tf.square(tf.sqrt(y_true[..., 2:4]) - tf.sqrt(y_pred[..., 2:4])) * obj_mask
-    ) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
-    
-    # Total loss
-    total_loss = obj_loss + class_loss + xy_loss + wh_loss
-    
-    return total_loss
-
 # Build a simple object detection model
 def build_model(input_shape, max_objects, num_classes):
     # Use MobileNetV2 as base model
@@ -227,50 +191,14 @@ def build_model(input_shape, max_objects, num_classes):
     x = Conv2D(256, 3, padding='same', activation='relu')(x)
     
     # Flatten the output
-    x = tf.keras.layers.Flatten()(x)
+    x = tf.keras.layers.GlobalAveragePooling2D()(x)
     
     # Dense layer to get to the right number of elements
-    x = tf.keras.layers.Dense(max_objects * (5 + num_classes))(x)
+    dense_output_size = max_objects * (5 + num_classes)
+    x = tf.keras.layers.Dense(dense_output_size)(x)
     
-    # Reshape to the final output
+    # Reshape to the final output dimensions
     output = tf.keras.layers.Reshape((max_objects, 5 + num_classes))(x)
-    
-    model = Model(inputs=base_model.input, outputs=output)
-    
-    model.compile(
-        loss=detection_loss,
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001)
-    )
-    
-    return model
-
-def chilled_model(input_shape, max_objects, num_classes):
-    # Use MobileNetV2 as base model
-    base_model = MobileNetV2(
-        input_shape=input_shape,
-        include_top=False,
-        weights='imagenet'
-    )
-    
-    # Freeze early layers
-    for layer in base_model.layers[:100]:
-        layer.trainable = False
-
-    # Get the output shape of the base model
-    base_output_shape = base_model.output_shape
-
-    # Calculate the correct output dimensions
-    output_dim = base_output_shape[1] * base_output_shape[2]
-    features_per_cell = (5 + num_classes) * max_objects // output_dim
-    
-    # Add detection heads
-    x = base_model.output
-    x = Conv2D(256, 3, padding='same', activation='relu')(x)
-    x = Conv2D((5 + num_classes) * max_objects, 1, padding='same')(x)
-    
-    # Flatten the spatial dimensions first
-    x = Reshape((output_dim, (5 + num_classes) * max_objects // output_dim))(x)
-    output = Reshape((max_objects, 5 + num_classes))(x)
     
     model = Model(inputs=base_model.input, outputs=output)
     
@@ -345,7 +273,7 @@ def visualize_predictions(model, image_paths, id_to_index, class_names, num_samp
 
 # Main function to run the entire pipeline
 def main():
-    # Load class mapping
+     # Load class mapping
     id_to_index, class_names = load_class_mapping()
     print(f"Loaded {len(class_names)} classes: {class_names}")
     
@@ -363,10 +291,10 @@ def main():
     
     # Create data generators
     batch_size = 8
-    train_gen = data_generator(train_images, train_boxes, train_classes, batch_size)
-    val_gen = data_generator(val_images, val_boxes, val_classes, batch_size)
+    train_gen = data_generator(train_images, train_boxes, train_classes, batch_size, max_objects)
+    val_gen = data_generator(val_images, val_boxes, val_classes, batch_size, max_objects)
     
-    # Build model
+    # Build model with the same max_objects value
     input_shape = (*IMG_SIZE, 3)
     model = build_model(input_shape, max_objects, NUM_CLASSES)
     model.summary()
@@ -409,6 +337,35 @@ def main():
     # Save the model
     model.save('pcb_detector_final.h5')
     print("Model saved as 'pcb_detector_final.h5'")
+
+def main():
+    # Load class mapping
+    id_to_index, class_names = load_class_mapping()
+    print(f"Loaded {len(class_names)} classes: {class_names}")
+    
+    # Load datasets
+    train_images, train_boxes, train_classes = load_dataset(TRAIN_DIR, id_to_index)
+    val_images, val_boxes, val_classes = load_dataset(VAL_DIR, id_to_index)
+    
+    print(f"Loaded {len(train_images)} training images and {len(val_images)} validation images")
+    
+    # Find max objects in any image for model design
+    max_objects_train = max(len(boxes) for boxes in train_boxes)
+    max_objects_val = max(len(boxes) for boxes in val_boxes)
+    max_objects = max(max_objects_train, max_objects_val)
+    print(f"Maximum objects in any image: {max_objects}")
+    
+    # Create data generators
+    batch_size = 8
+    train_gen = data_generator(train_images, train_boxes, train_classes, batch_size, max_objects)
+    val_gen = data_generator(val_images, val_boxes, val_classes, batch_size, max_objects)
+    
+    # Build model with the same max_objects value
+    input_shape = (*IMG_SIZE, 3)
+    model = build_model(input_shape, max_objects, NUM_CLASSES)
+    model.summary()
+    
+    # Rest of the function remains the same...
 
 if __name__ == "__main__":
     main()
