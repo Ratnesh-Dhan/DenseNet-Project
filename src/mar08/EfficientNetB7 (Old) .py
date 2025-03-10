@@ -5,7 +5,7 @@ import zlib, random
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
+from tensorflow.keras import layers, Model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from PIL import Image
 import io, matplotlib.pyplot as plt
@@ -16,8 +16,8 @@ TRAIN_ANN_DIR = "../../Datasets/PASCAL VOC 2012/train/ann"
 VAL_IMG_DIR = "../../Datasets/PASCAL VOC 2012/val/img"
 VAL_ANN_DIR = "../../Datasets/PASCAL VOC 2012/val/ann"
 
-# Increased image size for EfficientNetB7 which works better with higher resolution
-IMG_SIZE = (320, 320)  # Increased from 256x256 to better leverage EfficientNetB7
+# Image size compatible with EfficientNetB7
+IMG_SIZE = (320, 320)
 
 def augment_image_and_mask(image, mask):
     if random.random() > 0.5:
@@ -161,12 +161,52 @@ def iou_score(y_true, y_pred):
     
     return tf.reduce_mean(iou)
 
-# Model using EfficientNetB7 as backbone with improved decoder
+def build_unet_model():
+    inputs = keras.Input(shape=(IMG_SIZE[0], IMG_SIZE[1], 3))
+
+    # Encoder : EfficientNetB7
+    base_model = keras.application.EfficientNetB7(include_top=False, input_tensors=inputs, weights="imagenet")
+
+    # Extract encoder feature maps for skip connections
+    skips=[
+        base_model.get_layers("block2a_expand_activation").output,
+        base_model.get_layers("block3a_expand_activation").output,
+        base_model.get_layers("block4a_expand_activation").output
+    ]
+    encoder_output = base_model.output   # Deepest feature map
+
+    # Decode with skip connections
+    x = layers.Conv2D(512, (3,3), activation="relu", padding="same")(encoder_output)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2,2))(x)
+    x = layers.Concatenate()([x, skips[2]])   # Skip connection
+
+    x = layers.Conv2D(256, (3,3), activation="relu", padding="same")(encoder_output)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2,2))(x)
+    x = layers.Concatenate()([x, skips[1]])   # Skip connection
+    
+    x = layers.Conv2D(128, (3,3), activation="relu", padding="same")(encoder_output)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2,2))(x)
+    x = layers.Concatenate()([x, skips[0]])   # Skip connection
+
+    x = layers.Conv2D(64, (3,3), activation="relu", padding="same")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2, 2))(x)
+
+    # Final output layer ( binary segmentation )
+    outputs = layers.Conv2D(1, (1, 1), activation="sigmoid", padding="same")(x)
+
+    model = Model(inputs, outputs)
+    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=[iou_score])
+    return model
+
 def build_model():
     # Input size for EfficientNetB7
     inputs = keras.Input(shape=(IMG_SIZE[0], IMG_SIZE[1], 3))
     
-    # Use EfficientNetB7 as the encoder (backbone)
+    # Use EfficientNetB7 as the encoder backbone
     base_model = keras.applications.EfficientNetB7(
         include_top=False, 
         input_tensor=inputs,
@@ -176,73 +216,175 @@ def build_model():
     # Freeze the base model to prevent it from being updated during initial training
     base_model.trainable = False
     
-    # Extract features from different layers of the encoder for skip connections
-    # For EfficientNetB7, we'll use multiple layers for skip connections
-    # These layer names might vary slightly - consult EfficientNetB7 architecture if needed
-    skip_features = {}
-    skip_features['s1'] = base_model.get_layer('block1a_project_bn').output  # early feature
-    skip_features['s2'] = base_model.get_layer('block3a_project_bn').output  # mid-level feature
-    skip_features['s3'] = base_model.get_layer('block5a_project_bn').output  # higher-level feature
+    # Get the output from the backbone
+    encoder_output = base_model.output
     
-    # Get the final encoder output
-    encoder_output = base_model.output  # Shape will be smaller than B0 due to B7's depth
+    # Decoder pathway - using only the encoder output without skip connections initially
+    # to simplify and fix the dimension issue
     
-    # Decoder pathway with proper skip connections
-    # EfficientNetB7 has a deeper network, so we need more upsampling steps
-    
-    # Starting with bottleneck features
-    x = layers.Conv2D(512, (3, 3), activation="relu", padding="same", kernel_initializer='he_normal')(encoder_output)
+    # First upsampling block
+    x = layers.Conv2D(512, (3, 3), activation="relu", padding="same")(encoder_output)
     x = layers.BatchNormalization()(x)
-    
-    # Upsampling and adding skip connections
-    # First upsampling
     x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(256, (3, 3), activation="relu", padding="same", kernel_initializer='he_normal')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Concatenate()([x, skip_features['s3']])  # Skip connection
     
-    # Second upsampling
+    # Second upsampling block
+    x = layers.Conv2D(256, (3, 3), activation="relu", padding="same")(x)
+    x = layers.BatchNormalization()(x)
     x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(128, (3, 3), activation="relu", padding="same", kernel_initializer='he_normal')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Concatenate()([x, skip_features['s2']])  # Skip connection
     
-    # Third upsampling
+    # Third upsampling block
+    x = layers.Conv2D(128, (3, 3), activation="relu", padding="same")(x)
+    x = layers.BatchNormalization()(x)
     x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(64, (3, 3), activation="relu", padding="same", kernel_initializer='he_normal')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Concatenate()([x, skip_features['s1']])  # Skip connection
     
-    # Continue upsampling to reach the original image size
+    # Fourth upsampling block
+    x = layers.Conv2D(64, (3, 3), activation="relu", padding="same")(x)
+    x = layers.BatchNormalization()(x)
     x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(32, (3, 3), activation="relu", padding="same", kernel_initializer='he_normal')(x)
-    x = layers.BatchNormalization()(x)
     
-    # Final upsampling to match input size
+    # Fifth upsampling block - adjust based on the actual output dimensions needed
+    x = layers.Conv2D(32, (3, 3), activation="relu", padding="same")(x)
+    x = layers.BatchNormalization()(x)
     x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(16, (3, 3), activation="relu", padding="same", kernel_initializer='he_normal')(x)
-    x = layers.BatchNormalization()(x)
     
-    # Add one more upsampling if needed to reach the input size
-    # For 320x320 inputs with EfficientNetB7, we might need one more upsampling
-    x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(8, (3, 3), activation="relu", padding="same", kernel_initializer='he_normal')(x)
-    x = layers.BatchNormalization()(x)
+    # REMOVED: The extra upsampling block that was causing the dimensions to be 640x640
+    # If IMG_SIZE[0] == 320:
+    #     x = layers.Conv2D(16, (3, 3), activation="relu", padding="same")(x)
+    #     x = layers.BatchNormalization()(x)
+    #     x = layers.UpSampling2D((2, 2))(x)
     
-    # Final layer to produce the segmentation mask
-    outputs = layers.Conv2D(1, (1, 1), activation="sigmoid", kernel_initializer='glorot_normal')(x)
+    # Final convolution to get the output mask
+    outputs = layers.Conv2D(1, (1, 1), activation="sigmoid")(x)
     
-    model = keras.Model(inputs, outputs)
+    # Add explicit resize to ensure output dimensions match input dimensions
+    outputs = tf.keras.layers.Resizing(IMG_SIZE[0], IMG_SIZE[1])(outputs)
     
-    # Use a more stable optimizer with clipnorm to prevent exploding gradients
-    # Reduced learning rate since B7 is more sensitive during training
+    # Create the model
+    model = keras.Model(inputs=inputs, outputs=outputs)
+    
+    # Compile the model
     optimizer = keras.optimizers.Adam(learning_rate=5e-5, clipnorm=1.0)
-    
     model.compile(
-        optimizer=optimizer, 
-        loss="binary_crossentropy", 
+        optimizer=optimizer,
+        loss="binary_crossentropy",
         metrics=["accuracy", iou_score]
     )
+    
+    return model
+
+# Advanced model with proper skip connections
+# Note: This alternative architecture requires visual inspection of the tensor dimensions
+# to ensure skip connections work correctly
+def build_unet_model():
+    # Input size for EfficientNetB7
+    inputs = keras.Input(shape=(IMG_SIZE[0], IMG_SIZE[1], 3))
+    
+    # Get the pre-trained EfficientNetB7 model
+    base_model = keras.applications.EfficientNetB7(
+        include_top=False,
+        input_tensor=inputs,
+        weights='imagenet'
+    )
+    
+    # Freeze the base model
+    base_model.trainable = False
+    
+    # Create a dictionary to store the outputs of the layers we want to use as skip connections
+    # Note: We need to inspect the model to get the correct layer names and dimensions
+    # These are approximate and may need adjustment
+    skips = {}
+    
+    # Define which layers to extract for skip connections
+    # We'll need to print the model summary to find the right layers
+    # These values are examples and should be adjusted
+    skips["block2d_add"] = base_model.get_layer("block2d_add").output        # Earlier feature map
+    skips["block3d_add"] = base_model.get_layer("block3d_add").output        # Mid-level feature map
+    skips["block5i_add"] = base_model.get_layer("block5i_add").output        # Higher-level feature map
+    
+    # Get the bottleneck features from the encoder
+    x = base_model.output
+    
+    # Start the decoder path
+    # The dimensions below are approximations and should be verified
+    
+    # Decoder Block 1
+    x = layers.Conv2D(512, (3, 3), padding="same", activation="relu")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Upsample
+    
+    # Decoder Block 2 with skip connection
+    # Resize the skip connection to match the upsampled features if needed
+    skip1 = layers.Conv2D(512, (1, 1), padding="same")(skips["block5i_add"])
+    skip1_shape = tf.shape(skip1)[1:3]
+    x_shape = tf.shape(x)[1:3]
+    
+    # Resize if dimensions don't match
+    if tf.not_equal(skip1_shape[0], x_shape[0]) or tf.not_equal(skip1_shape[1], x_shape[1]):
+        skip1 = tf.image.resize(skip1, x_shape)
+    
+    x = layers.Concatenate()([x, skip1])
+    x = layers.Conv2D(256, (3, 3), padding="same", activation="relu")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Upsample
+    
+    # Decoder Block 3 with skip connection
+    skip2 = layers.Conv2D(256, (1, 1), padding="same")(skips["block3d_add"])
+    skip2_shape = tf.shape(skip2)[1:3]
+    x_shape = tf.shape(x)[1:3]
+    
+    # Resize if dimensions don't match
+    if tf.not_equal(skip2_shape[0], x_shape[0]) or tf.not_equal(skip2_shape[1], x_shape[1]):
+        skip2 = tf.image.resize(skip2, x_shape)
+    
+    x = layers.Concatenate()([x, skip2])
+    x = layers.Conv2D(128, (3, 3), padding="same", activation="relu")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Upsample
+    
+    # Decoder Block 4 with skip connection
+    skip3 = layers.Conv2D(128, (1, 1), padding="same")(skips["block2d_add"])
+    skip3_shape = tf.shape(skip3)[1:3]
+    x_shape = tf.shape(x)[1:3]
+    
+    # Resize if dimensions don't match
+    if tf.not_equal(skip3_shape[0], x_shape[0]) or tf.not_equal(skip3_shape[1], x_shape[1]):
+        skip3 = tf.image.resize(skip3, x_shape)
+    
+    x = layers.Concatenate()([x, skip3])
+    x = layers.Conv2D(64, (3, 3), padding="same", activation="relu")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Upsample
+    
+    # Continue upsampling to reach the target size
+    # We need to get from the current size to IMG_SIZE
+    x = layers.Conv2D(32, (3, 3), padding="same", activation="relu")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Upsample
+    
+    # One more upsampling to reach 320x320
+    x = layers.Conv2D(16, (3, 3), padding="same", activation="relu")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2, 2))(x)  # Upsample
+    
+    # Final 1x1 convolution to get the segmentation mask
+    outputs = layers.Conv2D(1, (1, 1), activation="sigmoid")(x)
+    
+    # Ensure the output dimensions match the input dimensions
+    outputs_shape = tf.shape(outputs)[1:3]
+    if tf.not_equal(outputs_shape[0], IMG_SIZE[0]) or tf.not_equal(outputs_shape[1], IMG_SIZE[1]):
+        outputs = tf.image.resize(outputs, [IMG_SIZE[0], IMG_SIZE[1]])
+    
+    # Create the model
+    model = keras.Model(inputs=inputs, outputs=outputs)
+    
+    # Compile the model
+    optimizer = keras.optimizers.Adam(learning_rate=5e-5, clipnorm=1.0)
+    model.compile(
+        optimizer=optimizer,
+        loss="binary_crossentropy",
+        metrics=["accuracy", iou_score]
+    )
+    
     return model
 
 # Check if the data directories exist
@@ -259,29 +401,31 @@ val_generator = SegmentationDataGenerator(VAL_IMG_DIR, VAL_ANN_DIR, batch_size=2
 print(f"Number of training samples: {len(train_generator) * train_generator.batch_size}")
 print(f"Number of validation samples: {len(val_generator) * val_generator.batch_size}")
 
-# Build model
+# Let's use the simplified model for now
+# For advanced model, uncomment the line below and comment out the line above after inspection
 model = build_model()
+# model = build_unet_model()  # Use this for the advanced model with skip connections
+
+# Print model summary to see the output dimensions of each layer
 model.summary()
 
 # Define callbacks for early stopping and model checkpoint
 early_stopping = EarlyStopping(
-    monitor='val_loss',      # Monitor validation loss
-    patience=15,             # Number of epochs with no improvement after which training will stop
-    verbose=1,               # Print messages
-    restore_best_weights=True,  # Restore model weights from the epoch with the best value of the monitored quantity
-    min_delta=0.001          # Minimum change to qualify as an improvement
+    monitor='val_loss',
+    patience=15,
+    verbose=1,
+    restore_best_weights=True,
+    min_delta=0.001
 )
 
-# Create a ModelCheckpoint callback to save the best model during training
 model_checkpoint = ModelCheckpoint(
-    filepath='best_segmentation_model_b7.h5',  # Updated filename for B7
-    monitor='val_iou_score',   # Monitor validation IoU
-    save_best_only=True,       # Only save the best model
-    mode='max',                # The higher the IoU the better
-    verbose=1                  # Print messages
+    filepath='best_segmentation_model_b7.h5',
+    monitor='val_iou_score',
+    save_best_only=True,
+    mode='max',
+    verbose=1
 )
 
-# Add a learning rate scheduler to reduce the learning rate when training plateaus
 reduce_lr = ReduceLROnPlateau(
     monitor='val_loss',
     factor=0.5,
@@ -290,142 +434,19 @@ reduce_lr = ReduceLROnPlateau(
     verbose=1
 )
 
-# Define callbacks list
 callbacks = [early_stopping, model_checkpoint, reduce_lr]
 
-# Add gradient accumulation to better handle the larger model with small batch sizes
-# This is a simple approach using a custom training loop
-def train_with_gradient_accumulation(model, train_generator, val_generator, epochs, callbacks, accumulation_steps=4):
-    # Initialize training history
-    history = {'loss': [], 'accuracy': [], 'iou_score': [], 
-               'val_loss': [], 'val_accuracy': [], 'val_iou_score': []}
-    
-    # Get compiled optimizer
-    optimizer = model.optimizer
-    
-    for epoch in range(epochs):
-        print(f"Epoch {epoch+1}/{epochs}")
-        
-        # Reset metrics
-        train_loss = 0.0
-        train_acc = 0.0
-        train_iou = 0.0
-        step_count = 0
-        
-        # Initialize gradients
-        accumulated_gradients = [tf.zeros_like(var) for var in model.trainable_variables]
-        
-        # Training loop
-        for batch_idx in range(len(train_generator)):
-            x_batch, y_batch = train_generator[batch_idx]
-            
-            # Forward pass with gradient recording
-            with tf.GradientTape() as tape:
-                y_pred = model(x_batch, training=True)
-                batch_loss = model.compiled_loss(y_batch, y_pred)
-            
-            # Calculate gradients
-            gradients = tape.gradient(batch_loss, model.trainable_variables)
-            
-            # Accumulate gradients
-            accumulated_gradients = [(acum_grad + grad) for acum_grad, grad in zip(accumulated_gradients, gradients)]
-            
-            # Get metrics
-            batch_acc = model.compiled_metrics.metrics[0](y_batch, y_pred)
-            batch_iou = model.compiled_metrics.metrics[1](y_batch, y_pred)
-            
-            train_loss += batch_loss.numpy()
-            train_acc += batch_acc.numpy()
-            train_iou += batch_iou.numpy()
-            step_count += 1
-            
-            # Apply accumulated gradients after specified number of steps
-            if (batch_idx + 1) % accumulation_steps == 0 or (batch_idx + 1) == len(train_generator):
-                # Normalize the gradients
-                accumulated_gradients = [grad / accumulation_steps for grad in accumulated_gradients]
-                
-                # Apply gradients
-                optimizer.apply_gradients(zip(accumulated_gradients, model.trainable_variables))
-                
-                # Reset accumulated gradients
-                accumulated_gradients = [tf.zeros_like(var) for var in model.trainable_variables]
-                
-                print(f"Batch {batch_idx+1}/{len(train_generator)} - Loss: {batch_loss.numpy():.4f}")
-        
-        # Calculate average training metrics
-        train_loss /= step_count
-        train_acc /= step_count
-        train_iou /= step_count
-        
-        # Validation loop
-        val_loss = 0.0
-        val_acc = 0.0
-        val_iou = 0.0
-        val_steps = 0
-        
-        for batch_idx in range(len(val_generator)):
-            x_val, y_val = val_generator[batch_idx]
-            y_pred = model(x_val, training=False)
-            
-            # Calculate validation loss and metrics
-            batch_val_loss = model.compiled_loss(y_val, y_pred)
-            batch_val_acc = model.compiled_metrics.metrics[0](y_val, y_pred)
-            batch_val_iou = model.compiled_metrics.metrics[1](y_val, y_pred)
-            
-            val_loss += batch_val_loss.numpy()
-            val_acc += batch_val_acc.numpy()
-            val_iou += batch_val_iou.numpy()
-            val_steps += 1
-        
-        val_loss /= val_steps
-        val_acc /= val_steps
-        val_iou /= val_steps
-        
-        # Print epoch results
-        print(f"Epoch {epoch+1}/{epochs} - Loss: {train_loss:.4f} - Accuracy: {train_acc:.4f} - IoU: {train_iou:.4f} - Val Loss: {val_loss:.4f} - Val Accuracy: {val_acc:.4f} - Val IoU: {val_iou:.4f}")
-        
-        # Update history
-        history['loss'].append(train_loss)
-        history['accuracy'].append(train_acc)
-        history['iou_score'].append(train_iou)
-        history['val_loss'].append(val_loss)
-        history['val_accuracy'].append(val_acc)
-        history['val_iou_score'].append(val_iou)
-        
-        # Handle callbacks (simplified implementation)
-        if 'best_val_iou' not in locals() or val_iou > best_val_iou:
-            best_val_iou = val_iou
-            model.save('best_segmentation_model_b7.h5')
-            print("Saved best model with improved IoU.")
-        
-        # Early stopping check (simplified)
-        if 'best_val_loss' not in locals():
-            best_val_loss = val_loss
-            patience_counter = 0
-        elif val_loss < best_val_loss - early_stopping.min_delta:
-            best_val_loss = val_loss
-            patience_counter = 0
-        else:
-            patience_counter += 1
-            
-        if patience_counter >= early_stopping.patience:
-            print(f"Early stopping triggered after {epoch+1} epochs")
-            break
-    
-    return history
-
-# Train model with callbacks - start with a few epochs to check stability
+# Train model with callbacks
 try:
     print("Starting initial training phase with frozen backbone...")
     
-    # Train with frozen backbone first using gradient accumulation for stability
-    history_initial = train_with_gradient_accumulation(
-        model=model,
-        train_generator=train_generator,
-        val_generator=val_generator,
+    # Initial training with frozen backbone
+    history_initial = model.fit(
+        train_generator,
+        validation_data=val_generator,
         epochs=5,
         callbacks=callbacks,
-        accumulation_steps=4  # Accumulate gradients over 4 steps (effectively like batch size 8)
+        verbose=1
     )
     
     print("Initial training successful! Now fine-tuning the model...")
@@ -436,25 +457,25 @@ try:
     
     # Recompile with a lower learning rate for fine-tuning
     model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=1e-6, clipnorm=1.0),  # Even lower LR for B7
+        optimizer=keras.optimizers.Adam(learning_rate=1e-6, clipnorm=1.0),
         loss="binary_crossentropy",
         metrics=["accuracy", iou_score]
     )
     
     # Continue training with all layers unfrozen
-    history_finetuning = train_with_gradient_accumulation(
-        model=model,
-        train_generator=train_generator,
-        val_generator=val_generator,
-        epochs=60,  # Reduced from 100 given B7's complexity
+    history_finetuning = model.fit(
+        train_generator,
+        validation_data=val_generator,
+        epochs=60,
+        initial_epoch=5,
         callbacks=callbacks,
-        accumulation_steps=8  # Increased accumulation for fine-tuning
+        verbose=1
     )
     
     # Combine histories
     history = {}
-    for key in history_initial:
-        history[key] = history_initial[key] + history_finetuning[key]
+    for key in history_initial.history:
+        history[key] = history_initial.history[key] + history_finetuning.history[key]
     
     # Save final model
     model.save("segmentation_model_b7_final.h5")

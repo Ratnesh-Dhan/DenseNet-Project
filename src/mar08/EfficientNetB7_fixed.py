@@ -5,7 +5,8 @@ import zlib, random
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
+import keras.backend as K
+from tensorflow.keras import layers, Model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from PIL import Image
 import io, matplotlib.pyplot as plt
@@ -161,82 +162,46 @@ def iou_score(y_true, y_pred):
     
     return tf.reduce_mean(iou)
 
-# Fixed Model using EfficientNetB7 as backbone with proper decoder for dimension matching
-# def build_model():
-#     # Input size for EfficientNetB7
-#     inputs = keras.Input(shape=(IMG_SIZE[0], IMG_SIZE[1], 3))
+def build_unet_model():
+    inputs = keras.Input(shape=(IMG_SIZE[0], IMG_SIZE[1], 3))
+
+    # Encoder : EfficientNetB7
+    base_model = keras.application.EfficientNetB7(include_top=False, input_tensors=inputs, weights="imagenet")
+
+    # Extract encoder feature maps for skip connections
+    skips=[
+        base_model.get_layers("block2a_expand_activation").output,
+        base_model.get_layers("block3a_expand_activation").output,
+        base_model.get_layers("block4a_expand_activation").output
+    ]
+    encoder_output = base_model.output   # Deepest feature map
+
+    # Decode with skip connections
+    x = layers.Conv2D(512, (3,3), activation="relu", padding="same")(encoder_output)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2,2))(x)
+    x = layers.Concatenate()([x, skips[2]])   # Skip connection
+
+    x = layers.Conv2D(256, (3,3), activation="relu", padding="same")(encoder_output)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2,2))(x)
+    x = layers.Concatenate()([x, skips[1]])   # Skip connection
     
-#     # Use EfficientNetB7 as the encoder backbone
-#     base_model = keras.applications.EfficientNetB7(
-#         include_top=False, 
-#         input_tensor=inputs,
-#         weights='imagenet'
-#     )
-    
-#     # Freeze the base model to prevent it from being updated during initial training
-#     base_model.trainable = False
-    
-#     # Get the output from the backbone
-#     encoder_output = base_model.output
-    
-#     # Print model architecture to understand layer dimensions
-#     # Use this for debugging but comment out for production
-#     # for layer in base_model.layers:
-#     #     print(f"Layer: {layer.name}, Output shape: {layer.output_shape}")
-    
-#     # Decoder pathway - using only the encoder output without skip connections initially
-#     # to simplify and fix the dimension issue
-    
-#     # First upsampling block
-#     x = layers.Conv2D(512, (3, 3), activation="relu", padding="same")(encoder_output)
-#     x = layers.BatchNormalization()(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-    
-#     # Second upsampling block
-#     x = layers.Conv2D(256, (3, 3), activation="relu", padding="same")(x)
-#     x = layers.BatchNormalization()(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-    
-#     # Third upsampling block
-#     x = layers.Conv2D(128, (3, 3), activation="relu", padding="same")(x)
-#     x = layers.BatchNormalization()(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-    
-#     # Fourth upsampling block
-#     x = layers.Conv2D(64, (3, 3), activation="relu", padding="same")(x)
-#     x = layers.BatchNormalization()(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-    
-#     # Fifth upsampling block - adjust based on the actual output dimensions needed
-#     x = layers.Conv2D(32, (3, 3), activation="relu", padding="same")(x)
-#     x = layers.BatchNormalization()(x)
-#     x = layers.UpSampling2D((2, 2))(x)
-    
-#     # Add additional upsampling blocks if needed to reach the desired output size
-#     # For 320x320 we need to make sure we reach that dimension
-#     if IMG_SIZE[0] == 320:
-#         # This checks if we need another upsampling for 320x320
-#         # The EfficientNetB7 typically downsamples by a factor of 32, so 320/32 = 10
-#         # We might need 6 upsampling operations in total for 320x320
-#         x = layers.Conv2D(16, (3, 3), activation="relu", padding="same")(x)
-#         x = layers.BatchNormalization()(x)
-#         x = layers.UpSampling2D((2, 2))(x)
-    
-#     # Final convolution to get the output mask
-#     outputs = layers.Conv2D(1, (1, 1), activation="sigmoid")(x)
-    
-#     # Create the model
-#     model = keras.Model(inputs=inputs, outputs=outputs)
-    
-#     # Compile the model
-#     optimizer = keras.optimizers.Adam(learning_rate=5e-5, clipnorm=1.0)
-#     model.compile(
-#         optimizer=optimizer,
-#         loss="binary_crossentropy",
-#         metrics=["accuracy", iou_score]
-#     )
-    
-#     return model
+    x = layers.Conv2D(128, (3,3), activation="relu", padding="same")(encoder_output)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2,2))(x)
+    x = layers.Concatenate()([x, skips[0]])   # Skip connection
+
+    x = layers.Conv2D(64, (3,3), activation="relu", padding="same")(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.UpSampling2D((2, 2))(x)
+
+    # Final output layer ( binary segmentation )
+    outputs = layers.Conv2D(1, (1, 1), activation="sigmoid", padding="same")(x)
+
+    model = Model(inputs, outputs)
+    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=[iou_score])
+    return model
 
 def build_model():
     # Input size for EfficientNetB7
@@ -267,7 +232,7 @@ def build_model():
     x = layers.Conv2D(256, (3, 3), activation="relu", padding="same")(x)
     x = layers.BatchNormalization()(x)
     x = layers.UpSampling2D((2, 2))(x)
-    
+
     # Third upsampling block
     x = layers.Conv2D(128, (3, 3), activation="relu", padding="same")(x)
     x = layers.BatchNormalization()(x)
@@ -351,7 +316,8 @@ def build_unet_model():
     # Decoder Block 2 with skip connection
     # Resize the skip connection to match the upsampled features if needed
     skip1 = layers.Conv2D(512, (1, 1), padding="same")(skips["block5i_add"])
-    skip1_shape = tf.shape(skip1)[1:3]
+    skip1_shape = K.int_shape(skip1)[1:3]
+    #skip1_shape = tf.shape(skip1)[1:3]
     x_shape = tf.shape(x)[1:3]
     
     # Resize if dimensions don't match
@@ -439,8 +405,8 @@ print(f"Number of validation samples: {len(val_generator) * val_generator.batch_
 
 # Let's use the simplified model for now
 # For advanced model, uncomment the line below and comment out the line above after inspection
-model = build_model()
-# model = build_unet_model()  # Use this for the advanced model with skip connections
+
+model = build_unet_model()  # Use this for the advanced model with skip connections
 
 # Print model summary to see the output dimensions of each layer
 model.summary()
@@ -502,7 +468,7 @@ try:
     history_finetuning = model.fit(
         train_generator,
         validation_data=val_generator,
-        epochs=60,
+        epochs=20,
         initial_epoch=5,
         callbacks=callbacks,
         verbose=1
