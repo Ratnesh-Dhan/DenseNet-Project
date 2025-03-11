@@ -12,11 +12,11 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 import matplotlib.pyplot as plt
 import cv2
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 
 # Define paths
 TRAIN_DIR = '../../Datasets/pcbDataset/train'
-VAL_DIR = '../../datasets/pcbDataset/validation'
+VAL_DIR = '../../Datasets/pcbDataset/validation'
 IMG_SIZE = (416, 416)  # Common size for object detection
 NUM_CLASSES = 9  # From your meta.json
 
@@ -144,13 +144,44 @@ def data_generator(image_paths, all_boxes, all_classes, batch_size=8, max_object
             yield batch_images, batch_targets
 
 # Custom loss function for object detection
+# def detection_loss(y_true, y_pred):
+#     # Make sure both tensors have the same shape
+#     shape = tf.shape(y_pred)
+#     y_true = tf.reshape(y_true, shape)
+    
+#     # Object confidence loss
+#     obj_mask = y_true[..., 4:5]
+#     obj_loss = tf.keras.losses.binary_crossentropy(obj_mask, y_pred[..., 4:5])
+#     obj_loss = tf.reduce_sum(obj_loss) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
+    
+#     # Class prediction loss
+#     class_loss = tf.keras.losses.categorical_crossentropy(
+#         y_true[..., 5:], y_pred[..., 5:], from_logits=False
+#     )
+#     class_loss = tf.reduce_sum(class_loss * obj_mask) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
+    
+#     # Bounding box coordinates loss
+#     xy_loss = tf.reduce_sum(
+#         tf.square(y_true[..., 0:2] - y_pred[..., 0:2]) * obj_mask
+#     ) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
+    
+#     wh_loss = tf.reduce_sum(
+#         tf.square(tf.sqrt(y_true[..., 2:4]) - tf.sqrt(y_pred[..., 2:4])) * obj_mask
+#     ) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
+    
+#     # Total loss
+#     total_loss = obj_loss + class_loss + xy_loss + wh_loss
+    
+#     return total_loss
+
+# Custom loss function for object detection
 def detection_loss(y_true, y_pred):
     # Make sure both tensors have the same shape
     shape = tf.shape(y_pred)
     y_true = tf.reshape(y_true, shape)
     
-    # Object confidence loss
-    obj_mask = y_true[..., 4:5]
+    # Object confidence loss (confidence score)
+    obj_mask = y_true[..., 4:5]  # Shape: [batch, max_objects, 1]
     obj_loss = tf.keras.losses.binary_crossentropy(obj_mask, y_pred[..., 4:5])
     obj_loss = tf.reduce_sum(obj_loss) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
     
@@ -158,21 +189,32 @@ def detection_loss(y_true, y_pred):
     class_loss = tf.keras.losses.categorical_crossentropy(
         y_true[..., 5:], y_pred[..., 5:], from_logits=False
     )
-    class_loss = tf.reduce_sum(class_loss * obj_mask) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
+    # Expand dimensions to match
+    class_loss = tf.reduce_sum(class_loss * tf.squeeze(obj_mask, axis=-1)) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
     
-    # Bounding box coordinates loss
+    # Bounding box coordinate losses - handle each coordinate separately
+    # X and Y coordinates (center)
+    xy_diff = tf.square(y_true[..., 0:2] - y_pred[..., 0:2])
+    # Reduce along the coordinate dimension to match obj_mask shape
     xy_loss = tf.reduce_sum(
-        tf.square(y_true[..., 0:2] - y_pred[..., 0:2]) * obj_mask
+        tf.reduce_sum(xy_diff, axis=-1, keepdims=True) * obj_mask
     ) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
     
+    # Width and height
+    wh_diff = tf.square(
+        tf.sqrt(tf.maximum(y_true[..., 2:4], 1e-10)) - 
+        tf.sqrt(tf.maximum(y_pred[..., 2:4], 1e-10))
+    )
+    # Reduce along the coordinate dimension to match obj_mask shape
     wh_loss = tf.reduce_sum(
-        tf.square(tf.sqrt(y_true[..., 2:4]) - tf.sqrt(y_pred[..., 2:4])) * obj_mask
+        tf.reduce_sum(wh_diff, axis=-1, keepdims=True) * obj_mask
     ) / tf.maximum(tf.reduce_sum(obj_mask), 1.0)
     
     # Total loss
     total_loss = obj_loss + class_loss + xy_loss + wh_loss
     
     return total_loss
+    
 # Build a simple object detection model
 def build_model(input_shape, max_objects, num_classes):
     # Use MobileNetV2 as base model
@@ -301,7 +343,7 @@ def main():
     
     # Configure callbacks
     callbacks = [
-        EarlyStopping(patience=10, verbose=1),
+        # EarlyStopping(patience=10, verbose=1),
         ReduceLROnPlateau(factor=0.1, patience=5, min_lr=1e-6, verbose=1),
         ModelCheckpoint('pcb_detector.h5', save_best_only=True, verbose=1)
     ]
@@ -313,7 +355,7 @@ def main():
     history = model.fit(
         train_gen,
         steps_per_epoch=steps_per_epoch,
-        epochs=50,  # Adjust as needed
+        epochs=100,  # Adjust as needed
         validation_data=val_gen,
         validation_steps=validation_steps,
         callbacks=callbacks
@@ -338,34 +380,34 @@ def main():
     model.save('pcb_detector_final.h5')
     print("Model saved as 'pcb_detector_final.h5'")
 
-def main():
-    # Load class mapping
-    id_to_index, class_names = load_class_mapping()
-    print(f"Loaded {len(class_names)} classes: {class_names}")
+# def main():
+#     # Load class mapping
+#     id_to_index, class_names = load_class_mapping()
+#     print(f"Loaded {len(class_names)} classes: {class_names}")
     
-    # Load datasets
-    train_images, train_boxes, train_classes = load_dataset(TRAIN_DIR, id_to_index)
-    val_images, val_boxes, val_classes = load_dataset(VAL_DIR, id_to_index)
+#     # Load datasets
+#     train_images, train_boxes, train_classes = load_dataset(TRAIN_DIR, id_to_index)
+#     val_images, val_boxes, val_classes = load_dataset(VAL_DIR, id_to_index)
     
-    print(f"Loaded {len(train_images)} training images and {len(val_images)} validation images")
+#     print(f"Loaded {len(train_images)} training images and {len(val_images)} validation images")
     
-    # Find max objects in any image for model design
-    max_objects_train = max(len(boxes) for boxes in train_boxes)
-    max_objects_val = max(len(boxes) for boxes in val_boxes)
-    max_objects = max(max_objects_train, max_objects_val)
-    print(f"Maximum objects in any image: {max_objects}")
+#     # Find max objects in any image for model design
+#     max_objects_train = max(len(boxes) for boxes in train_boxes)
+#     max_objects_val = max(len(boxes) for boxes in val_boxes)
+#     max_objects = max(max_objects_train, max_objects_val)
+#     print(f"Maximum objects in any image: {max_objects}")
     
-    # Create data generators
-    batch_size = 8
-    train_gen = data_generator(train_images, train_boxes, train_classes, batch_size, max_objects)
-    val_gen = data_generator(val_images, val_boxes, val_classes, batch_size, max_objects)
+#     # Create data generators
+#     batch_size = 8
+#     train_gen = data_generator(train_images, train_boxes, train_classes, batch_size, max_objects)
+#     val_gen = data_generator(val_images, val_boxes, val_classes, batch_size, max_objects)
     
-    # Build model with the same max_objects value
-    input_shape = (*IMG_SIZE, 3)
-    model = build_model(input_shape, max_objects, NUM_CLASSES)
-    model.summary()
+#     # Build model with the same max_objects value
+#     input_shape = (*IMG_SIZE, 3)
+#     model = build_model(input_shape, max_objects, NUM_CLASSES)
+#     model.summary()
     
-    # Rest of the function remains the same...
+#     # Rest of the function remains the same...
 
 if __name__ == "__main__":
     main()
