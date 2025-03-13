@@ -1,3 +1,8 @@
+"""
+https://www.geeksforgeeks.org/how-to-train-tensorflow-models-in-python/
+https://www.learnpytorch.io/00_pytorch_fundamentals/
+"""
+
 import tensorflow as tf
 import numpy as np
 import tensorflow_datasets as tfds
@@ -14,7 +19,13 @@ dataset_name = 'cifar10'
 
 image, label = next(iter(train_dataset.take(1)))
 
-plt.imshow(image)
-plt.title(label.numpy())
-plt.axis("off")
-plt.show()
+num_classes = dataset_info.features['label'].num_classes
+print(num_classes)
+
+# Preprocessing & Normalization
+def preprocessing_data(image, label):
+    image = tf.cast(image,tf.float32) / 255.0
+    return image, label
+
+train_dataset = train_dataset.map(preprocessing_data)
+test_dataset = test_dataset.map(preprocessing_data)
