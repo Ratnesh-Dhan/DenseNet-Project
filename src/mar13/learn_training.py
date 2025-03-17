@@ -54,7 +54,7 @@ model.compile(optimizer='adam',
             metrics=['accuracy'])
 
 batch_size = 128
-num_epochs = 10
+num_epochs = 30
 
 # To process the dataset in batches create the batches of batch_size 
 train_dataset = train_dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
@@ -62,6 +62,7 @@ test_dataset = test_dataset.batch(batch_size)
 
 # Train the model
 model.fit(train_dataset, epochs=num_epochs, validation_data=test_dataset)
+model.save("my_model.keras")
 
 # Evaluate
 loss, accuracy = model.evaluate(test_dataset)
@@ -78,5 +79,5 @@ new_image = tf.expand_dims(new_image, axis=0)
 predictions = model.predict(new_image)
 # predicted label
 pred_label = tf.argmax(predictions, axis =1)
-pred_label.numpy()
+print(pred_label.numpy())
 # tf.keras.saving.save_model(model, 'my_model.keras')
