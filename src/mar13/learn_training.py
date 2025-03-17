@@ -18,6 +18,8 @@ dataset_name = 'cifar10'
 )
 
 image, label = next(iter(train_dataset.take(1)))
+print("image shape: ",image.shape)
+print("label: ", label)
 
 num_classes = dataset_info.features['label'].num_classes
 print(num_classes)
@@ -29,3 +31,35 @@ def preprocessing_data(image, label):
 
 train_dataset = train_dataset.map(preprocessing_data)
 test_dataset = test_dataset.map(preprocessing_data)
+
+input_dim = (32, 32, 3)
+
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Input(shape=input_dim),
+    tf.keras.layers.Conv2D(32, (3,3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2,2)),
+    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(num_classes, activation='softmax')
+])
+
+model.summary()
+
+# Compiling model 
+model.compile(optimizer='adam',
+            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=['accuracy'])
+
+batch_size = 128
+num_epochs = 10
+
+# To process the dataset in batches create the batches of batch_size 
+train_dataset = train_dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+test_dataset = test_dataset.batch(batch_size)
+
+# Train the model
+model.fit(train_dataset, epochs=num_epochs, validation_data=test_dataset)
+
