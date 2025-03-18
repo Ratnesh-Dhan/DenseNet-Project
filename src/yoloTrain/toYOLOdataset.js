@@ -26,6 +26,9 @@ function searchFilesInDirectory(directoryPath) {
 
 const perFile = (ary) => {
   ary.forEach((element) => {
+    const jsonData = JSON.parse(fs.readFileSync(element, "utf8"));
+    const value = jsonData["objects"];
+    console.log(value);
     const name = element.split("\\").pop();
     console.log(name);
   });
