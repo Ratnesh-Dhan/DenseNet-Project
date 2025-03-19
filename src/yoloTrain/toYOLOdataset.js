@@ -28,9 +28,35 @@ const perFile = (ary) => {
   ary.forEach((element) => {
     const jsonData = JSON.parse(fs.readFileSync(element, "utf8"));
     const value = jsonData["objects"];
-    console.log(value);
-    const name = element.split("\\").pop();
-    console.log(name);
+    const result = []; // result would be the coverted yolo annotation for each file and need to be saved as image name
+
+    // const outputFilePath = path.join(path.dirname(element), 'output.txt');
+    // const customString = "Your custom string goes here"; // Replace with your desired string
+    // fs.writeFileSync(outputFilePath, customString, 'utf8');
+
+    try {
+      // console.log(value[0]["id"]);
+      if (value.length < 1) {
+        // If obejct is empty then it would be useless for us so we will skip that
+        throw new TypeError("empty object");
+      }
+      // working on what is going to be saved
+      const { height, width } = jsonData["size"];
+      value.forEach((ele) => {
+        const classId = ele["classId"];
+      });
+
+      // workig on how and where to be saved
+      const name = element
+        .split("\\")
+        .pop()
+        .replace(/\.json$/, "");
+      console.log(name);
+    } catch (e) {
+      if (e instanceof TypeError) {
+        console.log(e, value[0]);
+      }
+    }
   });
 };
 
