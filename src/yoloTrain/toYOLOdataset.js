@@ -39,10 +39,12 @@ const perFile = (ary, save_dir) => {
 
   // Start progress bar
   progressBar.start(ary.length, 0);
-
   if (!fs.existsSync(save_dir)) {
     fs.mkdirSync(save_dir, { recursive: true });
   }
+  // Progress counter
+  let fileCounter = 0;
+
   // This map_data will help to get the integer for classId
   const map_data = JSON.parse(
     fs.readFileSync("../../Datasets/pcbDataset/classMap.json", "utf8")
@@ -100,7 +102,14 @@ const perFile = (ary, save_dir) => {
         console.log("ERROR, : ", e);
       }
     }
+    // Update progeress bar
+    fileCounter++;
+    progressBar.update(fileCounter);
   });
+
+  // Stoping progress bar
+  progressBar.stop();
+  console.log("Conversion complete.!");
 };
 
 // Example usage
