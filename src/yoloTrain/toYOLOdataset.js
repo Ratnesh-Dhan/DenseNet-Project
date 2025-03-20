@@ -113,7 +113,7 @@ const perFile = (ary, save_dir) => {
 };
 
 // Example usage
-const variable_directory = "validation";
+const variable_directory = "train";
 const directoryPath = `../../Datasets/pcbDataset/${variable_directory}/ann/`; // Change this to the desired directory
 const save_directory = `../../Datasets/pcbDataset/YOLO/${variable_directory}/`;
 const allFiles = searchFilesInDirectory(directoryPath);
