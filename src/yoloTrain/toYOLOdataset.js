@@ -91,7 +91,8 @@ const perFile = (ary, save_dir) => {
       const name = element
         .split("\\")
         .pop()
-        .replace(/\.json$/, "");
+        .replace(/\.jpg.json$/, "");
+      // .replace(/\.json$/, "");
       // Writing file
       const outputPath = path.join(save_dir, `${name}.txt`);
       fs.writeFileSync(outputPath, single_yolo_file_array.join("\n"), "utf8");
