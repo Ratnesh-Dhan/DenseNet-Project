@@ -18,6 +18,9 @@
 *.jpg
 *.jpeg
 *.png
+*.mp4
+*.webp
+*.avi
 
 # Igonre cache files
 *.pyc
