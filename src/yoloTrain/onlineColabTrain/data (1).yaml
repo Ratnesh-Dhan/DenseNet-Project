@@ -1,0 +1,24 @@
+# Dataset path and configuration
+path: 'C:\Users\NDT Lab\Software\DenseNet-Project\DenseNet-Project\Datasets\yoloPCB' # Use ./ to reference the current directory where data.yaml is located
+train: images/train
+val: images/val
+
+# Number of classes
+nc: 9
+
+# Class names
+names:
+  0: Cap1
+  1: Cap2
+  2: Cap3
+  3: Cap4
+  4: MOSFET
+  5: Mov
+  6: Resestor
+  7: Resistor
+  8: Transformer
+  9: Ic
+  10: Diode
+  12: Cap6
+  13: Transistor
+  14: Potentiometer

@@ -6,11 +6,13 @@ from PIL import Image
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 
-model_name = "../../../MyTrained_Models/pcbYOLO/last.pt"
+model_name = "../../../MyTrained_Models/pcb/best_7_april.pt"
 
 model = YOLO(model_name)
 
-image = plt.imread("../image4.jpg")
+image = plt.imread("../resis.jpg")
+# image = cv2.resize(image, (640, 480))
+print(f"image shape : {image.shape}")
 # if image.shape[0] < image.shape[1]:
 #     image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -24,7 +26,7 @@ for result in results:
 
 def getColours(seed=None):
     if seed is not None:
-        random.seed(seed)
+        random.seed(seed + 6)
     
     # Generate a random hue
     hue = random.random()
@@ -45,7 +47,7 @@ def getColours(seed=None):
 for box in result.boxes:
     # check if confidence is greater than 40 percent
     # if box.conf[0] > 0.4:
-    if box.conf[0] > 0.7:
+    if box.conf[0] > 0.4:
         # get coordinates
         [x1, y1, x2, y2] = box.xyxy[0]
         # convert to int
@@ -67,8 +69,8 @@ for box in result.boxes:
         image = cv2.rectangle(image, (x1, y1), (x2, y2), colour, 2)
         
         print(class_name)
-        # cv2.putText(image, f'{classes_names[int(box.cls[0])]} {box.conf[0]:.2f}', (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, colour, 2)
-        cv2.putText(image, f'{class_name} {box.conf[0]:.2f}', (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, colour, 2)
+        cv2.putText(image, f'{classes_names[int(box.cls[0])]} {box.conf[0]:.2f}', (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, colour, 2)
+        # cv2.putText(image, f'{class_name} {box.conf[0]:.2f}', (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, colour, 1)
    
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
