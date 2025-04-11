@@ -53,6 +53,7 @@ def running(model):
 
                 # class_name = "Cap" if class_name == "Mov" else class_name
                 class_name = "IC" if class_name == "MOSFET" else class_name
+
                 # print("class name: ", class_name)
                 colour = getColours(cls)
 
@@ -88,5 +89,14 @@ def getColours(seed=None):
     rgb_tuple = tuple(int(x * 255) for x in rgb)
     
     return rgb_tuple
+
+# def getColours(cls_num):
+#     base_colors = [(240, 10, 10), (10, 240, 10), (10, 10, 240)]  # Slightly adjusted base colors
+#     color_index = cls_num % len(base_colors)
+#     increments = [(2, -1, 2), (-1, 2, -1), (2, -1, 1)]  # Adjusted increments for color variation
+#     color = [base_colors[color_index][i] + increments[color_index][i] * 
+#     (cls_num // len(base_colors)) % 256 for i in range(3)]
+#     return tuple(color)
+    
 
 running(model=model)

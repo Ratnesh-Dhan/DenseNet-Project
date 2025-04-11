@@ -6,7 +6,7 @@ from tqdm import tqdm  # Make sure to import tqdm at the top of your file
 # Set logging level to ERROR to suppress lower-level logs
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-model_name = "../../../MyTrained_Models/pcbYOLO/last.pt"
+model_name = "../../../MyTrained_Models/pcb/best_7_april.pt"
 model = YOLO(model_name)
 
 def scan_directory_for_files(directory):
@@ -39,12 +39,14 @@ def runOnAllImages(files, model):
                 cls = int(box.cls[0])
                 # getting class name
                 class_name = classes_names[cls]
+                if class_name == "Resistor" and box.conf[0] < 0.66:
+                    continue
                 # MOSFET to Cap
                 class_name = "IC" if class_name == "MOSFET" else class_name
                 colour = getColours(cls)
                 image = cv2.rectangle(image, (x1, y1), (x2, y2), colour, 2)
                 cv2.putText(image, f'{class_name} {box.conf[0]:.2f}', (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, colour, 2)
-        output_file = os.path.join("../../../Datasets/pcbDataset/test/result/", os.path.basename(file))  # Define output path
+        output_file = os.path.join("../../../Datasets/pcbDataset/test/results/", os.path.basename(file))  # Define output path
         cv2.imwrite(output_file, image)  # Save the image
 
 # Example usage
