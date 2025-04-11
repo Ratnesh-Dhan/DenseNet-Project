@@ -10,8 +10,9 @@ model_name = "../../../MyTrained_Models/pcb/best_7_april.pt"
 
 model = YOLO(model_name)
 
-image = plt.imread("../test3.jpeg")
-# image = cv2.resize(image, (640, 480))
+image = plt.imread("../images (4).jpg")
+if image.shape[0] < 480 or image.shape[1] < 640:
+    image = cv2.resize(image, (640, 480))
 print(f"image shape : {image.shape}")
 # if image.shape[0] < image.shape[1]:
 #     image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
@@ -56,7 +57,7 @@ def getColours(cls_num):
 for box in result.boxes:
     # check if confidence is greater than 40 percent
     # if box.conf[0] > 0.4:
-    if box.conf[0] > 0.5:
+    if box.conf[0] > 0.4:
         # get coordinates
         [x1, y1, x2, y2] = box.xyxy[0]
         # convert to int
@@ -71,10 +72,11 @@ for box in result.boxes:
 
         # class_name = "Cap" if class_name == "Mov" else class_name
         class_name = "IC" if class_name == "MOSFET" else class_name
-        if class_name == "Resistor" and box.conf[0] < 0.65:
-            continue
+        # if class_name == "Resistor" and box.conf[0] < 0.65:
+        #     continue
         colour = getColours(cls)
         if class_name == "Ic":
+        # if class_name == "Resistor":
             colour = (0,0,0)
         # colour = (0,0,0)
         print(colour)

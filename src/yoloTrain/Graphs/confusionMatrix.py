@@ -4,8 +4,8 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
 # Config
-gt_dir = "dataset/labels/val"  # path to ground truth labels
-pred_dir = "runs/detect/val/labels"  # path to predicted labels
+gt_dir = "../../../Datasets/yoloPCB/labels/val"  # path to ground truth labels
+pred_dir = "../../../runs/detect/val5/labels"  # path to predicted labels
 class_names = [
     "Cap1", "Cap2", "Cap3", "Cap4", "MOSFET", "Mov", "Resestor",
     "Resistor", "Transformer", "Ic", "Diode", "Cap6",
@@ -102,6 +102,7 @@ new_class_names = [class_names[i] for i in include_indices]
 cm = confusion_matrix(new_y_true, new_y_pred)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=new_class_names)
 disp.plot(cmap=plt.cm.Blues, xticks_rotation=45)
-plt.title("Confusion Matrix (Resestor merged into Resistor)")
+# plt.title("Confusion Matrix (Resestor merged into Resistor)")
+plt.title("Confusion Matrix")
 plt.tight_layout()
 plt.show()
