@@ -5,7 +5,7 @@ from sklearn.cluster import KMeans
 from skimage import io
 
 # Load image
-image_path = "./image 009.jpg"  # Replace with your actual path
+image_path = "./images/24.jpg"  # Replace with your actual path
 image = io.imread(image_path)
 pixels = image.reshape(-1, 3)
 

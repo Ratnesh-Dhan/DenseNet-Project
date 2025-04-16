@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 
 # Load the image
-image_path = "./i003.jpg"
+image_path = "./images/i003.jpg"
 image = Image.open(image_path).convert("RGB")
 image_np = np.array(image)
 
