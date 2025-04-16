@@ -10,7 +10,7 @@ model_name = "../../../MyTrained_Models/pcb/best_7_april.pt"
 
 model = YOLO(model_name)
 
-image = plt.imread("../images (4).jpg")
+image = plt.imread("../captain.jpg")
 if image.shape[0] < 480 or image.shape[1] < 640:
     image = cv2.resize(image, (640, 480))
 print(f"image shape : {image.shape}")
