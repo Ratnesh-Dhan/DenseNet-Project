@@ -18,6 +18,9 @@
 *.jpg
 *.jpeg
 *.png
+*.mp4
+*.webp
+*.avi
 
 # Igonre cache files
 *.pyc
@@ -29,6 +32,7 @@ __pycache__/
 /pre-Trained_model
 /MyTrained_Models
 /Datasets
+/runs
 *.pth
 *.h5
 *.keras
@@ -36,3 +40,8 @@ __pycache__/
 
 # Ignoring "image" folders
 /src/img
+
+# Ignoring node packages
+package-lock.json
+package.json
+/node_modules

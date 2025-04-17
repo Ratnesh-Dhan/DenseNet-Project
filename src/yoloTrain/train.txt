@@ -1,0 +1,27 @@
+# Basic training command
+yolo task=detect mode=train data=data.yaml model=yolov8n.pt epochs=100 imgsz=640 batch=16
+
+
+# More advanced training command
+yolo task=detect mode=train data=/path/to/your/data.yaml model=yolov8n.pt \
+    epochs=100 \
+    imgsz=640 \
+    batch=16 \
+    patience=30 \
+    optimizer=Adam \
+    lr0=0.01 \
+    weight_decay=0.0005 \
+    augment=True \
+    workers=8 \
+    save=True \
+    device=0  # Use specific GPU, use device=cpu for CPU training
+
+
+# 7. Evaluate Your Model
+# After training, evaluate your model on the validation set:
+yolo task=detect mode=val data=/path/to/your/data.yaml model=/path/to/runs/detect/train/weights/best.pt
+
+
+# 8. Use Your Model for Inference
+# Once trained, you can use your model for inference:
+yolo task=detect mode=predict model=/path/to/runs/detect/train/weights/best.pt source=/path/to/test/images
