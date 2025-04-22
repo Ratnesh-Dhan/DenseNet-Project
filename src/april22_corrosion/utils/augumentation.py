@@ -11,11 +11,28 @@ transform = A.Compose([
     A.RandomBrightnessContrast(p=0.2)
 ], bbox_params=A.BboxParams(format='yolo'))
 
+def clip_bbox(bbox):
+    """Clip bounding box coordinates to valid range [0, 1]"""
+    x_min, y_min, x_max, y_max = bbox[:4]
+    x_min = max(0.0, min(1.0, x_min))
+    y_min = max(0.0, min(1.0, y_min))
+    x_max = max(0.0, min(1.0, x_max))
+    y_max = max(0.0, min(1.0, y_max))
+    return [x_min, y_min, x_max, y_max] + bbox[4:]
+
 def transformer(transform, image, bboxes):
-    transformed = transform(image=image, bboxes=bboxes)
-    transformed_image = transformed['image']
-    transformed_bboxes = transformed['bboxes']
-    return transformed_image, transformed_bboxes
+    try:
+        transformed = transform(image=image, bboxes=bboxes)
+        transformed_image = transformed['image']
+        transformed_bboxes = transformed['bboxes']
+        
+        # Clip all bounding boxes to valid range
+        transformed_bboxes = [clip_bbox(bbox) for bbox in transformed_bboxes]
+        
+        return transformed_image, transformed_bboxes
+    except Exception as e:
+        print(f"Error in transformation: {e}")
+        return image, bboxes  # Return original image and bboxes if transformation fails
 
 def load_yolo_annotation(txt_path):
     bboxes = []
