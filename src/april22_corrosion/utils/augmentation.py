@@ -12,7 +12,7 @@ try :
     import cv2, os, numpy as np
     from PIL import Image
 
-    class_map = ['corrosion', 'Corrosion']
+    class_map = ['Corrosion']
 
     transform = A.Compose([
     A.SmallestMaxSize(max_size=400, p=1.0),  # Resize smaller dimension to 400px while maintaining aspect ratio
