@@ -1,0 +1,11 @@
+# Dataset path and configuration
+path: "/content/drive/MyDrive/Datasets/corrosion" # Use ./ to reference the current directory where data.yaml is located
+train: images/train
+val: images/val
+
+# Number of classes
+nc: 1
+
+# Class names
+names:
+  0: Corrosion
