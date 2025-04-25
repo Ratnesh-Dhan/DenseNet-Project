@@ -6,12 +6,12 @@ from PIL import Image
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 
-model_name = "../../MyTrained_Models/corrosion/yolo_best.pt"
+model_name = "../../MyTrained_Models/corrosion/last.pt"
 # model_name = "../../MyTrained_Models/corrosion/corrosion_yolo_40.pt"
 
 model = YOLO(model_name)
 
-image = plt.imread("../img/corrosion/corrosion1.webp")
+image = plt.imread("../img/corrosion/corrosion7.jpg")
 
 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 image = cv2.resize(image, (640, 640))
@@ -22,25 +22,6 @@ results = model(image)
 
 for result in results:
     classes_names = result.names
-
-# def getColours(seed=None):
-#     if seed is not None:
-#         random.seed(seed + 6)
-    
-#     # Generate a random hue
-#     hue = random.random()
-    
-#     # Set saturation and value (brightness) to create a darker color
-#     saturation = 0.7 + random.random() * 0.3  # 70-100% saturation
-#     value = 0.4 + random.random() * 0.2  # 40-60% brightness
-    
-#     # Convert HSV to RGB
-#     rgb = colorsys.hsv_to_rgb(hue, saturation, value)
-    
-#     # Convert to 0-255 range and create tuple
-#     rgb_tuple = tuple(int(x * 255) for x in rgb)
-    
-#     return rgb_tuple
 
 def getColours(cls_num):
     base_colors = [(240, 10, 10), (10, 240, 10), (10, 10, 240)]  # Slightly adjusted base colors
@@ -54,7 +35,7 @@ def getColours(cls_num):
 for box in result.boxes:
     # check if confidence is greater than 40 percent
     # if box.conf[0] > 0.4:
-    if box.conf[0] > 0.3:
+    if box.conf[0] > 0.2:
         # get coordinates
         [x1, y1, x2, y2] = box.xyxy[0]
         # convert to int
