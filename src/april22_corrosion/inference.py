@@ -11,7 +11,7 @@ model_name = "../../MyTrained_Models/corrosion/last.pt"
 
 model = YOLO(model_name)
 
-image = plt.imread("../img/corrosion/corrosion7.jpg")
+image = plt.imread("../img/corrosion/2.jpg")
 
 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 image = cv2.resize(image, (640, 640))
@@ -35,7 +35,7 @@ def getColours(cls_num):
 for box in result.boxes:
     # check if confidence is greater than 40 percent
     # if box.conf[0] > 0.4:
-    if box.conf[0] > 0.2:
+    if box.conf[0] > 0.0:
         # get coordinates
         [x1, y1, x2, y2] = box.xyxy[0]
         # convert to int
