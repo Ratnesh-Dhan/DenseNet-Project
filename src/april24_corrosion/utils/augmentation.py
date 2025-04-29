@@ -5,7 +5,8 @@ from albumentations.core.serialization import save, load
 from tqdm import tqdm
 
 # Define paths
-base_dir = r"D:\NML ML Works\cropped corrosion annotaion"
+# base_dir = r"D:\NML ML Works\cropped corrosion annotaion"
+base_dir = r"D:\NML ML Works\Test corrosion images"
 image_dir = os.path.join(base_dir, 'images')
 corrosion_mask_dir = os.path.join(base_dir, 'corrosion_mask')
 sample_mask_dir = os.path.join(base_dir, 'sample_piece_mask')

@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os
 import random
+from tensorflow.keras.applications.resnet50 import preprocess_input
 
 # Paths
 IMAGE_DIR = '/path/to/images'
@@ -18,7 +19,8 @@ def load_image_and_masks(image_path, image_size=(512, 512)):
     image = tf.io.read_file(image_path)
     image = tf.image.decode_png(image, channels=3)
     image = tf.image.resize(image, image_size)
-    image = tf.cast(image, tf.float32) / 255.0
+    # image = tf.cast(image, tf.float32) / 255.0
+    image = preprocess_input(tf.cast(image, tf.float32))
 
     # Load sample piece mask
     piece_mask = tf.io.read_file(piece_mask_path)
@@ -61,7 +63,7 @@ def augment(image, mask):
     return image, mask
 
 # --- Dataset Final Function ---
-def get_dataset(image_dir, batch_size=8, augment_data=True, shuffle=True):
+def get_dataset(image_dir, batch_size=8, augment_data=False, shuffle=True):
     image_paths = sorted([os.path.join(image_dir, fname) for fname in os.listdir(image_dir)])
 
     dataset = tf.data.Dataset.from_tensor_slices(image_paths)
