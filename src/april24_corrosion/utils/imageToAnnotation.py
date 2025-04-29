@@ -4,15 +4,18 @@ import os
 
 # Define color range for corrosion (rusty areas)
 # These ranges might need minor tweaking based on your dataset
-lower_corrosion = np.array([5, 50, 50])   # HSV lower bound (rusty orange/brown)
-upper_corrosion = np.array([20, 255, 255]) # HSV upper bound
+# lower_corrosion = np.array([5, 50, 50])   # HSV lower bound (rusty orange/brown)
+lower_corrosion = np.array([5, 80, 30])   # HSV lower bound (rusty orange/brown)
+# upper_corrosion = np.array([20, 255, 255]) # HSV upper bound
+upper_corrosion = np.array([30, 255, 200]) # HSV upper bound
 
 # Define color range for metal surface (you can adjust if needed)
 lower_metal = np.array([0, 0, 150])       # HSV lower bound (light gray/white)
 upper_metal = np.array([180, 50, 255])    # HSV upper bound
 
 # Paths
-input_folder = r'D:\NML ML Works\cropped corrosion'    # Update this
+# input_folder = r'D:\NML ML Works\cropped corrosion'    # Update this
+input_folder = r'D:\NML ML Works\corrosionDataset\images'    # Update this
 output_mask_folder = r'D:\NML ML Works\cropped corrosion annotaion\corrosion_mask'
 output_piece_folder = r'D:\NML ML Works\cropped corrosion annotaion\sample_piece_mask'
 
