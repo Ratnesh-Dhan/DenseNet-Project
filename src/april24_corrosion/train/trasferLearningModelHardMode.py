@@ -34,7 +34,14 @@ def build_unet_with_transfer_learning(input_shape=(512, 512, 3), num_classes=3):
     c9 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(u9)
     c9 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(c9)
 
-    outputs = layers.Conv2D(num_classes, (1, 1), activation='softmax')(c9)
+    # Replaced this
+    # outputs = layers.Conv2D(num_classes, (1, 1), activation='softmax')(c9)
+    # With this
+    u10 = layers.Conv2DTranspose(32, (2, 2), strides=(2, 2), padding='same')(c9)
+    c10 = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(u10)
+    c10 = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(c10)
+    outputs = layers.Conv2D(num_classes, (1, 1), activation='softmax')(c10)
+    # Upto this 
 
     # Create the model
     model = Model(inputs=base_model.input, outputs=outputs)
@@ -51,7 +58,7 @@ def build_unet_with_transfer_learning(input_shape=(512, 512, 3), num_classes=3):
     return model
 
 # Create the model
-model = build_unet_with_transfer_learning(input_shape=(512, 512, 3), num_classes=3)
+# model = build_unet_with_transfer_learning(input_shape=(512, 512, 3), num_classes=3)
 
 # Display the model summary
-model.summary()
+# model.summary()
