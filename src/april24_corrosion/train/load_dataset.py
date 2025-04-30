@@ -35,13 +35,14 @@ def load_image_and_masks(image_path, image_size=(512, 512)):
     corrosion_mask = tf.squeeze(corrosion_mask, axis=-1)
 
     # Create a final mask
-    final_mask = tf.zeros_like(piece_mask, dtype=tf.uint8)
+    # final_mask = tf.zeros_like(piece_mask, dtype=tf.uint8)
+    final_mask = tf.zeros_like(piece_mask, dtype=tf.float32)
 
     final_mask = tf.where(piece_mask > 0, 1, final_mask)        # sample piece => class 1
     final_mask = tf.where(corrosion_mask > 0, 2, final_mask)     # corrosion => class 2
 
     # One-hot encode final mask
-    final_mask = tf.one_hot(final_mask, depth=3)
+    final_mask = tf.one_hot(final_mask, depth=3, dtype=tf.float32)
 
     return image, final_mask
 

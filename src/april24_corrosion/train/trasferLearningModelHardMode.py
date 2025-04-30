@@ -42,7 +42,9 @@ def build_unet_with_transfer_learning(input_shape=(512, 512, 3), num_classes=3):
     # Compile the model
     model.compile(
         optimizer='adam',
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+        # loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+        # // (from_logits=False) This tells the loss function that the model’s output is already softmax-activated
+        loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
         metrics=['accuracy']
     )
     
