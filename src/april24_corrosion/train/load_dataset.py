@@ -1,5 +1,4 @@
 import tensorflow as tf
-import numpy as np
 import os
 import random
 from tensorflow.keras.applications.resnet50 import preprocess_input
@@ -9,7 +8,7 @@ IMAGE_DIR = '/path/to/images'
 CORROSION_MASK_DIR = '/path/to/mask_corrosion'
 PIECE_MASK_DIR = '/path/to/mask_sample_piece'
 
-def load_image_and_masks(image_path, image_size=(512, 512)):
+def load_image_and_masks(image_path):
     # Derive corresponding mask paths
     filename = tf.strings.split(image_path, os.sep)[-1]
     corrosion_mask_path = tf.strings.join([CORROSION_MASK_DIR, filename], separator=os.sep)
@@ -18,20 +17,21 @@ def load_image_and_masks(image_path, image_size=(512, 512)):
     # Load image
     image = tf.io.read_file(image_path)
     image = tf.image.decode_png(image, channels=3)
-    image = tf.image.resize(image, image_size)
+    # image = tf.image.resize(image, image_size)
+    image = tf.image.resize_with_pad(image, target_height=512, target_width=512)
     # image = tf.cast(image, tf.float32) / 255.0
     image = preprocess_input(tf.cast(image, tf.float32))
 
     # Load sample piece mask
     piece_mask = tf.io.read_file(piece_mask_path)
     piece_mask = tf.image.decode_png(piece_mask, channels=1)
-    piece_mask = tf.image.resize(piece_mask, image_size, method='nearest')
+    piece_mask = tf.image.resize_with_pad(piece_mask, 512, 512, method='nearest')
     piece_mask = tf.squeeze(piece_mask, axis=-1)
 
     # Load corrosion mask
     corrosion_mask = tf.io.read_file(corrosion_mask_path)
     corrosion_mask = tf.image.decode_png(corrosion_mask, channels=1)
-    corrosion_mask = tf.image.resize(corrosion_mask, image_size, method='nearest')
+    corrosion_mask = tf.image.resize_with_pad(corrosion_mask, 512, 512, method='nearest')
     corrosion_mask = tf.squeeze(corrosion_mask, axis=-1)
 
     # Create a final mask
@@ -71,8 +71,8 @@ def get_dataset(image_dir, batch_size=8, augment_data=False, shuffle=True):
     dataset = dataset.map(lambda img: load_image_and_masks(img),
                           num_parallel_calls=tf.data.AUTOTUNE)
 
-    if augment_data:
-        dataset = dataset.map(augment, num_parallel_calls=tf.data.AUTOTUNE)
+    # if augment_data:
+    #     dataset = dataset.map(augment, num_parallel_calls=tf.data.AUTOTUNE)
 
     if shuffle:
         dataset = dataset.shuffle(100)
