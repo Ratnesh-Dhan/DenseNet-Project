@@ -1,7 +1,7 @@
 import os
 from PIL import Image
 
-base_location = r'D:\NML ML Works\corrosion Final dataset'
+base_location = r'/home/zumbie/Codes/NML/DenseNet-Project/Datasets/corrosion'
 
 train_dir = os.path.join(base_location, 'train')
 valid_dir = os.path.join(base_location, 'validate')
