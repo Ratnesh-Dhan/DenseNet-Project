@@ -79,8 +79,9 @@ def display_results(original, mask, pred_prob):
 
     # Apply blue color with transparency only to class 2 (corrosion)
     # blue = [0, 0, 255, 150]  # R, G, B, Alpha (150 = semi-transparent)
-    blue = [150, 0, 0, 150]  # R, G, B, Alpha (150 = semi-transparent)
-    overlay_rgba[mask == 2] = blue  # class 2 is corrosion
+    neon = [57, 255, 50, 150]  # R, G, B, Alpha (150 = semi-transparent)
+    overlay_rgba[mask == 2] = neon  # neon for corrosion
+    # overlay_rgba[mask == 2] = blue  # class 2 is corrosion
 
     # Convert original to RGBA
     original_rgba = cv2.cvtColor(original_uint8, cv2.COLOR_RGB2RGBA)
@@ -111,7 +112,7 @@ def display_results(original, mask, pred_prob):
 if __name__ == "__main__":
     load_and_predict(
         model_path='./model/unet_resnet50_multiclass.h5',
-        image_path='../test/image/corrosion2.jpg'
+        image_path='../test/image/16.png'
     )
 # This function needs to 
 

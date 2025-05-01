@@ -35,6 +35,7 @@ __pycache__/
 /runs
 *.pth
 *.h5
+*.tflite
 *.keras
 *.tfrecord
 
