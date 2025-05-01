@@ -1,4 +1,5 @@
 import os
+from PIL import Image
 
 base_location = r'D:\NML ML Works\corrosion Final dataset'
 
@@ -16,3 +17,10 @@ for folders in train_files:
 for folders in valid_files:
     ary.append(os.path.join(valid_dir, folders))
 
+for i in ary:
+    files = [f for f in os.listdir(i) if f.endswith('.png')]
+    for f in files:
+        im_path = os.path.join(i, f)
+        img = Image.open(im_path)
+        img.save(im_path, icc_profile=None)
+        print(f'done {f}')
