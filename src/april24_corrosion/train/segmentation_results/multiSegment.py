@@ -1,13 +1,13 @@
 import tensorflow as tf
 import numpy as np
-import cv2
+import cv2, os, sys
 import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
-def load_and_predict(model_path, image_path):
+def load_and_predict(model, image_path, count):
     # Load model
-    model = load_model(model_path)
+    
     print(f"Model loaded: input shape {model.input_shape}, output shape {model.output_shape}")
     
     # Load and preprocess image - USING IMAGENET NORMALIZATION
@@ -27,61 +27,20 @@ def load_and_predict(model_path, image_path):
     segmentation_mask = np.argmax(prediction[0], axis=-1)
     
     # Show results
-    display_results(og_image, segmentation_mask, prediction[0])
+    save_results(og_image, segmentation_mask, prediction[0], count=count)
     
     return segmentation_mask, prediction
 
-
-# def display_results(original, mask, pred_prob):
-#     # Define colors for visualization
-#     colors = [
-#         # [0, 0, 0],    # Red for class 0
-#         # [0, 0, 0],    # Green for class 1
-#         # [0, 0, 255]     # Blue for class 2
-#         [255, 255, 255],    # Red for class 0
-#         [255, 255, 255],    # Green for class 1
-#         [0, 0, 255]     # Blue for class 2
-#     ]
-
-#     # Create colored mask
-#     colored_mask = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
-#     for i, color in enumerate(colors):
-#         colored_mask[mask == i] = color
-
-#     # Convert original to uint8
-#     original_uint8 = original.astype('uint8')
-
-#     # Blend the original and mask using alpha
-#     alpha = 0.5  # Transparency factor
-#     overlay = cv2.addWeighted(original_uint8, 1 - alpha, colored_mask, alpha, 0)
-
-#     # Display
-#     plt.figure(figsize=(12, 5))
-#     plt.subplot(1, 2, 1)
-#     plt.imshow(original_uint8)
-#     plt.title('Original Image')
-#     plt.axis('off')
-
-#     plt.subplot(1, 2, 2)
-#     plt.imshow(overlay)
-#     plt.title('Overlay Segmentation')
-#     plt.axis('off')
-
-#     plt.tight_layout()
-#     plt.show()
-
-def display_results(original, mask, pred_prob):
+def save_results(original, mask, pred_prob, count):
     # Convert original to uint8
     original_uint8 = original.astype('uint8')
 
     # Create a blank RGBA image for overlay
     overlay_rgba = np.zeros((mask.shape[0], mask.shape[1], 4), dtype=np.uint8)
 
-    # Apply blue color with transparency only to class 2 (corrosion)
-    # blue = [0, 0, 255, 150]  # R, G, B, Alpha (150 = semi-transparent)
+    # Apply neon color with transparency only to class 2 (corrosion)
     neon = [57, 255, 50, 150]  # R, G, B, Alpha (150 = semi-transparent)
     overlay_rgba[mask == 2] = neon  # neon for corrosion
-    # overlay_rgba[mask == 2] = blue  # class 2 is corrosion
 
     # Convert original to RGBA
     original_rgba = cv2.cvtColor(original_uint8, cv2.COLOR_RGB2RGBA)
@@ -106,13 +65,27 @@ def display_results(original, mask, pred_prob):
     plt.axis('off')
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig(f'segmentation_result_{count}.png', bbox_inches='tight', dpi=300)
+    plt.close()
 
 
 if __name__ == "__main__":
-    load_and_predict(
-        model_path='./model/unet_resnet50_multiclass.h5',
-        image_path='../test/image/18.png'
-    )
+    model_path=r'C:\Users\NDT Lab\Software\DenseNet-Project\DenseNet-Project\src\april24_corrosion\train\model\unet_resnet50_multiclass.h5'
+    model = load_model(model_path)
+    locale = r"D:\NML ML Works\corrosionDataset\images"
+    files = os.listdir(locale)
+    half = int(len(files)/2)
+    files = files[half :]
+    count = 1
+    for f in files:
+        f = os.path.join(str(locale), f)
+        print(f)
+        load_and_predict(
+            model,
+            image_path=f,
+            count=count
+        )
+        count = count +1
+        print("Done")
 # This function needs to 
 
