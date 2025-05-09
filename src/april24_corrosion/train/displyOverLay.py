@@ -112,7 +112,8 @@ def display_results(original, mask, pred_prob):
 if __name__ == "__main__":
     load_and_predict(
         model_path='./model/unet_resnet50_multiclass.h5',
-        image_path='../test/image/18.png'
+        # image_path='../test/image/18.png'
+        image_path=r'D:\NML ML Works\Testing\WhatsApp Image 2025-05-09 at 3.29.04 PM.jpeg'
     )
 # This function needs to 
 
