@@ -5,16 +5,16 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
-def save_binary_mask(mask, count, target_class=2, output_dir=r"D:\NML ML Works\Testing_mask_binary"):
+def save_binary_mask(mask, name, target_class=2, output_dir=r"D:\NML ML Works\Testing_mask_binary"):
     os.makedirs(output_dir, exist_ok=True)
     # Create binary mask
     binary_mask = np.where(mask == target_class, 255, 0).astype(np.uint8)
     # Save as PNG
-    save_path = os.path.join(output_dir, f'binary_mask_{count}.png')
+    save_path = os.path.join(output_dir, f'{name}.png')
     cv2.imwrite(save_path, binary_mask)
 
 
-def load_and_predict(model, image_path, count):
+def load_and_predict(model, image_path, name):
     # Load model
     
     print(f"Model loaded: input shape {model.input_shape}, output shape {model.output_shape}")
@@ -36,12 +36,12 @@ def load_and_predict(model, image_path, count):
     segmentation_mask = np.argmax(prediction[0], axis=-1)
     
     # Show results
-    # save_results(og_image, segmentation_mask, prediction[0], count=count)
-    save_binary_mask(segmentation_mask, count)
+    # save_results(og_image, segmentation_mask, prediction[0], name=name)
+    save_binary_mask(segmentation_mask, name)
 
     return segmentation_mask, prediction
 
-def save_results(original, mask, pred_prob, count):
+def save_results(original, mask, pred_prob, name):
     # Convert original to uint8
     original_uint8 = original.astype('uint8')
 
@@ -75,7 +75,7 @@ def save_results(original, mask, pred_prob, count):
     plt.axis('off')
 
     plt.tight_layout()
-    save_path = os.path.join(r"D:\NML ML Works\Testing_mask", f'segmentation_result_{count}.png')
+    save_path = os.path.join(r"D:\NML ML Works\Testing_mask", f'{name}.png')
     plt.savefig(save_path, bbox_inches='tight', dpi=300)
     plt.close()
 
@@ -84,18 +84,18 @@ if __name__ == "__main__":
     model_path=r'C:\Users\NDT Lab\Software\DenseNet-Project\DenseNet-Project\src\april24_corrosion\train\model\unet_resnet50_multiclass.h5'
     model = load_model(model_path)
     # locale = r"D:\NML ML Works\corrosionDataset\images"
-    locale = r"D:\NML ML Works\Testing"
+    locale = r"D:\NML ML Works\corrosion all masks\dataset 2025-04-25 16-40-02\img"
     files = os.listdir(locale)
     # half = int(len(files)/2)
     # files = files[half :]
     count = 1
     for f in files:
-        f = os.path.join(str(locale), f)
-        print(f)
+        p = os.path.join(str(locale), f)
+        print(p)
         load_and_predict(
             model,
-            image_path=f,
-            count=count
+            image_path=p,
+            name=f
         )
         count = count +1
         print("Done")
