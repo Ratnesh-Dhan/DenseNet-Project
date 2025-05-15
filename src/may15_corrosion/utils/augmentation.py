@@ -5,10 +5,10 @@ from albumentations.core.serialization import save, load
 from tqdm import tqdm
 
 # Define paths
-base_dir = r"D:\NML ML Works\Test corrosion images"
-image_dir = os.path.join(base_dir, 'images')
-corrosion_mask_dir = os.path.join(base_dir, 'corrosion_mask')
-sample_mask_dir = os.path.join(base_dir, 'sample_piece_mask')
+base_dir = r"D:\NML ML Works\corrosion all masks\FINAL DATASET"
+image_dir = os.path.join(base_dir, 'img_2nd_png_version')
+corrosion_mask_dir = os.path.join(base_dir, 'filtered_corrosion_2nd_png_version')
+sample_mask_dir = os.path.join(base_dir, 'merged_masks_2nd_png_version')
 # Output dirs
 aug_img_dir = os.path.join(base_dir, 'augmented/images')
 aug_corrosion_mask_dir = os.path.join(base_dir, 'augmented/corrosion_mask')
@@ -31,12 +31,12 @@ transform = A.Compose([
 
 # Process images
 for filename in tqdm(os.listdir(image_dir)):
-    if not filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+    if not filename.lower().endswith(('.png')):
         continue
     
     img_path = os.path.join(image_dir, filename)
-    cor_mask_path = os.path.join(corrosion_mask_dir, f'corrosion_mask_{filename}')
-    samp_mask_path = os.path.join(sample_mask_dir, f'piece_mask_{filename}')
+    cor_mask_path = os.path.join(corrosion_mask_dir, filename)
+    samp_mask_path = os.path.join(sample_mask_dir, filename)
     
     image = cv2.imread(img_path)
     corrosion_mask = cv2.imread(cor_mask_path, cv2.IMREAD_GRAYSCALE)
