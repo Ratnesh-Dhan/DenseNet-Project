@@ -3,7 +3,7 @@ const fs = require("fs");
 const output_dir1 =
   "D:/NML ML Works/corrosion all masks/dataset 2025-04-25 16-40-02/merged_masks";
 const output_dir2 =
-  "D:/NML ML Works/corrosion all masks/dataset 2025-04-25 16-40-02/img";
+  "D:/NML ML Works/corrosion all masks/dataset 2025-04-25 16-40-02/filtered_corrosion_2nd";
 
 const last_remover = (arrays) => {
   const return_array = [];
