@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const base_location = "D:\\NML ML Works\\corrosion Final dataset";
+const base_location =
+  "/home/zumbie/Codes/NML/DenseNet-Project/Datasets/corrosion";
 const train_image_dir = path.join(base_location, "train/images");
 const train_mask_dir = path.join(base_location, "train/corrosion_mask");
 const train_piece_dir = path.join(base_location, "train/sample_piece_mask");

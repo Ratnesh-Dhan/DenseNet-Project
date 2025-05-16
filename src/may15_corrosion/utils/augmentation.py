@@ -5,7 +5,7 @@ from albumentations.core.serialization import save, load
 from tqdm import tqdm
 
 # Define paths
-base_dir = r"D:\NML ML Works\corrosion all masks\FINAL DATASET"
+base_dir = r"/home/zumbie/Codes/NML/DenseNet-Project/Datasets/corrosion/may15_corrrosion_for_training"
 image_dir = os.path.join(base_dir, 'img_2nd_png_version')
 corrosion_mask_dir = os.path.join(base_dir, 'filtered_corrosion_2nd_png_version')
 sample_mask_dir = os.path.join(base_dir, 'merged_masks_2nd_png_version')
@@ -24,6 +24,9 @@ transform = A.Compose([
     A.Rotate(limit=30, p=0.7),
     A.Affine(translate_percent=0.05, scale=1.1, rotate=20, p=0.7),
     A.ElasticTransform(alpha=1, sigma=50, p=0.3),
+    # these 2 are additional augmentations
+    A.Perspective(scale=(0.05, 0.1), p=0.3),
+    A.CoarseDropout(max_holes=5, max_height=32, max_width=32, mask_fill_value=0, p=0.4),
 ], additional_targets={
     'corrosion_mask': 'mask',
     'sample_mask': 'mask'
