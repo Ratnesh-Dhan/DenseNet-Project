@@ -11,7 +11,7 @@ corrosion_mask_dir = os.path.join(base_dir, 'masks')
 # sample_mask_dir = os.path.join(base_dir, 'merged_masks_2nd_png_version')
 # Output dirs
 aug_img_dir = os.path.join(base_dir, 'augmented/images')
-aug_corrosion_mask_dir = os.path.join(base_dir, 'augmented/mask')
+aug_corrosion_mask_dir = os.path.join(base_dir, 'augmented/masks')
 # aug_sample_mask_dir = os.path.join(base_dir, 'augmented/sample_piece_mask')
 
 os.makedirs(aug_img_dir, exist_ok=True)

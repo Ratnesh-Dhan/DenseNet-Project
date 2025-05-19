@@ -7,7 +7,7 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
 def load_and_predict(model_path, image_path):
     # Load model
-    model = load_model(model_path)
+    model = load_model(model_path, compile=False)
     print(f"Model loaded: input shape {model.input_shape}, output shape {model.output_shape}")
     
     # Load and preprocess image - USING IMAGENET NORMALIZATION
@@ -111,8 +111,8 @@ def display_results(original, mask, pred_prob):
 
 if __name__ == "__main__":
     load_and_predict(
-        model_path='./model/unet_resnet50_multiclass.h5',
-        image_path='../test/image/img229.jpg'
+        model_path='./model/may_16_unet_resnet50_multiclass.h5',
+        image_path='../test/image/1.png'
         # image_path=r'D:\NML ML Works\Testing\WhatsApp Image 2025-05-09 at 3.29.04 PM.jpeg'
     )
 # This function needs to 

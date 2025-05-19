@@ -1,13 +1,13 @@
 import tensorflow as tf
 import numpy as np
-import cv2
+import cv2, os, sys
 import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
-def load_and_predict(model_path, image_path):
+def load_and_predict(model, image_path, count):
     # Load model
-    model = load_model(model_path, compile=False)
+    
     print(f"Model loaded: input shape {model.input_shape}, output shape {model.output_shape}")
     
     # Load and preprocess image - USING IMAGENET NORMALIZATION
@@ -27,11 +27,11 @@ def load_and_predict(model_path, image_path):
     segmentation_mask = np.argmax(prediction[0], axis=-1)
     
     # Show results
-    display_results(img_array, segmentation_mask, prediction[0], og_image=og_image)
+    save_results(og_image, segmentation_mask, prediction[0], count=count)
     
     return segmentation_mask, prediction
 
-def display_results(original, mask, pred_prob, og_image):
+def save_results(og_image, mask, pred_prob, count):
     # Define colors for visualization
     colors = [
         [255, 0, 0],    # Red for class 0
@@ -56,12 +56,31 @@ def display_results(original, mask, pred_prob, og_image):
     plt.imshow(colored_mask)
     plt.title('Segmentation Result')
     plt.axis('off')
-    
+
     plt.tight_layout()
-    plt.show()
+    save_path = os.path.join(r"D:\NML ML Works\Testing\results", f'segmentation_result_{count}.png')
+    plt.savefig(save_path, bbox_inches='tight', dpi=300)
+    plt.close()
+
 
 if __name__ == "__main__":
-    load_and_predict(
-        model_path='./model/may_16_unet_resnet50_multiclass.h5',
-        image_path='../test/image/15.png'
-    )
+    model_path=r'C:\Users\NDT Lab\Software\DenseNet-Project\DenseNet-Project\src\april24_corrosion\train\model\may_16_unet_resnet50_multiclass.h5'
+    model = load_model(model_path, compile=False)
+    # locale = r"D:\NML ML Works\Testing"
+    locale = r'D:\NML ML Works\Testing\new images for test'
+    files = os.listdir(locale)
+    # half = int(len(files)/2)
+    # files = files[half :]
+    count = 1
+    for f in files:
+        f = os.path.join(str(locale), f)
+        print(f)
+        load_and_predict(
+            model,
+            image_path=f,
+            count=count
+        )
+        count = count +1
+        print("Done")
+# This function needs to 
+

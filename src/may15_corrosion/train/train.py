@@ -2,7 +2,7 @@ import os
 import tensorflow as tf
 from model import unet_model
 import matplotlib.pyplot as plt
-from data_loader import get_dataset
+from data_loader_old import get_dataset
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 model = unet_model()
@@ -24,7 +24,8 @@ model.compile(optimizer='adam',
 
 # model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-base_dir = r"/home/zumbie/Codes/NML/DenseNet-Project/Datasets/kaggle_semantic_segmentation_CORROSION_dataset"
+# base_dir = r"/home/zumbie/Codes/NML/DenseNet-Project/Datasets/kaggle_semantic_segmentation_CORROSION_dataset"
+base_dir = r"D:\NML ML Works\kaggle_semantic_segmentation_CORROSION_dataset"
 train_ds = get_dataset(os.path.join(base_dir, "train/images"), os.path.join(base_dir, "train/masks"), batch_size=8)
 val_ds = get_dataset(os.path.join(base_dir, "validate/images"), os.path.join(base_dir, "validate/masks"), batch_size=8)
 

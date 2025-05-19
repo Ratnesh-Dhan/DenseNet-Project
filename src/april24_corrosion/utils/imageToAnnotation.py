@@ -15,12 +15,13 @@ upper_metal = np.array([180, 50, 255])    # HSV upper bound
 
 # Paths
 # input_folder = r'D:\NML ML Works\cropped corrosion'    # Update this
-input_folder = r'D:\NML ML Works\corrosionDataset\images'    # Update this
-output_mask_folder = r'D:\NML ML Works\cropped corrosion annotaion\corrosion_mask'
-output_piece_folder = r'D:\NML ML Works\cropped corrosion annotaion\sample_piece_mask'
+# input_folder = r'D:\NML ML Works\corrosionDataset\images'    # Update this
+input_folder = r'D:\NML ML Works\corrosion all masks\FINAL DATASET\img_2nd_png_version'
+output_mask_folder = r'D:\NML ML Works\corrosion all masks\FINAL DATASET\new_corrosion_mask_may_16'
+# output_piece_folder = r'D:\NML ML Works\cropped corrosion annotaion\sample_piece_mask'
 
 os.makedirs(output_mask_folder, exist_ok=True)
-os.makedirs(output_piece_folder, exist_ok=True)
+# os.makedirs(output_piece_folder, exist_ok=True)
 
 # Loop through images
 for img_name in os.listdir(input_folder):
@@ -41,10 +42,10 @@ for img_name in os.listdir(input_folder):
     
     # Save masks
     corrosion_mask_path = os.path.join(output_mask_folder, f"corrosion_mask_{img_name}")
-    piece_mask_path = os.path.join(output_piece_folder, f"piece_mask_{img_name}")
+    # piece_mask_path = os.path.join(output_piece_folder, f"piece_mask_{img_name}")
 
     cv2.imwrite(corrosion_mask_path, corrosion_mask)
-    cv2.imwrite(piece_mask_path, piece_mask)
+    # cv2.imwrite(piece_mask_path, piece_mask)
     
     # Optional: Calculate corrosion percentage
     corrosion_area = np.sum(corrosion_mask > 0)
