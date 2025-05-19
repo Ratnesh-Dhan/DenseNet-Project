@@ -16,7 +16,7 @@ def load_image_mask(image_path, mask_path):
     mask = tf.image.resize(mask, IMG_SIZE, method='nearest')
 
     # Convert red areas to 1, everything else to 0
-    red_mask = tf.equal(mask, [255, 0, 0])
+    red_mask = tf.equal(mask, [128, 0, 0])
     red_mask = tf.reduce_all(red_mask, axis=-1)
     mask = tf.cast(red_mask, tf.float32)
     mask = tf.expand_dims(mask, axis=-1)  # Add channel dimension
