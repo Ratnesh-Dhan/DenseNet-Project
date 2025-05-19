@@ -1,11 +1,13 @@
 import os
 import tensorflow as tf
 from model import unet_model
+from model_transferLearning import build_unet_with_resnet50
 import matplotlib.pyplot as plt
 from data_loader_old import get_dataset
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
-model = unet_model()
+# model = unet_model()
+model = build_unet_with_resnet50()
 
 def dice_loss(y_true, y_pred, smooth=1e-6):
     y_true_f = tf.reshape(y_true, [-1])
@@ -22,6 +24,7 @@ model.compile(optimizer='adam',
               loss=bce_dice_loss,
               metrics=[dice_loss])
 
+model.summary()
 # model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # base_dir = r"/home/zumbie/Codes/NML/DenseNet-Project/Datasets/kaggle_semantic_segmentation_CORROSION_dataset"
@@ -31,13 +34,13 @@ val_ds = get_dataset(os.path.join(base_dir, "validate/images"), os.path.join(bas
 
 callbacks = [
     EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
-    ModelCheckpoint('best_model.h5', monitor='val_loss', save_best_only=True)
+    ModelCheckpoint('best_model_transferLearning.h5', monitor='val_loss', save_best_only=True)
 ]
+#  callbacks=[tf.keras.callbacks.ModelCheckpoint("model.h5", save_best_only=True)], 
 
 history = model.fit(train_ds, 
                     validation_data=val_ds, 
-                    epochs=50,
-                    #  callbacks=[tf.keras.callbacks.ModelCheckpoint("model.h5", save_best_only=True)], 
+                    epochs=80,
                     callbacks=callbacks
                     )
 

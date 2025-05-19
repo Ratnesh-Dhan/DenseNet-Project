@@ -16,8 +16,9 @@ def bce_dice_loss(y_true, y_pred):
     dice = dice_loss(y_true, y_pred)
     return bce + dice
 
-model = load_model('best_model.h5', custom_objects={'dice_loss': dice_loss, 'bce_dice_loss': bce_dice_loss})
-
+# model = load_model('best_model_bce_dice_loss.h5', custom_objects={'dice_loss': dice_loss, 'bce_dice_loss': bce_dice_loss})
+model = load_model('epoch_31_bce_dice.h5', custom_objects={'dice_loss': dice_loss, 'bce_dice_loss': bce_dice_loss})
+# model = load_model('best_model_binary_crossEntropy.h5')
 # --- Constants ---
 IMAGE_SIZE = 256
 
@@ -39,13 +40,13 @@ def predict_mask(model, image_array, threshold=0.5):
 def show_overlay(original_rgb, predicted_mask):
     plt.figure(figsize=(12, 5))
 
-    plt.subplot(1, 3, 1)
+    plt.subplot(1, 2, 1)
     plt.imshow(original_rgb)
     plt.title("Original Image")
 
-    plt.subplot(1, 3, 2)
-    plt.imshow(predicted_mask, cmap='gray')
-    plt.title("Predicted Mask (Corrosion)")
+    # plt.subplot(1, 3, 2)
+    # plt.imshow(predicted_mask, cmap='gray')
+    # plt.title("Predicted Mask (Corrosion)")
 
     # Overlay mask on image
     # overlay = original_rgb.copy()
@@ -66,7 +67,7 @@ def show_overlay(original_rgb, predicted_mask):
     # /This is new changes
 
     # overlay[predicted_mask > 0] = [255, 0, 0]  # Red overlay
-    plt.subplot(1, 3, 3)
+    plt.subplot(1, 2, 2)
     plt.imshow(overlay)
     plt.title("Overlay")
 
@@ -76,7 +77,7 @@ def show_overlay(original_rgb, predicted_mask):
 # --- Run Example ---
 image_path = r"D:\NML ML Works\Testing"
 # image_path = r"D:\NML ML Works\kaggle_semantic_segmentation_CORROSION_dataset\validate\images"
-image_path = os.path.join(image_path, "8.jpeg")
+image_path = os.path.join(image_path, "4.jpg")
 input_tensor, resized_img = preprocess_image(image_path)
 mask = predict_mask(model, input_tensor)
 show_overlay(resized_img, mask)

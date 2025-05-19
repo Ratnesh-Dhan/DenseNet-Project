@@ -1,3 +1,4 @@
+# This is unet model whose primary task is semantic segmentation
 from tensorflow.keras import layers, Model
 
 def unet_model(input_size=(256, 256, 3)):
