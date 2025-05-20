@@ -43,7 +43,8 @@ history = model.fit(train_ds,
                     epochs=80,
                     callbacks=callbacks
                     )
-
+model.save("final_model_transferLearning.h5")
+print('\nModel saved successfully..!\n')
 def plot_history(history):
     plt.figure(figsize=(12, 5))
 

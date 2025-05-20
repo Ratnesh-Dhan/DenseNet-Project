@@ -9,7 +9,7 @@ def dice_loss(y_true, y_pred, smooth=1e-6):
     intersection = tf.reduce_sum(y_true_f * y_pred_f)
     return 1 - (2. * intersection + smooth) / (tf.reduce_sum(y_true_f) + tf.reduce_sum(y_pred_f) + smooth)
 
-def build_unet_with_resnet50(input_shape=(256, 256, 3)):
+def build_unet_with_resnet50(input_shape=(512, 512, 3)):
     base_model = ResNet50(weights='imagenet', include_top=False, input_shape=input_shape)
 
     # Optional: Freeze base_model layers initially

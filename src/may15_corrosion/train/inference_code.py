@@ -17,7 +17,7 @@ def bce_dice_loss(y_true, y_pred):
     return bce + dice
 
 # model = load_model('best_model_bce_dice_loss.h5', custom_objects={'dice_loss': dice_loss, 'bce_dice_loss': bce_dice_loss})
-model = load_model('epoch_31_bce_dice.h5', custom_objects={'dice_loss': dice_loss, 'bce_dice_loss': bce_dice_loss})
+model = load_model('./models/best_model_transferLearning.h5', custom_objects={'dice_loss': dice_loss, 'bce_dice_loss': bce_dice_loss})
 # model = load_model('best_model_binary_crossEntropy.h5')
 # --- Constants ---
 IMAGE_SIZE = 256
