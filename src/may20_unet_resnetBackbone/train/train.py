@@ -22,12 +22,16 @@ early_stopping = EarlyStopping(
     restore_best_weights=True
 ) 
 
-base_location = r'D:\NML ML Works\kaggle_semantic_segmentation_CORROSION_dataset'
+# base_location = r'D:\NML ML Works\kaggle_semantic_segmentation_CORROSION_dataset'
+base_location = r"/home/zumbie/Codes/NML/DenseNet-Project/Datasets/kaggle_semantic_segmentation_CORROSION_dataset"
 train_gen = CorrosionDataset(os.path.join(base_location, "train/images"), os.path.join(base_location, "train/masks"))
 val_gen = CorrosionDataset(os.path.join(base_location, "validate/images"), os.path.join(base_location, "validate/masks"))
 
 model = build_unet(input_shape=(256, 256, 3))
-model.compile(optimizer="adam", loss=bce_dice_loss, metrics=["accuracy"])
+# model.compile(optimizer="adam", loss=bce_dice_loss, metrics=["accuracy"])
+model.compile(optimizer='adam',
+              loss=bce_dice_loss,
+              metrics=[dice_loss])
 
-model.fit(train_gen, validation_data=val_gen, epochs=10, callbacks=[early_stopping])
+model.fit(train_gen, validation_data=val_gen, epochs=80, callbacks=[early_stopping])
 model.save("../models/unet_resnet50_corrosion.h5")

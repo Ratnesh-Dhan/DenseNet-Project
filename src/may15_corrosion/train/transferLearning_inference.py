@@ -9,10 +9,10 @@ IMG_SIZE = (256, 256)
 
 # Load trained model and weights
 # model = build_unet_with_resnet50()
-if os.path.exists('./models/best_model_transferLearning.h5'):
+if os.path.exists('./models/best_model_transferLearning_test.h5'):
     print("\nModel's file location exists.\n")
 # model.load_weights(r'.\models\best_model_transferLearning.h5')
-model = tf.keras.models.load_model('./models/best_model_transferLearning.h5')
+model = tf.keras.models.load_model('./models/best_model_transferLearning_test.h5')
 
 def load_image(image_path):
     image = tf.io.read_file(image_path)

@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import os
 import tensorflow as tf
+from tensorflow.keras.applications.resnet import preprocess_input
 
 class CorrosionDataset(tf.keras.utils.Sequence):
     def __init__(self, image_dir, mask_dir, batch_size=8, image_size=256):
@@ -10,7 +11,7 @@ class CorrosionDataset(tf.keras.utils.Sequence):
         self.mask_dir = mask_dir
         self.batch_size = batch_size
         self.image_size = image_size
-        self.image_ids = os.listdir(image_dir)
+        self.image_ids = sorted(os.listdir(image_dir))
 
     def __len__(self):
         return len(self.image_ids) // self.batch_size
@@ -23,16 +24,26 @@ class CorrosionDataset(tf.keras.utils.Sequence):
             img_path = os.path.join(self.image_dir, id)
             mask_path = os.path.join(self.mask_dir, id.replace('.jpg', '.png'))
 
-            img = cv2.imread(img_path)
-            img = cv2.resize(img, (self.image_size, self.image_size))
-            img = img / 255.0
+            # Load and preprocess image
+            image = tf.io.read_file(img_path)
+            image = tf.image.decode_jpeg(image, channels=3)
+            image = tf.image.resize(image, (self.image_size, self.image_size))
+            # image = tf.cast(image, tf.float32) / 255.0
+            image = tf.cast(image, tf.float32)  # Don't normalize here!
+            image = preprocess_input(image)     # Apply ResNet preprocessing here
 
-            mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
-            mask = cv2.resize(mask, (self.image_size, self.image_size))
-            mask = (mask > 127).astype(np.float32)
-            mask = np.expand_dims(mask, axis=-1)
+            # Load and preprocess mask (as RGB)
+            mask = tf.io.read_file(mask_path)
+            mask = tf.image.decode_png(mask, channels=3)
+            mask = tf.image.resize(mask, (self.image_size, self.image_size), method='nearest')
 
-            images.append(img)
-            masks.append(mask)
+            # Select only pixels with RGB == [128, 0, 0]
+            red_mask = tf.equal(mask, [128, 0, 0])
+            red_mask = tf.reduce_all(red_mask, axis=-1)  # shape: (H, W)
+            mask = tf.cast(red_mask, tf.float32)
+            mask = tf.expand_dims(mask, axis=-1)  # shape: (H, W, 1)
+
+            images.append(image.numpy())
+            masks.append(mask.numpy())
 
         return np.array(images), np.array(masks)
