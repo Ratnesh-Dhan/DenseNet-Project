@@ -6,7 +6,8 @@ import tensorflow as tf
 from tensorflow.keras.applications.resnet import preprocess_input
 
 class CorrosionDataset(tf.keras.utils.Sequence):
-    def __init__(self, image_dir, mask_dir, batch_size=8, image_size=256):
+    def __init__(self, image_dir, mask_dir, batch_size=16, image_size=256, **kwargs):
+        super().__init__(**kwargs)
         self.image_dir = image_dir
         self.mask_dir = mask_dir
         self.batch_size = batch_size
