@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from tensorflow.keras.models import load_model
 
-model = load_model("unet_resnet50_corrosion.h5", compile=False)
+model = load_model("../models/unet_resnet50_corrosion.h5", compile=False)
 
 img = cv2.imread("test_image.jpg")
 img = cv2.resize(img, (256, 256))

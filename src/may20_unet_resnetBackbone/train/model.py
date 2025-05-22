@@ -17,6 +17,9 @@ def build_unet(input_shape=(256, 256, 3)):
 
     # Pretrained ResNet50 as encoder
     base_model = ResNet50(include_top=False, weights="imagenet", input_tensor=inputs)
+    # for layers in base_model.layers :
+    #     layers.trainable = False
+
 
     # Skip connections
     skips = [

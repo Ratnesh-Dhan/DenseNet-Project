@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow.keras.applications.resnet import preprocess_input
 
 class CorrosionDataset(tf.keras.utils.Sequence):
-    def __init__(self, image_dir, mask_dir, batch_size=16, image_size=256, **kwargs):
+    def __init__(self, image_dir, mask_dir, batch_size=8, image_size=256, **kwargs):
         super().__init__(**kwargs)
         self.image_dir = image_dir
         self.mask_dir = mask_dir
@@ -19,6 +19,8 @@ class CorrosionDataset(tf.keras.utils.Sequence):
 
     def __getitem__(self, idx):
         batch_ids = self.image_ids[idx * self.batch_size : (idx + 1) * self.batch_size]
+        # images = [ os.path.join(self.image_dir, id) for id in batch_ids]
+        # masks = [ os.path.join(self.mask_dir, id.replace('.jpg', '.png')) for id in batch_ids]
         images = []
         masks = []
         for id in batch_ids:
