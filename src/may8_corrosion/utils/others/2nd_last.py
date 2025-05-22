@@ -37,4 +37,4 @@ def closed_polygon_mask(image_path, output_path):
     cv2.imwrite(output_path, final_mask)
 
 # Example usage
-closed_polygon_mask("old.jpg", "perfect_closed_mask.png")
+closed_polygon_mask("old2.jpg", "new_perfect_closed_mask.png")

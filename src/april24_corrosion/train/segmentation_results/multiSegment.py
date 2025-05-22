@@ -65,17 +65,19 @@ def save_results(original, mask, pred_prob, count):
     plt.axis('off')
 
     plt.tight_layout()
-    plt.savefig(f'segmentation_result_{count}.png', bbox_inches='tight', dpi=300)
+    save_path = os.path.join(r"D:\NML ML Works\Testing_mask", f'segmentation_result_{count}.png')
+    plt.savefig(save_path, bbox_inches='tight', dpi=300)
     plt.close()
 
 
 if __name__ == "__main__":
     model_path=r'C:\Users\NDT Lab\Software\DenseNet-Project\DenseNet-Project\src\april24_corrosion\train\model\unet_resnet50_multiclass.h5'
     model = load_model(model_path)
-    locale = r"D:\NML ML Works\corrosionDataset\images"
+    # locale = r"D:\NML ML Works\corrosionDataset\images"
+    locale = r"D:\NML ML Works\Testing"
     files = os.listdir(locale)
-    half = int(len(files)/2)
-    files = files[half :]
+    # half = int(len(files)/2)
+    # files = files[half :]
     count = 1
     for f in files:
         f = os.path.join(str(locale), f)

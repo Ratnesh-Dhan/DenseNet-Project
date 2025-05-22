@@ -10,15 +10,15 @@ model = build_unet_with_transfer_learning(input_shape=(512, 512, 3), num_classes
 model.summary()
 
 # --- Paths ---
-TRAIN_IMAGE_DIR = r'D:\NML ML Works\corrosion Final dataset\train\images'
-TRAIN_CORROSION_MASK_DIR = r'D:\NML ML Works\corrosion Final dataset\train\corrosion_mask'
-TRAIN_PIECE_MASK_DIR = r'D:\NML ML Works\corrosion Final dataset\train\sample_piece_mask'
+TRAIN_IMAGE_DIR = '/home/zumbie/Codes/NML/DenseNet-Project/Datasets/corrosion/train/images'
+TRAIN_CORROSION_MASK_DIR = '/home/zumbie/Codes/NML/DenseNet-Project/Datasets/corrosion/train/corrosion_mask'
+TRAIN_PIECE_MASK_DIR = '/home/zumbie/Codes/NML/DenseNet-Project/Datasets/corrosion/train/sample_piece_mask'
 
-VAL_IMAGE_DIR = r'D:\NML ML Works\corrosion Final dataset\validate\images'  
-VAL_CORROSION_MASK_DIR = r'D:\NML ML Works\corrosion Final dataset\validate\corrosion_mask'
-VAL_PIECE_MASK_DIR = r'D:\NML ML Works\corrosion Final dataset\validate\sample_piece_mask'
+VAL_IMAGE_DIR = '/home/zumbie/Codes/NML/DenseNet-Project/Datasets/corrosion/validate/images'  
+VAL_CORROSION_MASK_DIR = '/home/zumbie/Codes/NML/DenseNet-Project/Datasets/corrosion/validate/corrosion_mask'
+VAL_PIECE_MASK_DIR = '/home/zumbie/Codes/NML/DenseNet-Project/Datasets/corrosion/validate/sample_piece_mask'
 
-MODEL_SAVE_PATH = os.path.join("./model",'unet_resnet50_multiclass.h5')
+MODEL_SAVE_PATH = os.path.join("./model",'may_16_unet_resnet50_multiclass.h5')
 
 data_pipeline_train = DataPipeline(TRAIN_IMAGE_DIR, TRAIN_CORROSION_MASK_DIR, TRAIN_PIECE_MASK_DIR)
 data_pipeline_validate = DataPipeline(VAL_IMAGE_DIR, VAL_CORROSION_MASK_DIR, VAL_PIECE_MASK_DIR)
