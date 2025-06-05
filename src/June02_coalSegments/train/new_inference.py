@@ -26,7 +26,12 @@ def sliding_window_inference(model, image, support_image, window_size=31, stride
 
             center_y = y + half_patch
             center_x = x + half_patch
-            color = (0, 255, 0) if pred_class == 0 else (0, 0, 255)  # Organic or Inorganic
+            if pred_class == 0: 
+                color = (0, 255, 0) #organic
+            elif pred_class == 1:
+                color = (0, 0, 255) #inorganic
+            else:
+                color = (255, 0, 0) #background ( supposed to be but not in the model . Mostly it will be black)
 
             cv2.rectangle(
                 heatmap,
@@ -37,12 +42,12 @@ def sliding_window_inference(model, image, support_image, window_size=31, stride
             )
     return heatmap
 
-files = os.listdir("../img")
-model = tf.keras.models.load_model("../models/working_new_model_ep100.h5")
-image_name = "10"
+model = tf.keras.models.load_model("../models/working_best_model.h5")
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+image_name = "image 1"
 input_image = plt.imread(f"./Images/{image_name}.jpg")
-support_image = Image.open(f"./supportImages/{image_name}.png")
-support_image = np.array(support_image)
+support_image = Image.open(f"./supportImages/{image_name}.png").convert("RGB")
+support_image = np.array(support_image).astype(np.uint8)
 heatmap = sliding_window_inference(model, input_image, support_image)
 cv2.imwrite(f"./results/{image_name}_heatmap.png", heatmap)
 plt.subplot(1, 2, 1)
