@@ -39,6 +39,7 @@ history = model.fit(
     validation_steps=len(validation_generator),
     epochs=10
 )
+model.save('new_folder.h5')
 model.save('model.keras')
 
 # Plot the training and validation accuracy and loss
