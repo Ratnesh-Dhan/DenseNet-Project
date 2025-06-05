@@ -38,12 +38,13 @@ def sliding_window_inference(model, image, support_image, window_size=31, stride
     return heatmap
 
 files = os.listdir("../img")
-model = tf.keras.models.load_model("model.keras")
-image_name = "1.jpg"
-input_image = Image.open(f"../img/{image_name}")
-support_image = Image.open(f"../support_img/{image_name}")
+model = tf.keras.models.load_model("../models/working_new_model_ep100.h5")
+image_name = "10"
+input_image = plt.imread(f"./Images/{image_name}.jpg")
+support_image = Image.open(f"./supportImages/{image_name}.png")
+support_image = np.array(support_image)
 heatmap = sliding_window_inference(model, input_image, support_image)
-cv2.imwrite(f"{image_name}", heatmap)
+cv2.imwrite(f"./results/{image_name}_heatmap.png", heatmap)
 plt.subplot(1, 2, 1)
 plt.imshow(input_image)
 plt.title("Input Image")
@@ -53,5 +54,5 @@ plt.imshow(heatmap)
 plt.title("Segmentation Result")
 plt.axis('off')
 plt.tight_layout()
-plt.savefig(f"{image_name}_comparison.png")
+plt.savefig(f"./results/{image_name}_comparison.png")
 plt.show()
