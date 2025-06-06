@@ -4,6 +4,7 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 import matplotlib.pyplot as plt
 import numpy as np
 from model import create_model
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 train_dir = r"D:\NML ML Works\TRAINING-20250602T050431Z-1-001\working dataset\train"
 validation_dir = r"D:\NML ML Works\TRAINING-20250602T050431Z-1-001\working dataset\validation"
@@ -30,6 +31,21 @@ validation_generator = validation_datagen.flow_from_directory(
     shuffle=False # Important for prediction-evaluation match
 )
 
+early_stop = EarlyStopping(
+    monitor='val_loss',
+    patience = 5,
+    restore_best_weights=True,
+    verbose=1
+)
+
+model_checkpoint = ModelCheckpoint(
+    filepath="../models/EarlyStoppedBest06June.keras",
+    monitor = 'val_loss',
+    verbose = 1,
+    save_best_only=True,
+    mode='auto'
+)
+
 model = create_model()
 # Training the model
 history = model.fit(
@@ -37,9 +53,10 @@ history = model.fit(
     steps_per_epoch=len(train_generator),
     validation_data=validation_generator,
     validation_steps=len(validation_generator),
-    epochs=10
+    epochs=100,
+    callbacks=[early_stop, model_checkpoint]
 )
-model.save('new_folder.h5')
+# model.save('new_folder.h5')
 model.save('model.keras')
 
 # Plot the training and validation accuracy and loss
