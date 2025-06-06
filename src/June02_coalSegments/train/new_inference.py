@@ -32,11 +32,18 @@ def sliding_window_inference(model, image, support_image, window_size=31, stride
                 color = (0, 0, 255) #inorganic
             else:
                 color = (255, 0, 0) #background ( supposed to be but not in the model . Mostly it will be black)
-
+    
+            # cv2.rectangle(
+            #     heatmap,
+            #     (center_x - half_center, center_y - half_center),
+            #     (center_x + half_center, center_y + half_center),
+            #     color,
+            #     thickness=-1
+            # )
             cv2.rectangle(
                 heatmap,
-                (center_x - half_center, center_y - half_center),
-                (center_x + half_center, center_y + half_center),
+                (x, y), #top left
+                (x + window_size, y + window_size), #bottom right
                 color,
                 thickness=-1
             )
@@ -44,7 +51,7 @@ def sliding_window_inference(model, image, support_image, window_size=31, stride
 
 model = tf.keras.models.load_model("../models/working_best_model.h5")
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-image_name = "image 1"
+image_name = "image 001"
 input_image = plt.imread(f"./Images/{image_name}.jpg")
 support_image = Image.open(f"./supportImages/{image_name}.png").convert("RGB")
 support_image = np.array(support_image).astype(np.uint8)
