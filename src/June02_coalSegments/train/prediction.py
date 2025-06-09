@@ -51,7 +51,6 @@ def sliding_window_inference(model, image, window_size=31, stride=15, center_pat
     inertinte_red = 0
     mineral_yellow = 0
     vitrinite_purple = 0
-    iner
     h, w, _ = image.shape
     heatmap = np.zeros((h, w, 3), dtype=np.uint8)
 
@@ -107,23 +106,29 @@ model = tf.keras.models.load_model("../models/EarlyStoppedBest09June.keras")
 
 # For single image
 
-# file_name = "010"
-# file = f"../img/{file_name}.jpg"
-# img = plt.imread(f"../img/{file}")
-# heatmap = sliding_window_inference(model, img)
+file_name = "010"
+file = f"../img/{file_name}.jpg"
+img = plt.imread(f"../img/{file}")
+heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img)
 
-# cv2.imwrite(f"./results/{file_name}09_heatmap.png", heatmap)
-# plt.subplot(1, 2, 1)
-# plt.imshow(img)
-# plt.title("Input Image")
-# plt.axis('off')
-# plt.subplot(1, 2, 2)
-# plt.imshow(heatmap)
-# plt.title("Segmentation Result")
-# plt.axis('off')
-# plt.tight_layout()
-# plt.savefig(f"./results/{file_name}09_comparison.png", )
-# plt.show()
+cv2.imwrite(f"./results/{file_name}09_heatmap.png", cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
+plt.subplot(1, 2, 1)
+plt.imshow(img)
+plt.title("Input Petrography Image", fontsize=16)
+plt.axis('off')
+plt.subplot(1, 2, 2)
+plt.imshow(heatmap)
+plt.title("Shallow CNN Classifier / custom sequential CNN", fontsize=16)
+plt.axis('off')
+
+# Add text below the plots
+plt.figtext(0.5, 0.13, 
+    f"Cavity Green: {cavity}  |  Cavity Filled Blue: {cavity_filled}  |  Inertinite Red: {inertinite}  |  Minerals Yellow: {minerals}  |  Vitrinite Purple: {vitrinite}", 
+    wrap=True, horizontalalignment='center', fontsize=20)
+plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
+
+plt.savefig(f"./results/{file_name}09_comparison.png" )
+plt.show()
 
 
 sys.exit(0)
