@@ -36,7 +36,7 @@ def create_model():
         layers.Flatten(),
         layers.Dense(64, activation='relu'),
         layers.Dropout(0.3),
-        layers.Dense(3, activation='softmax')
+        layers.Dense(5, activation='softmax')
     ])
 
     model.compile(optimizer='adam', 

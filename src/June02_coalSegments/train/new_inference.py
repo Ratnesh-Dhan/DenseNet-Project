@@ -26,13 +26,16 @@ def sliding_window_inference(model, image, support_image, window_size=31, stride
 
             center_y = y + half_patch
             center_x = x + half_patch
-            if pred_class == 0: 
-                color = (0, 255, 0) #organic
+            if pred_class == 0:
+                color = (0, 255, 0)  # Cavity
             elif pred_class == 1:
-                color = (0, 0, 255) #inorganic
-            else:
-                color = (255, 0, 0) #background ( supposed to be but not in the model . Mostly it will be black)
-    
+                color = (0, 0, 255)  # Cavity filled
+            elif pred_class == 2:
+                color = (255, 0, 0)  # Inertinite
+            elif pred_class == 3:
+                color = (255, 255, 0)  # Minerals
+            else:  # pred_class == 4
+                color = (128, 0, 128)  # Vitrinite
             # cv2.rectangle(
             #     heatmap,
             #     (center_x - half_center, center_y - half_center),
@@ -49,7 +52,7 @@ def sliding_window_inference(model, image, support_image, window_size=31, stride
             )
     return heatmap
 
-model = tf.keras.models.load_model("../models/working_best_model.h5")
+model = tf.keras.models.load_model("../models/EarlyStoppedBest09June.keras")
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 image_name = "image 001"
 input_image = plt.imread(f"./Images/{image_name}.jpg")

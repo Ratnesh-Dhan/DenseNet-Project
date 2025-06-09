@@ -10,10 +10,10 @@ const shuffle = (array) => {
   j;
 };
 
-const base_path =
-  "D:\\NML ML Works\\TRAINING-20250602T050431Z-1-001\\working dataset";
-const train_cavity_path = path.join(base_path, "train", "cavity");
-const validation_cavity_path = path.join(base_path, "validation", "cavity");
+const base_path = "D:\\NML ML Works\\newCoalByDeepBhaiya";
+const folderName = "4 Vitrinite";
+const train_cavity_path = path.join(base_path, "TRAINING", folderName);
+const validation_cavity_path = path.join(base_path, "VALIDATION", folderName);
 
 const train_cavity_files = shuffle(fs.readdirSync(train_cavity_path));
 

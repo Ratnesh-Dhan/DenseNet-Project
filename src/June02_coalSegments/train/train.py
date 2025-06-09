@@ -6,8 +6,8 @@ import numpy as np
 from model import create_model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
-train_dir = r"D:\NML ML Works\TRAINING-20250602T050431Z-1-001\working dataset\train"
-validation_dir = r"D:\NML ML Works\TRAINING-20250602T050431Z-1-001\working dataset\validation"
+train_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\TRAINING"
+validation_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\VALIDATION"
 
 train_datagen = keras.preprocessing.image.ImageDataGenerator(
     rescale=1./255,
@@ -39,7 +39,7 @@ early_stop = EarlyStopping(
 )
 
 model_checkpoint = ModelCheckpoint(
-    filepath="../models/EarlyStoppedBest06June.keras",
+    filepath="../models/EarlyStoppedBest09June.keras",
     monitor = 'val_loss',
     verbose = 1,
     save_best_only=True,
@@ -53,11 +53,11 @@ history = model.fit(
     steps_per_epoch=len(train_generator),
     validation_data=validation_generator,
     validation_steps=len(validation_generator),
-    epochs=100,
+    epochs=50,
     callbacks=[early_stop, model_checkpoint]
 )
 # model.save('new_folder.h5')
-model.save('model.keras')
+model.save('../models/modelJUNE09.keras')
 
 # Plot the training and validation accuracy and loss
 # plt.plot(history.history['accuracy'], label='Training Accuracy')
@@ -82,6 +82,7 @@ plt.title('Loss')
 plt.legend()
 
 plt.tight_layout()
+plt.savefig("./results/09.png", bbox_inches="tight")
 plt.show()
 
 
@@ -101,5 +102,9 @@ predicted_classes = np.argmax(predictions, axis=1)
 # print('Confusion Matrix:')
 # print(confusion_matrix(validation_generator.classes, predicted_classes))
 true_labels = validation_generator.classes[:len(predicted_classes)]
-print(classification_report(true_labels, predicted_classes))
-print(confusion_matrix(true_labels, predicted_classes))
+# Save classification report and confusion matrix to a text file
+with open('./results/09_metrics.txt', 'w') as f:
+    f.write("Classification Report:\n")
+    f.write(classification_report(true_labels, predicted_classes))
+    f.write("\n\nConfusion Matrix:\n")
+    f.write(str(confusion_matrix(true_labels, predicted_classes)))
