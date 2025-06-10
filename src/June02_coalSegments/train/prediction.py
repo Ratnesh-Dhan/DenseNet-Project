@@ -106,32 +106,32 @@ model = tf.keras.models.load_model("../models/EarlyStoppedBest09June.keras")
 
 # For single image
 
-file_name = "010"
-file = f"../img/{file_name}.jpg"
-img = plt.imread(f"../img/{file}")
-heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img)
+# file_name = "010"
+# file = f"../img/{file_name}.jpg"
+# img = plt.imread(f"../img/{file}")
+# heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img)
 
-cv2.imwrite(f"./results/{file_name}09_heatmap.png", cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
-plt.subplot(1, 2, 1)
-plt.imshow(img)
-plt.title("Input Petrography Image", fontsize=16)
-plt.axis('off')
-plt.subplot(1, 2, 2)
-plt.imshow(heatmap)
-plt.title("Shallow CNN Classifier / custom sequential CNN", fontsize=16)
-plt.axis('off')
+# cv2.imwrite(f"./results/{file_name}_09_heatmap.png", cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
+# plt.figure(figsize=(24, 12))
+# plt.subplot(1, 2, 1)
+# plt.imshow(img)
+# plt.title("Input Petrography Image", fontsize=16)
+# plt.axis('off')
+# plt.subplot(1, 2, 2)
+# plt.imshow(heatmap)
+# plt.title("Sequential CNN", fontsize=16)
+# plt.axis('off')
 
-# Add text below the plots
-plt.figtext(0.5, 0.13, 
-    f"Cavity Green: {cavity}  |  Cavity Filled Blue: {cavity_filled}  |  Inertinite Red: {inertinite}  |  Minerals Yellow: {minerals}  |  Vitrinite Purple: {vitrinite}", 
-    wrap=True, horizontalalignment='center', fontsize=20)
-plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
+# # Add text below the plots
+# plt.figtext(0.5, 0.12, 
+#     f"Cavity Green: {cavity}  |  Cavity Filled Blue: {cavity_filled}  |  Inertinite Red: {inertinite}  |  Minerals Yellow: {minerals}  |  Vitrinite Purple: {vitrinite}", 
+#     wrap=True, horizontalalignment='center', fontsize=20)
+# plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
 
-plt.savefig(f"./results/{file_name}09_comparison.png" )
-plt.show()
+# plt.savefig(f"./results/{file_name}_09_comparison.png" )
+# plt.show()
 
 
-sys.exit(0)
 # For multiple images
 
 folder_path = r"C:\Users\NDT Lab\Documents\DATA-20250609T100339Z-1-001\DATA\TESTING"
@@ -140,16 +140,22 @@ save_path = r"C:\Users\NDT Lab\Documents\DATA-20250609T100339Z-1-001\DATA\Result
 for file_name in files:
     # file = f"../img/{file_name}.jpg"
     img = plt.imread(os.path.join(folder_path, file_name))
-    heatmap = sliding_window_inference(model, img)
+    heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img)
 
-    cv2.imwrite(os.path.join(save_path, f"{file_name}09_heatmap.png"), heatmap)
+    cv2.imwrite(os.path.join(save_path, f"{file_name}09_heatmap.png"), cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
+    plt.figure(figsize=(24, 12))
     plt.subplot(1, 2, 1)
     plt.imshow(img)
-    plt.title("Input Image")
+    plt.title("Input Petrography Image", fontsize=16)
     plt.axis('off')
     plt.subplot(1, 2, 2)
     plt.imshow(heatmap)
-    plt.title("Segmentation Result")
+    plt.title("Sequential CNN", fontsize=16)
     plt.axis('off')
-    plt.tight_layout()
+
+# Add text below the plots
+    plt.figtext(0.5, 0.12, 
+        f"Cavity Green: {cavity}  |  Cavity Filled Blue: {cavity_filled}  |  Inertinite Red: {inertinite}  |  Minerals Yellow: {minerals}  |  Vitrinite Purple: {vitrinite}", 
+        wrap=True, horizontalalignment='center', fontsize=20)
+    plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
     plt.savefig(os.path.join(save_path,f"{file_name}09_comparison.png") )
