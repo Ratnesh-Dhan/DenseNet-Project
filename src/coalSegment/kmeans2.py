@@ -5,12 +5,12 @@ from sklearn.cluster import KMeans
 from skimage import io
 
 # Load image
-image_path = "./images/image 007.jpg"  # Replace with your actual path
+image_path = "./images/02.jpg"  # Replace with your actual path
 image = io.imread(image_path)
 pixels = image.reshape(-1, 3)
 
 # Apply KMeans clustering (you can change n_clusters to 5–7 for more detail)
-kmeans = KMeans(n_clusters=5, random_state=42)
+kmeans = KMeans(n_clusters=7, random_state=42)
 kmeans.fit(pixels)
 
 # Map each pixel to its cluster's center
