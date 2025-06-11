@@ -2,7 +2,7 @@ from tensorflow.keras import layers, models
 
 def create_model():
     model = models.Sequential([
-        layers.Input(shape=(15, 15, 3)),
+        layers.Input(shape=(16, 16, 3)),
 
         # First Block
         layers.Conv2D(32, (3, 3), padding='same'),

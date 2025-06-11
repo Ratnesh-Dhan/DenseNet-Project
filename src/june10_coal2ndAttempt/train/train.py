@@ -1,13 +1,14 @@
-import tensorflow as tf
+import json
 from tensorflow import keras
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import matplotlib.pyplot as plt
 import numpy as np
 from model import create_model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+import seaborn as sns
 
-train_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\TRAINING"
-validation_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\VALIDATION"
+train_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16"
+validation_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\VALIDATION"
 
 train_datagen = keras.preprocessing.image.ImageDataGenerator(
     rescale=1./255,
@@ -18,14 +19,14 @@ validation_datagen = keras.preprocessing.image.ImageDataGenerator(
 
 train_generator = train_datagen.flow_from_directory(
     train_dir,
-    target_size=(15, 15),
+    target_size=(16, 16),
     batch_size=32,
     class_mode='sparse',
 )
 
 validation_generator = validation_datagen.flow_from_directory(
     validation_dir,
-    target_size=(15, 15),
+    target_size=(16, 16),
     batch_size=32,
     class_mode='sparse',
     shuffle=False # Important for prediction-evaluation match
@@ -39,7 +40,7 @@ early_stop = EarlyStopping(
 )
 
 model_checkpoint = ModelCheckpoint(
-    filepath="../models/EarlyStoppedBest10June.keras",
+    filepath="../models/EarlyStoppedBest11June.keras",
     monitor = 'val_loss',
     verbose = 1,
     save_best_only=True,
@@ -57,7 +58,10 @@ history = model.fit(
     callbacks=[early_stop, model_checkpoint]
 )
 # model.save('new_folder.h5')
-model.save('../models/modelJUNE10.keras')
+model.save('../models/modelJUNE11.keras')
+
+with open('../results/class_indices.json', 'w') as f:
+    json.dump(train_generator.class_indices, f)
 
 plt.figure(figsize=(12, 5))
 
@@ -74,7 +78,7 @@ plt.title('Loss')
 plt.legend()
 
 plt.tight_layout()
-plt.savefig("./results/09.png", bbox_inches="tight")
+plt.savefig("../results/09.png", bbox_inches="tight")
 plt.show()
 
 
@@ -90,8 +94,18 @@ predicted_classes = np.argmax(predictions, axis=1)
 
 true_labels = validation_generator.classes[:len(predicted_classes)]
 # Save classification report and confusion matrix to a text file
-with open('./results/09_metrics.txt', 'w') as f:
+with open('../results/09_metrics.txt', 'w') as f:
     f.write("Classification Report:\n")
     f.write(classification_report(true_labels, predicted_classes))
     f.write("\n\nConfusion Matrix:\n")
     f.write(str(confusion_matrix(true_labels, predicted_classes)))
+
+cm = confusion_matrix(true_labels, predicted_classes)
+plt.figure(figsize=(6, 5))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=train_generator.class_indices, yticklabels=train_generator.class_indices)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.tight_layout()
+plt.savefig('../results/09_confusion_matrix.png')
+plt.close()
