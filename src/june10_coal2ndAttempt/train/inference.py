@@ -1,0 +1,170 @@
+import numpy as np
+import cv2, os, sys
+from PIL import Image
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tqdm import tqdm
+
+def sliding_window_inference(model, image, window_size=16, stride=8, center_patch_size=16, class_num=5):
+    cavity_green = 0
+    cavity_filled_blue = 0
+    inertinte_red = 0
+    mineral_yellow = 0
+    vitrinite_purple = 0
+    h, w, _ = image.shape
+    heatmap = np.zeros((h, w, 3), dtype=np.uint8)
+
+    half_patch = window_size // 2
+    half_center = center_patch_size // 2
+
+    patches = []
+    coords = []
+
+    for y in range(0, h - window_size + 1, stride):
+        for x in range(0, w - window_size + 1, stride):
+            patch = image[y:y+window_size, x:x+window_size].astype(np.float32) / 255.0
+            patches.append(patch)
+            coords.append((x, y))
+
+    patches = np.array(patches)
+    predictions = model.predict(patches, verbose=1)
+
+    for (x, y), prediction in tqdm(zip(coords, predictions), total=len(predictions)):
+        pred_class = np.argmax(prediction)
+        center_y = y + half_patch
+        center_x = x + half_patch
+
+        if class_num == 3:
+            if pred_class == 0:
+                color = (0, 255, 0)  # Cavity GREEN
+                cavity_green = cavity_green + 1
+            elif pred_class == 1:
+                color = (255, 255, 0)  # Cavity filled YELLOW
+                cavity_filled_blue = cavity_filled_blue + 1
+            elif pred_class == 2:
+                color = (128, 0, 128)  # Inertinite PURPLE
+                inertinte_red = inertinte_red + 1
+            elif pred_class == 3:
+                color = (255, 255, 0)  # Minerals YELLOW
+                mineral_yellow = mineral_yellow + 1
+            else:  # pred_class == 4
+                color = (128, 0, 128)  # Vitrinite PURPLE
+                vitrinite_purple = vitrinite_purple + 1
+
+        else:
+            if pred_class == 0:
+                color = (0, 255, 0)  # Cavity GREEN
+                cavity_green = cavity_green + 1
+            elif pred_class == 1:
+                color = (0, 0, 255)  # Cavity filled BLUE
+                cavity_filled_blue = cavity_filled_blue + 1
+            elif pred_class == 2:
+                color = (255, 0, 0)  # Inertinite RED
+                inertinte_red = inertinte_red + 1
+            elif pred_class == 3:
+                color = (255, 255, 0)  # Minerals YELLOW
+                mineral_yellow = mineral_yellow + 1
+            else:  # pred_class == 4
+                color = (128, 0, 128)  # Vitrinite PURPLE
+                vitrinite_purple = vitrinite_purple + 1
+
+        cv2.rectangle(
+            heatmap,
+            (center_x - half_center, center_y - half_center),
+            (center_x + half_center, center_y + half_center),
+            color,
+            thickness=-1
+        )
+
+    return heatmap, cavity_green, cavity_filled_blue, inertinte_red, mineral_yellow, vitrinite_purple
+
+
+model = tf.keras.models.load_model("../models/EarlyStoppedBest11June.keras")
+
+# # For single image
+
+# file_name = "image 010"
+# file = f"D:/NML ML Works/Coal_Lebels/{file_name}.jpg"
+# img = plt.imread(file)
+# # img = cv2.imread(file)
+# img = np.array(img, copy=True)  # Make it writable
+# img = cv2.rectangle(img, (2146, 30), (2572, 162), (0, 0, 0), -1)  # Black rectangle with thickness=-1 for filling
+# # plt.imshow(img)
+# # plt.show()
+# # sys.exit(0)
+# heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img, class_num=5)
+
+# total_number = cavity + cavity_filled + inertinite + minerals + vitrinite
+# cavity_percentage = round((cavity/total_number)*100, 2)
+# cavity_filled_percentage = round((cavity_filled/total_number)*100, 2)
+# inertinite_percentage = round((inertinite/total_number)*100, 2)
+# minerals_percentage = round((minerals/total_number)*100, 2)
+# vitrinite_percentage = round((vitrinite/total_number)*100, 2)
+
+# cv2.imwrite(f"./results/{file_name}_09_heatmap.png", cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
+# plt.figure(figsize=(24, 12))
+# plt.subplot(1, 2, 1)
+# plt.imshow(img)
+# plt.title("Input Petrography Image", fontsize=16)
+# plt.axis('off')
+# plt.subplot(1, 2, 2)
+# plt.imshow(heatmap)
+# plt.title("Sequential CNN", fontsize=16)
+# plt.axis('off')
+
+# # Add text below the plots
+# plt.figtext(0.5, 0.12, 
+#     f"Cavity Green: {cavity_percentage} % |  Cavity Filled Blue: {cavity_filled_percentage} %  |  Inertinite Red: {inertinite_percentage} %  |  Minerals Yellow: {minerals_percentage} %  |  Vitrinite Purple: {vitrinite_percentage} %", 
+#     wrap=True, horizontalalignment='center', fontsize=20)
+
+# # Organic and Inorganic text 
+# plt.figtext(0.5, 0.06,
+#             f"Organic: {round(inertinite_percentage+vitrinite_percentage, 2)} % | Inorganic: {round(minerals_percentage+cavity_filled_percentage,2)} %",
+#             wrap=True, horizontalalignment='center', fontsize=20)
+# plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
+
+# plt.savefig(f"../results/{file_name}_09_comparison.png" )
+# plt.show()
+
+# sys.exit(0)
+# For multiple images
+
+folder_path = r"D:\NML ML Works\Deep bhaiya\TESTING2-20250611T124336Z-1-001\TESTING2"
+files = os.listdir(folder_path)
+save_path = r"D:\NML ML Works\Deep bhaiya\TESTING2-20250611T124336Z-1-001\results"
+for file_name in files:
+    img = plt.imread(os.path.join(folder_path, file_name))
+    img = np.array(img, copy=True)  # Make it writable
+    img = cv2.rectangle(img, (2146, 30), (2572, 162), (0, 0, 0), -1)  # Black rectangle with thickness=-1 for filling
+    heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img, class_num=3)
+
+    total_number = cavity + cavity_filled + inertinite + minerals + vitrinite
+    cavity_percentage = round((cavity/total_number)*100, 2)
+    cavity_filled_percentage = round((cavity_filled/total_number)*100, 2)
+    inertinite_percentage = round((inertinite/total_number)*100, 2)
+    minerals_percentage = round((minerals/total_number)*100, 2)
+    vitrinite_percentage = round((vitrinite/total_number)*100, 2)
+
+    cv2.imwrite(os.path.join(save_path,f"{file_name}_heatmap.png"), cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
+    plt.figure(figsize=(24, 12))
+    plt.subplot(1, 2, 1)
+    plt.imshow(img)
+    plt.title("Input Petrography Image", fontsize=16)
+    plt.axis('off')
+    plt.subplot(1, 2, 2)
+    plt.imshow(heatmap)
+    plt.title("Sequential CNN", fontsize=16)
+    plt.axis('off')
+
+    # # Add text below the plots
+    # plt.figtext(0.5, 0.12, 
+    #     f"Cavity Green: {cavity_percentage} % |  Cavity Filled Blue: {cavity_filled_percentage} %  |  Inertinite Red: {inertinite_percentage} %  |  Minerals Yellow: {minerals_percentage} %  |  Vitrinite Purple: {vitrinite_percentage} %", 
+    #     wrap=True, horizontalalignment='center', fontsize=20)
+
+    # Organic and Inorganic text 
+    plt.figtext(0.5, 0.12,
+                f"Organic PURPLE: {round(inertinite_percentage+vitrinite_percentage, 2)} % | Inorganic YELLOW: {round(minerals_percentage+cavity_filled_percentage,2)} % | Background GREEN: {cavity_percentage}",
+                wrap=True, horizontalalignment='center', fontsize=20)
+    plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
+
+    plt.savefig(os.path.join(save_path, f"{file_name}_comparison.png" ))
