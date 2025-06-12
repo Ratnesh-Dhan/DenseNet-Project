@@ -4,11 +4,13 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 import matplotlib.pyplot as plt
 import numpy as np
 from model import create_model
+from mini_VGG_model import create_better_model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 import seaborn as sns
 
 train_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16"
 validation_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\VALIDATION"
+model_name = "miniVGG"
 
 train_datagen = keras.preprocessing.image.ImageDataGenerator(
     rescale=1./255,
@@ -40,14 +42,14 @@ early_stop = EarlyStopping(
 )
 
 model_checkpoint = ModelCheckpoint(
-    filepath="../models/EarlyStoppedBest11June.keras",
+    filepath=f"../models/EarlyStoppedBest{model_name}.keras",
     monitor = 'val_loss',
     verbose = 1,
     save_best_only=True,
     mode='auto'
 )
 
-model = create_model()
+model = create_better_model()
 # Training the model
 history = model.fit(
     train_generator,
@@ -58,7 +60,7 @@ history = model.fit(
     callbacks=[early_stop, model_checkpoint]
 )
 # model.save('new_folder.h5')
-model.save('../models/modelJUNE11.keras')
+model.save(f'../models/{model_name}.keras')
 
 with open('../results/class_indices.json', 'w') as f:
     json.dump(train_generator.class_indices, f)
@@ -78,7 +80,7 @@ plt.title('Loss')
 plt.legend()
 
 plt.tight_layout()
-plt.savefig("../results/09.png", bbox_inches="tight")
+plt.savefig(f"../results/{model_name}.png", bbox_inches="tight")
 plt.show()
 
 
@@ -94,7 +96,7 @@ predicted_classes = np.argmax(predictions, axis=1)
 
 true_labels = validation_generator.classes[:len(predicted_classes)]
 # Save classification report and confusion matrix to a text file
-with open('../results/09_metrics.txt', 'w') as f:
+with open(f'../results/{model_name}_metrics.txt', 'w') as f:
     f.write("Classification Report:\n")
     f.write(classification_report(true_labels, predicted_classes))
     f.write("\n\nConfusion Matrix:\n")
@@ -107,5 +109,5 @@ plt.xlabel('Predicted')
 plt.ylabel('Actual')
 plt.title('Confusion Matrix')
 plt.tight_layout()
-plt.savefig('../results/09_confusion_matrix.png')
+plt.savefig(f'../results/{model_name}_confusion_matrix.png')
 plt.close()
