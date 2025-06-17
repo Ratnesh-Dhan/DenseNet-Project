@@ -75,9 +75,9 @@ def show_overlay(original_rgb, predicted_mask):
     plt.show()
 
 # --- Run Example ---
-image_path = r"D:\NML ML Works\Testing"
-# image_path = r"D:\NML ML Works\kaggle_semantic_segmentation_CORROSION_dataset\validate\images"
-image_path = os.path.join(image_path, "3.jpeg")
+# image_path = r"D:\NML ML Works\Testing"
+image_path = r"D:\NML 2nd working directory\Modified\CSS"
+image_path = os.path.join(image_path, "SS_ME_3399.jpg")
 input_tensor, resized_img = preprocess_image(image_path)
 mask = predict_mask(model, input_tensor)
 show_overlay(resized_img, mask)

@@ -82,67 +82,67 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
 
 
 # model = tf.keras.models.load_model("../models/newCnnEpoch25.keras")
-model = tf.keras.models.load_model("../models/newCNNjune13Epoch_50.keras")
+model = tf.keras.models.load_model("../models/newCNNjune13Epoch_100.keras")
 
-# For single image
-file_name = "short name"
-add_name = "CNN"
-# file = f"D:/NML ML Works/Coal_Lebels/{file_name}.jpg"
-# file = f"D:/NML ML Works/Deep bhaiya/TESTING2-20250611T124336Z-1-001/TESTING2/{file_name}.jpg"
-# file = f"D:/NML ML Works/Coal photomicrographs/{file_name}.jpg"
-file = f"C:/Users/NDT Lab/Documents/DATA-20250609T100339Z-1-001/DATA/TESTING/{file_name}.jpg"
-img = plt.imread(file)
-img = np.array(img, copy=True)  # Make it writable
-img = cv2.rectangle(img, (2146, 30), (2572, 162), (0, 0, 0), -1)  # Black rectangle with thickness=-1 for filling
+# # For single image
+# file_name = "short name"
+# add_name = "CNN"
+# # file = f"D:/NML ML Works/Coal_Lebels/{file_name}.jpg"
+# # file = f"D:/NML ML Works/Deep bhaiya/TESTING2-20250611T124336Z-1-001/TESTING2/{file_name}.jpg"
+# # file = f"D:/NML ML Works/Coal photomicrographs/{file_name}.jpg"
+# file = f"C:/Users/NDT Lab/Documents/DATA-20250609T100339Z-1-001/DATA/TESTING/{file_name}.jpg"
+# img = plt.imread(file)
+# img = np.array(img, copy=True)  # Make it writable
+# img = cv2.rectangle(img, (2146, 30), (2572, 162), (0, 0, 0), -1)  # Black rectangle with thickness=-1 for filling
 
-heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img, class_num=5)
+# heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img, class_num=5)
 
-total_number = cavity + cavity_filled + inertinite + minerals + vitrinite
-cavity_percentage = round((cavity/total_number)*100, 2)
-cavity_filled_percentage = round((cavity_filled/total_number)*100, 2)
-inertinite_percentage = round((inertinite/total_number)*100, 2)
-minerals_percentage = round((minerals/total_number)*100, 2)
-vitrinite_percentage = round((vitrinite/total_number)*100, 2)
+# total_number = cavity + cavity_filled + inertinite + minerals + vitrinite
+# cavity_percentage = round((cavity/total_number)*100, 2)
+# cavity_filled_percentage = round((cavity_filled/total_number)*100, 2)
+# inertinite_percentage = round((inertinite/total_number)*100, 2)
+# minerals_percentage = round((minerals/total_number)*100, 2)
+# vitrinite_percentage = round((vitrinite/total_number)*100, 2)
 
-cv2.imwrite(f"./results/{file_name}_{add_name}_heatmap.png", cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
-plt.figure(figsize=(24, 12))
-plt.subplot(1, 2, 1)
-plt.imshow(img)
-plt.title("Input Petrography Image", fontsize=16)
-plt.axis('off')
-plt.subplot(1, 2, 2)
-plt.imshow(heatmap)
-plt.title("Sequential CNN", fontsize=16)
-plt.axis('off')
+# cv2.imwrite(f"./results/{file_name}_{add_name}_heatmap.png", cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
+# plt.figure(figsize=(24, 12))
+# plt.subplot(1, 2, 1)
+# plt.imshow(img)
+# plt.title("Input Petrography Image", fontsize=16)
+# plt.axis('off')
+# plt.subplot(1, 2, 2)
+# plt.imshow(heatmap)
+# plt.title("Sequential CNN", fontsize=16)
+# plt.axis('off')
 
-# Add text below the plots
-plt.figtext(0.5, 0.12, 
-    f"Cavity Green: {cavity_percentage} % |  Cavity Filled Blue: {cavity_filled_percentage} %  |  Inertinite Red: {inertinite_percentage} %  |  Minerals Yellow: {minerals_percentage} %  |  Vitrinite Purple: {vitrinite_percentage} %", 
-    wrap=True, horizontalalignment='center', fontsize=20)
+# # Add text below the plots
+# plt.figtext(0.5, 0.12, 
+#     f"Cavity Green: {cavity_percentage} % |  Cavity Filled Blue: {cavity_filled_percentage} %  |  Inertinite Red: {inertinite_percentage} %  |  Minerals Yellow: {minerals_percentage} %  |  Vitrinite Purple: {vitrinite_percentage} %", 
+#     wrap=True, horizontalalignment='center', fontsize=20)
 
-# Organic and Inorganic text 
-plt.figtext(0.5, 0.06,
-            f"Organic: {round(inertinite_percentage+vitrinite_percentage, 2)} % | Inorganic: {round(minerals_percentage+cavity_filled_percentage,2)} %",
-            wrap=True, horizontalalignment='center', fontsize=20)
-plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
+# # Organic and Inorganic text 
+# plt.figtext(0.5, 0.06,
+#             f"Organic: {round(inertinite_percentage+vitrinite_percentage, 2)} % | Inorganic: {round(minerals_percentage+cavity_filled_percentage,2)} %",
+#             wrap=True, horizontalalignment='center', fontsize=20)
+# plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
 
-plt.savefig(f"../results/{file_name}_{add_name}_comparison.png" )
-plt.show()
+# plt.savefig(f"../results/{file_name}_{add_name}_comparison.png" )
+# plt.show()
 
-sys.exit(0)
+# sys.exit(0)
 
 # For multiple images
 
 folder_path = r"D:\NML ML Works\Deep bhaiya\TESTING2-20250611T124336Z-1-001\TESTING2"
 files = os.listdir(folder_path)
-save_path = r"D:\NML ML Works\Deep bhaiya\TESTING2-20250611T124336Z-1-001\results4_13june"
+save_path = r"D:\NML ML Works\Deep bhaiya\TESTING2-20250611T124336Z-1-001\results5_13june"
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 for file_name in files:
     img = plt.imread(os.path.join(folder_path, file_name))
     img = np.array(img, copy=True)  # Make it writable
     img = cv2.rectangle(img, (2146, 30), (2572, 162), (0, 0, 0), -1)  # Black rectangle with thickness=-1 for filling
-    heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img, class_num=3)
+    heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img, class_num=5)
 
     total_number = cavity + cavity_filled + inertinite + minerals + vitrinite
     cavity_percentage = round((cavity/total_number)*100, 2)
@@ -163,14 +163,14 @@ for file_name in files:
     plt.axis('off')
 
     # # Add text below the plots
-    # plt.figtext(0.5, 0.12, 
-    #     f"Cavity Green: {cavity_percentage} % |  Cavity Filled Blue: {cavity_filled_percentage} %  |  Inertinite Red: {inertinite_percentage} %  |  Minerals Yellow: {minerals_percentage} %  |  Vitrinite Purple: {vitrinite_percentage} %", 
-    #     wrap=True, horizontalalignment='center', fontsize=20)
+    plt.figtext(0.5, 0.12, 
+        f"Cavity Green: {cavity_percentage} % |  Cavity Filled Blue: {cavity_filled_percentage} %  |  Inertinite Red: {inertinite_percentage} %  |  Minerals Yellow: {minerals_percentage} %  |  Vitrinite Purple: {vitrinite_percentage} %", 
+        wrap=True, horizontalalignment='center', fontsize=20)
 
     # Organic and Inorganic text 
-    plt.figtext(0.5, 0.12,
-                f"Organic PURPLE: {round(inertinite_percentage+vitrinite_percentage, 2)} % | Inorganic YELLOW: {round(minerals_percentage+cavity_filled_percentage,2)} % | Background GREEN: {cavity_percentage}",
-                wrap=True, horizontalalignment='center', fontsize=20)
+    # plt.figtext(0.5, 0.12,
+    #             f"Organic PURPLE: {round(inertinite_percentage+vitrinite_percentage, 2)} % | Inorganic YELLOW: {round(minerals_percentage+cavity_filled_percentage,2)} % | Background GREEN: {cavity_percentage}",
+    #             wrap=True, horizontalalignment='center', fontsize=20)
     plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
 
-    plt.savefig(os.path.join(save_path, f"{file_name}_with_CF_comparison.png" ))
+    plt.savefig(os.path.join(save_path, f"{file_name}_with_5_class_comparison.png" ))

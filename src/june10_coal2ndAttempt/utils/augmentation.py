@@ -1,26 +1,34 @@
 from PIL import Image
 import os, random, sys
 
-folder_path = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16\4 Vitrinite"
-save_folder = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16\4 Vitrinite"
-files = random.sample(os.listdir(folder_path), len(os.listdir(folder_path)))
-files = files[:len(files)//2]  # Take only the first half of the files array
+# folder_path = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16\4 Vitrinite"
+# save_folder = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16\4 Vitrinite"
+base_path = r"D:\NML ML Works\new square corrosion dataset\dataset\Train"
 
-for file in files:
-    image = Image.open(os.path.join(folder_path, file))
-    file_name = file.replace('.png', '')
+big_folders = os.listdir(base_path)
+for i in big_folders:
+    folder_path = os.path.join(base_path, i) 
+    save_folder = os.path.join(base_path, i) 
 
-    # # Fliping left to right
-    # new_image = image.transpose(Image.FLIP_LEFT_RIGHT)
-    # new_image.save(os.path.join(save_folder, f'{file_name}_flipped_LtoR.png'))
+        
+    files = random.sample(os.listdir(folder_path), len(os.listdir(folder_path)))
+    # files = files[:len(files)//2]  # Take only the first half of the files array
 
-    new_image = image.transpose(Image.FLIP_TOP_BOTTOM)
-    new_image.save(os.path.join(save_folder, f'{file_name}_flipped_TtoB.png'))
+    for file in files:
+        image = Image.open(os.path.join(folder_path, file))
+        file_name = file.replace('.png', '')
 
-    # # Rotations
-    # new_image.rotate(90).save(os.path.join(save_folder, f'{file_name}_rot90.png'))
-    # new_image.rotate(180).save(os.path.join(save_folder, f'{file_name}_rot180.png'))
-    # new_image.rotate(270).save(os.path.join(save_folder, f'{file_name}_rot270.png'))
+        # Fliping left to right
+        new_image = image.transpose(Image.FLIP_LEFT_RIGHT)
+        new_image.save(os.path.join(save_folder, f'{file_name}_flipped_LtoR.png'))
+
+        new_image = image.transpose(Image.FLIP_TOP_BOTTOM)
+        new_image.save(os.path.join(save_folder, f'{file_name}_flipped_TtoB.png'))
+
+        # # Rotations
+        new_image.rotate(90).save(os.path.join(save_folder, f'{file_name}_rot90.png'))
+        new_image.rotate(180).save(os.path.join(save_folder, f'{file_name}_rot180.png'))
+        new_image.rotate(270).save(os.path.join(save_folder, f'{file_name}_rot270.png'))
 
 
 sys.exit(0)
