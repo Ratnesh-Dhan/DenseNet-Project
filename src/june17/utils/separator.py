@@ -16,7 +16,12 @@ for i in hs:
     if not os.path.exists(paths):
         os.makedirs(paths)
 
-for j in tqdm(files):
-    preffixx = j.split('_')[0]
-    cp_path = os.path.join(base_path, preffixx)
-    shutil.copyfile(os.path.join(folder_path, j), os.path.join(cp_path, j))
+for file in tqdm(files):
+    preffix = file.split('_')[0]
+    copy_folder = os.path.join(base_path, preffix)
+    shutil.copyfile(os.path.join(folder_path, file) , os.path.join(copy_folder, file))
+
+# for j in tqdm(files):
+#     preffixx = j.split('_')[0]
+#     cp_path = os.path.join(base_path, preffixx)
+#     shutil.copyfile(os.path.join(folder_path, j), os.path.join(cp_path, j))

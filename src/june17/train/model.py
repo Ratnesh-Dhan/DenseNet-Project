@@ -4,22 +4,18 @@ def create_model():
     model = models.Sequential([
         layers.Input(shape=(30, 30, 3)),
 
-        layers.Conv2D(32, (3, 3), padding='same'),
+        layers.Conv2D(32, (3, 3), padding='same', activation='relu'),
         layers.BatchNormalization(),
-        layers.ReLU(),
+        layers.Conv2D(32, (3, 3), padding='same', activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
 
-        layers.Conv2D(64, (3, 3), padding='same'),
+        layers.Conv2D(64, (3, 3), padding='same', activation='relu'),
         layers.BatchNormalization(),
-        layers.ReLU(),
+        layers.Conv2D(64, (3, 3), padding='same', activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
 
-        layers.Conv2D(128, (3, 3), padding='same'),
+        layers.Conv2D(128, (3, 3), padding='same', activation='relu'),
         layers.BatchNormalization(),
-        layers.ReLU(),
-
-        # layers.Conv2D(256, (3, 3), padding='same'),
-        # layers.BatchNormalization(),
-        # layers.ReLU(),
-
         layers.GlobalAveragePooling2D(),
 
         layers.Dense(64, activation='relu'),
