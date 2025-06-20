@@ -1,10 +1,11 @@
 import os
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from model import create_model
+from model2 import create_model
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.utils import class_weight
 import seaborn as sns
 import os
 
@@ -45,20 +46,30 @@ val_generator = datagen.flow_from_directory(
 model = create_model()
 model.summary()
 
+model_name = "best_model_20_june_2nd"
+
 callbacks = [
     EarlyStopping(patience=5, restore_best_weights=True, monitor='val_loss'),
-    ModelCheckpoint('best_model.keras', save_best_only=True, monitor='val_loss')
+    ModelCheckpoint(f'../models/{model_name}.keras', save_best_only=True, monitor='val_loss')
 ]
+y_train = train_generator.classes
+
+class_weights = class_weight.compute_class_weight(
+    class_weight='balanced',
+    classes=np.unique(y_train),
+    y=y_train
+)
 
 # Train
 history = model.fit(
     train_generator,
     validation_data=val_generator,
     epochs=EPOCHS,
-    callbacks=callbacks
+    callbacks=callbacks,
+    class_weight=dict(enumerate(class_weights))
 )
 
-model.save("my_fully_trained_model.keras")
+model.save(f"{model_name}_fully_trained.keras")
 
 # Create a directory to store results
 os.makedirs("results", exist_ok=True)
@@ -86,7 +97,7 @@ def plot_history(history):
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig("results/training_history.png")
+    plt.savefig(f"results/{model_name}_training_history.png")
     plt.close()
 
 plot_history(history)
@@ -106,12 +117,12 @@ sns.heatmap(cm, annot=True, fmt='.2f', xticklabels=labels, yticklabels=labels, c
 plt.title('Normalized Confusion Matrix')
 plt.xlabel('Predicted')
 plt.ylabel('True')
-plt.savefig("results/confusion_matrix.png")
+plt.savefig(f"results/{model_name}_confusion_matrix.png")
 plt.close()
 
 # 4. Classification report
 report = classification_report(y_true, y_pred, target_names=labels)
-with open("results/classification_report.txt", "w") as f:
+with open(f"results/{model_name}_classification_report.txt", "w") as f:
     f.write(report)
 
 # 5. Print accuracy
