@@ -10,7 +10,7 @@ import seaborn as sns
 
 train_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16"
 validation_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\VALIDATION"
-model_name = "newCNNjune13Epoch_100"
+model_name = "CNNmodelJUNE24"
 batch_size = 64
 train_datagen = keras.preprocessing.image.ImageDataGenerator(
     rescale=1./255,
@@ -57,7 +57,7 @@ history = model.fit(
     validation_data=validation_generator,
     validation_steps=len(validation_generator),
     epochs=100,
-    # callbacks=[early_stop, model_checkpoint]
+    callbacks=[early_stop, model_checkpoint]
 )
 # model.save('new_folder.h5')
 model.save(f'../models/{model_name}.keras')
@@ -67,21 +67,45 @@ with open('../results/class_indices.json', 'w') as f:
 
 plt.figure(figsize=(12, 5))
 
+# Accuracy plot
 plt.subplot(1, 2, 1)
 plt.plot(history.history['accuracy'], label='Train Acc')
 plt.plot(history.history['val_accuracy'], label='Val Acc')
 plt.title('Accuracy')
 plt.legend()
+plt.xlim(0)       # Start x-axis at 0
+plt.ylim(0)       # Start y-axis at 0
 
+# Loss plot
 plt.subplot(1, 2, 2)
 plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Val Loss')
 plt.title('Loss')
 plt.legend()
+plt.xlim(0)       # Start x-axis at 0
+plt.ylim(0)       # Start y-axis at 0
 
 plt.tight_layout()
 plt.savefig(f"../results/{model_name}.png", bbox_inches="tight")
 plt.show()
+
+# plt.figure(figsize=(12, 5))
+
+# plt.subplot(1, 2, 1)
+# plt.plot(history.history['accuracy'], label='Train Acc')
+# plt.plot(history.history['val_accuracy'], label='Val Acc')
+# plt.title('Accuracy')
+# plt.legend()
+
+# plt.subplot(1, 2, 2)
+# plt.plot(history.history['loss'], label='Train Loss')
+# plt.plot(history.history['val_loss'], label='Val Loss')
+# plt.title('Loss')
+# plt.legend()
+
+# plt.tight_layout()
+# plt.savefig(f"../results/{model_name}.png", bbox_inches="tight")
+# plt.show()
 
 
 # Evaluate the model on the validation dataset
