@@ -82,7 +82,8 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
 
 
 # model = tf.keras.models.load_model("../models/newCnnEpoch25.keras")
-model = tf.keras.models.load_model("../models/newCNNjune13Epoch_100.keras")
+# model = tf.keras.models.load_model("../models/newCNNjune13Epoch_100.keras")
+model = tf.keras.models.load_model("../models/miniVGG2.keras")
 
 # For single image
 file_name = "short name"

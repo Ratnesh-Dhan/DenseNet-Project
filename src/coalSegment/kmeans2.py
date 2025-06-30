@@ -5,7 +5,8 @@ from sklearn.cluster import KMeans
 from skimage import io
 
 # Load image
-image_path = "./images/02.jpg"  # Replace with your actual path
+# image_path = "./images/02.jpg"  # Replace with your actual path
+image_path = r"D:\NML ML Works\Deep bhaiya\TESTING2-20250611T124336Z-1-001\TESTING2\NEW.jpg"
 image = io.imread(image_path)
 pixels = image.reshape(-1, 3)
 
@@ -24,7 +25,7 @@ ax[0].set_title("Original Image")
 ax[0].axis('off')
 
 ax[1].imshow(segmented_image)
-ax[1].set_title("Segmented Image (5 Clusters)")
+ax[1].set_title("Segmented Image (7 Clusters)")
 ax[1].axis('off')
 
 plt.tight_layout()
