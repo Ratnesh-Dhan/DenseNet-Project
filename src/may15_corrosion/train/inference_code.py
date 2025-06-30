@@ -23,8 +23,8 @@ model = load_model('./models/best_model_bce_dice_loss.h5', custom_objects={'dice
 IMAGE_SIZE = 256
 
 # --- Image Preprocessing ---
-def preprocess_image(image_path):
-    image = cv2.imread(image_path)
+def preprocess_image(image):
+    image = cv2.rotate(image, cv2.ROTATE_180)  # Rotate 180 degrees
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (IMAGE_SIZE, IMAGE_SIZE))
     image = image.astype(np.float32) / 255.0
@@ -37,12 +37,16 @@ def predict_mask(model, image_array, threshold=0.5):
     return mask
 
 # --- Visualize ---
-def show_overlay(original_rgb, predicted_mask):
+def show_overlay(original_rgb, predicted_mask, x, y):
     plt.figure(figsize=(12, 5))
 
+    # preprocessing before display
+    original_rgb_copy = cv2.resize(original_rgb, (y, x))
+    original_rgb_copy = cv2.rotate(original_rgb_copy, cv2.ROTATE_180)
+
     plt.subplot(1, 2, 1)
-    plt.imshow(original_rgb)
-    plt.title("Original Image")
+    plt.imshow(original_rgb_copy)
+    plt.title("Input image")
 
     # plt.subplot(1, 3, 2)
     # plt.imshow(predicted_mask, cmap='gray')
@@ -64,20 +68,28 @@ def show_overlay(original_rgb, predicted_mask):
     overlay[mask_indices] = (
         alpha * neon_color + (1 - alpha) * overlay[mask_indices]
     ).astype(np.uint8)
+
+    # Resize back to original size
+    overlay = cv2.rotate(overlay, cv2.ROTATE_180)
+    overlay = cv2.resize(overlay, (y, x))
+
     # /This is new changes
 
     # overlay[predicted_mask > 0] = [255, 0, 0]  # Red overlay
     plt.subplot(1, 2, 2)
     plt.imshow(overlay)
-    plt.title("Overlay")
+    plt.title("Ouput with mask")
 
     plt.tight_layout()
     plt.show()
 
 # --- Run Example ---
-image_path = r"D:\NML ML Works\Testing"
-# image_path = r"D:\NML ML Works\kaggle_semantic_segmentation_CORROSION_dataset\validate\images"
-image_path = os.path.join(image_path, "3.jpeg")
-input_tensor, resized_img = preprocess_image(image_path)
+# image_path = r"D:\NML ML Works\Testing"
+image_path = r"D:\NML 2nd working directory\Dr. sarma paswan-05-06-2025\Actual\SS\CROPED"
+# image_path = os.path.join(image_path, "SS_ME_3399.jpg")
+image_path = os.path.join(image_path, "SS_As_3395.jpg")
+image = cv2.imread(image_path)
+x, y, _ = image.shape
+input_tensor, resized_img = preprocess_image(image)
 mask = predict_mask(model, input_tensor)
-show_overlay(resized_img, mask)
+show_overlay(resized_img, mask, x, y)

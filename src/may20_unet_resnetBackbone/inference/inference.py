@@ -35,5 +35,7 @@ if __name__ == "__main__":
 
     model = tf.keras.models.load_model(model_path, compile=False)
 
-    image_path = r"D:\NML ML Works\kaggle_semantic_segmentation_CORROSION_dataset\validate\images\img72_aug1.jpg"
+    # image_path = r"D:\NML ML Works\kaggle_semantic_segmentation_CORROSION_dataset\validate\images\img72_aug1.jpg"
+    image_path = r"D:\NML 2nd working directory\Modified\CSS"
+    image_path = os.path.join(image_path, "CSS_AG_3386.jpg")
     predict_mask(image_path)
