@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 from torchvision.transforms import functional as F
 
-class CorrosionDataset(torch.utils.data.Dataset):
+class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, image_dir, mask_root_dir, transforms=None):
         self.image_dir = image_dir
         self.mask_root_dir = mask_root_dir
@@ -20,15 +20,19 @@ class CorrosionDataset(torch.utils.data.Dataset):
 
         masks = []
         labels = []
+        boxes = []
 
         for mask_file in mask_files:
             mask = Image.open(os.path.join(mask_dir, mask_file)).convert("L")
             mask = np.array(mask)
+            mask = (mask > 0).astype(np.uint8)  # Make binary
+
             if mask.max() == 0:
                 continue  # Skip empty masks
 
             masks.append(mask)
 
+            # Label assignment
             if "corrosion" in mask_file.lower():
                 labels.append(1)
             elif "piece_1" in mask_file.lower():
@@ -36,17 +40,19 @@ class CorrosionDataset(torch.utils.data.Dataset):
             else:
                 raise ValueError(f"Unknown class: {mask_file}")
 
+            # Bounding box
+            pos = np.argwhere(mask)
+            ymin, xmin = pos.min(axis=0)
+            ymax, xmax = pos.max(axis=0)
+            if xmax <= xmin or ymax <= ymin:
+                continue  # Skip invalid boxes
+            boxes.append([xmin, ymin, xmax, ymax])
+
+        if len(masks) == 0:
+            raise ValueError(f"No valid masks for image {self.image_files[idx]}")
+
         masks = torch.as_tensor(np.stack(masks), dtype=torch.uint8)
         labels = torch.as_tensor(labels, dtype=torch.int64)
-
-        boxes = []
-        for m in masks:
-            pos = m.nonzero()
-            xmin = pos[:, 1].min()
-            xmax = pos[:, 1].max()
-            ymin = pos[:, 0].min()
-            ymax = pos[:, 0].max()
-            boxes.append([xmin, ymin, xmax, ymax])
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
 
         image_id = torch.tensor([idx])
@@ -63,9 +69,10 @@ class CorrosionDataset(torch.utils.data.Dataset):
         }
 
         if self.transforms:
-            img, target = self.transforms(img, target)
+            img = self.transforms(img)
 
         return img, target
+
 
     def __len__(self):
         return len(self.image_files)

@@ -11,10 +11,10 @@ def get_transform():
     return T.Compose([T.ToTensor()])
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
+base_path = r"D:\NML 2nd working directory\corrosion sample piece\FINALDATASET"
 # Load dataset
-dataset = CustomDataset("data/train", transforms=get_transform())
-dataset_test = CustomDataset("data/val", transforms=get_transform())
+dataset = CustomDataset(os.path.join(base_path, "train/images"), os.path.join(base_path, "train/annotations"), transforms=get_transform())
+dataset_test = CustomDataset(os.path.join(base_path, "val/images"), os.path.join(base_path, "val/annotations"), transforms=get_transform())
 
 data_loader = DataLoader(dataset, batch_size=2, shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
 data_loader_test = DataLoader(dataset_test, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
@@ -53,7 +53,7 @@ patience = 3
 counter = 0
 
 model_name = "mask_rcnn_july01"
-
+best_val_loss = float('inf')
 for epoch in range(num_epochs):
     model.train()
     epoch_train_loss = 0.0
