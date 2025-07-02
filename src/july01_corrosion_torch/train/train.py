@@ -83,9 +83,15 @@ for epoch in range(num_epochs):
             images = list(img.to(device) for img in images)
             targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
+            # Manually calculate loss during eval mode
             loss_dict = model(images, targets)
-            losses = sum(loss for loss in loss_dict.values())
-            epoch_val_loss += losses.item()
+            if isinstance(loss_dict, dict):  # Ensure it's loss, not predictions
+                losses = sum(loss for loss in loss_dict.values())
+                epoch_val_loss += losses.item()
+
+            # loss_dict = model(images, targets)
+            # losses = sum(loss for loss in loss_dict.values())
+            # epoch_val_loss += losses.item()
 
     avg_val_loss = epoch_val_loss / len(data_loader_test)
     val_loss_list.append(avg_val_loss)
