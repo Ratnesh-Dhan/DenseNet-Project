@@ -11,7 +11,7 @@ def get_transform():
     return T.Compose([T.ToTensor()])
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-base_path = r"D:\NML 2nd working directory\corrosion sample piece\FINALDATASET"
+base_path = r"D:\NML 2nd working directory\corrosion sample piece\dataset\train_reduced"
 # Load dataset
 dataset = CustomDataset(os.path.join(base_path, "train/images"), os.path.join(base_path, "train/annotations"), transforms=get_transform())
 dataset_test = CustomDataset(os.path.join(base_path, "val/images"), os.path.join(base_path, "val/annotations"), transforms=get_transform())
@@ -20,7 +20,7 @@ data_loader = DataLoader(dataset, batch_size=2, shuffle=True, collate_fn=lambda 
 data_loader_test = DataLoader(dataset_test, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 # Load model
-num_classes = 3  # Background + 1 object
+num_classes = 3  # Background + 2 objects
 model = get_model_instance_segmentation(num_classes)
 model.to(device)
 
@@ -52,7 +52,7 @@ val_loss_list = []
 patience = 3
 counter = 0
 
-model_name = "mask_rcnn_july01"
+model_name = "mask_rcnn_july03"
 best_val_loss = float('inf')
 for epoch in range(num_epochs):
     model.train()
@@ -111,9 +111,10 @@ for epoch in range(num_epochs):
             break
 
 # Plot the Loss Graphs
+epochs_run = len(train_loss_list)
 plt.figure(figsize=(10, 6))
-plt.plot(range(1, num_epochs + 1), train_loss_list, label='Train Loss')
-plt.plot(range(1, num_epochs + 1), val_loss_list, label='Validation Loss')
+plt.plot(range(1, epochs_run + 1), train_loss_list, label='Train Loss')
+plt.plot(range(1, epochs_run + 1), val_loss_list, label='Validation Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.title('Training and Validation Loss over Epochs')
@@ -121,15 +122,15 @@ plt.legend()
 plt.grid(True)
 if not os.path.exists("../results"):
     os.makedirs("../results")
-plt.savefig(f"../results/{model_name}_loss_plot_epoch_{num_epochs}.png")  # Saves to file
+plt.savefig(f"../results/{model_name}_loss_plot_epoch_{epochs_run}.png")  # Saves to file
 plt.show()                    # Displays in notebook or window
 
 loss_df = pd.DataFrame({
-    'Epoch': list(range(1, num_epochs + 1)),
+    'Epoch': list(range(1, epochs_run + 1)),
     'Train Loss': train_loss_list,
     'Validation Loss': val_loss_list
 })
-loss_df.to_csv(f"../results/{model_name}_loss_log_epoch_{num_epochs}.csv", index=False)
+loss_df.to_csv(f"../results/{model_name}_loss_log_epoch_{epochs_run}.csv", index=False)
 
 all_preds = []
 all_targets = []

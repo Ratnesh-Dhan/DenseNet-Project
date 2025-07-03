@@ -1,8 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const basePath =
-  "D:/NML 2nd working directory/corrosion sample piece/augmented";
+const basePath = "D:/NML 2nd working directory/corrosion sample piece/dataset";
 const imageDir = path.join(basePath, "images");
 const annotationDir = path.join(basePath, "annotations");
 
