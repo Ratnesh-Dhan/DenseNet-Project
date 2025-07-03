@@ -30,7 +30,7 @@ params = [p for p in model.parameters() if p.requires_grad]
 optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0005)
 
 # Training setup
-num_epochs = 5
+num_epochs = 2
 train_loss_list = []
 val_loss_list = []
 patience = 3
@@ -135,9 +135,10 @@ with torch.no_grad():
 
 # Class names (excluding background)
 class_names = ['corrosion', 'piece']
+label_ids = [1, 2]
 
 # Confusion matrix
-cm = confusion_matrix(all_targets, all_preds, normalize='true')
+cm = confusion_matrix(all_targets, all_preds, labels=label_ids, normalize='true')
 plt.figure(figsize=(6, 5))
 sns.heatmap(cm, annot=True, fmt=".2f", cmap='Blues', xticklabels=class_names, yticklabels=class_names)
 plt.xlabel('Predicted')
