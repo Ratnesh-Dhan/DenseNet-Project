@@ -11,7 +11,7 @@ def get_transform():
     return T.Compose([T.ToTensor()])
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-base_path = r"D:\NML 2nd working directory\corrosion sample piece\dataset\train_reduced"
+base_path = r"D:\NML 2nd working directory\corrosion sample piece\dataset"
 
 # Load datasets
 dataset = CustomDataset(os.path.join(base_path, "train/images"), os.path.join(base_path, "train/annotations"), transforms=get_transform())
@@ -30,13 +30,14 @@ params = [p for p in model.parameters() if p.requires_grad]
 optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0005)
 
 # Training setup
-num_epochs = 2
+num_epochs = 50
 train_loss_list = []
 val_loss_list = []
 patience = 3
 counter = 0
 best_val_loss = float('inf')
-model_name = "mask_rcnn_july03"
+model_name = "mask_rcnn_july04"
+# model_name = "test_model_name"
 
 # Training loop
 for epoch in range(num_epochs):

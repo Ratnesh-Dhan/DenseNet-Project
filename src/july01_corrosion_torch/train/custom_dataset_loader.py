@@ -3,6 +3,8 @@ import torch
 import numpy as np
 from PIL import Image
 from torchvision.transforms import functional as F
+import matplotlib.pyplot as plt
+
 
 class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, image_dir, mask_root_dir, transforms=None):
@@ -70,6 +72,12 @@ class CustomDataset(torch.utils.data.Dataset):
 
         if self.transforms:
             img = self.transforms(img)
+        
+        # # this is for debugging
+        # plt.imshow(img.permute(1, 2, 0))  # if img is tensor after transform
+        # plt.imshow(masks[0], alpha=0.5)
+        # plt.title(f"Labels: {labels.tolist()}")
+        # plt.show()
 
         return img, target
 
