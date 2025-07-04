@@ -1,6 +1,4 @@
 import torchvision
-from torchvision.models.detection import MaskRCNN
-from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 
 def get_model_instance_segmentation(num_classes):
     # Load instance segmentation model pre-trained on COCO
