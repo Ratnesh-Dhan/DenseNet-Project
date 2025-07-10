@@ -10,6 +10,19 @@ const trainAnnoDir = path.join(basePath, "train/annotations");
 const valImageDir = path.join(basePath, "val/images");
 const valAnnoDir = path.join(basePath, "val/annotations");
 
+if (!path.existsSync(trainImageDir)) {
+  fs.mkdirSync(trainImageDir);
+}
+if (!path.existsSync(trainAnnoDir)) {
+  fs.mkdirSync(trainAnnoDir);
+}
+if (!path.existsSync(valImageDir)) {
+  fs.mkdirSync(valImageDir);
+}
+if (!path.existsSync(valAnnoDir)) {
+  fs.mkdirSync(valAnnoDir);
+}
+
 const fsExtra = require("fs-extra");
 
 function ensureDirs(...dirs) {
