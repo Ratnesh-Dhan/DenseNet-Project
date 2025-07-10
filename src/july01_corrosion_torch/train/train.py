@@ -11,7 +11,7 @@ def get_transform():
     return T.Compose([T.ToTensor()])
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-base_path = r"D:\NML 2nd working directory\corrosion sample piece\dataset"
+base_path = r"D:\NML 2nd working directory\Final_dataset_corrosion\dataset"
 
 # Load datasets
 dataset = CustomDataset(os.path.join(base_path, "train/images"), os.path.join(base_path, "train/annotations"), transforms=get_transform())
@@ -36,7 +36,7 @@ val_loss_list = []
 patience = 3
 counter = 0
 best_val_loss = float('inf')
-model_name = "mask_rcnn_july04"
+model_name = "mask_rcnn_july10_with_corrosion"
 # model_name = "test_model_name"
 
 # Training loop

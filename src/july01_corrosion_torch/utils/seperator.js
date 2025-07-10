@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const basePath = "D:/NML 2nd working directory/corrosion sample piece/dataset";
+const basePath = "D:/NML 2nd working directory/Final_dataset_corrosion/dataset";
 const imageDir = path.join(basePath, "images");
 const annotationDir = path.join(basePath, "annotations");
 
@@ -10,17 +10,17 @@ const trainAnnoDir = path.join(basePath, "train/annotations");
 const valImageDir = path.join(basePath, "val/images");
 const valAnnoDir = path.join(basePath, "val/annotations");
 
-if (!path.existsSync(trainImageDir)) {
-  fs.mkdirSync(trainImageDir);
+if (!fs.existsSync(trainImageDir)) {
+  fs.mkdirSync(trainImageDir, { recursive: true });
 }
-if (!path.existsSync(trainAnnoDir)) {
-  fs.mkdirSync(trainAnnoDir);
+if (!fs.existsSync(trainAnnoDir)) {
+  fs.mkdirSync(trainAnnoDir, { recursive: true });
 }
-if (!path.existsSync(valImageDir)) {
-  fs.mkdirSync(valImageDir);
+if (!fs.existsSync(valImageDir)) {
+  fs.mkdirSync(valImageDir, { recursive: true });
 }
-if (!path.existsSync(valAnnoDir)) {
-  fs.mkdirSync(valAnnoDir);
+if (!fs.existsSync(valAnnoDir)) {
+  fs.mkdirSync(valAnnoDir, { recursive: true });
 }
 
 const fsExtra = require("fs-extra");
