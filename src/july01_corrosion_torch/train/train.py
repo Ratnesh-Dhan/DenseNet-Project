@@ -36,7 +36,7 @@ val_loss_list = []
 patience = 3
 counter = 0
 best_val_loss = float('inf')
-model_name = "mask_rcnn_july10_with_corrosion"
+model_name = "mask_rcnn_july11_with_corrosion"
 # model_name = "test_model_name"
 
 # Training loop
