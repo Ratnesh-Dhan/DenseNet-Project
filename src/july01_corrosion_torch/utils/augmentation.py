@@ -5,10 +5,10 @@ import albumentations as A
 from tqdm import tqdm
 
 # --- Paths ---
-base_path = r"D:\NML 2nd working directory\corrosion sample piece"
-image_dir = os.path.join(base_path, "dataset/images")
+base_path = r"D:\NML 2nd working directory\Final_dataset_corrosion"
+image_dir = os.path.join(base_path, "dataset/img")
 annotation_dir = os.path.join(base_path, "dataset/annotations")
-aug_image_dir = os.path.join(base_path, "augmented/images")
+aug_image_dir = os.path.join(base_path, "augmented/img")
 aug_anno_dir = os.path.join(base_path, "augmented/annotations")
 
 os.makedirs(aug_image_dir, exist_ok=True)
