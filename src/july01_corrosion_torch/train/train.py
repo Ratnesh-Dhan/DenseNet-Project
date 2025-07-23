@@ -17,8 +17,8 @@ base_path = r"D:\NML 2nd working directory\Final_dataset_corrosion\dataset"
 dataset = CustomDataset(os.path.join(base_path, "train/images"), os.path.join(base_path, "train/annotations"), transforms=get_transform())
 dataset_test = CustomDataset(os.path.join(base_path, "val/images"), os.path.join(base_path, "val/annotations"), transforms=get_transform())
 
-data_loader = DataLoader(dataset, batch_size=2, shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
-data_loader_test = DataLoader(dataset_test, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
+data_loader = DataLoader(dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
+data_loader_test = DataLoader(dataset_test, batch_size=2, shuffle=False, collate_fn=lambda x: tuple(zip(*x)))
 
 # Load model
 num_classes = 3  # Background + 2 classes

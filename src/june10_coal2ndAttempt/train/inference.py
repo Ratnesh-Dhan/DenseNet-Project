@@ -83,15 +83,19 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
 
 # model = tf.keras.models.load_model("../models/newCnnEpoch25.keras")
 # model = tf.keras.models.load_model("../models/newCNNjune13Epoch_100.keras")
-model = tf.keras.models.load_model("../models/miniVGG2.keras")
+# model = tf.keras.models.load_model("../models/EarlyStoppedBest11June.keras") # This is good
+# model = tf.keras.models.load_model("../models/modelJUNE11.keras") # This is better
+model = tf.keras.models.load_model("../models/CNNmodelJUNE24.keras") # This is best
+# model = tf.keras.models.load_model("../models/newCnnEpoch25.keras") # This is not best
 
 # For single image
-file_name = "short name"
+file_name = "030"
 add_name = "CNN"
 # file = f"D:/NML ML Works/Coal_Lebels/{file_name}.jpg"
 # file = f"D:/NML ML Works/Deep bhaiya/TESTING2-20250611T124336Z-1-001/TESTING2/{file_name}.jpg"
 # file = f"D:/NML ML Works/Coal photomicrographs/{file_name}.jpg"
-file = f"C:/Users/NDT Lab/Documents/DATA-20250609T100339Z-1-001/DATA/TESTING/{file_name}.jpg"
+# file = f"C:/Users/NDT Lab/Documents/DATA-20250609T100339Z-1-001/DATA/TESTING/{file_name}.jpg"
+file = f"D:/NML 2nd working directory/testing/{file_name}.jpg"
 img = plt.imread(file)
 img = np.array(img, copy=True)  # Make it writable
 img = cv2.rectangle(img, (2146, 30), (2572, 162), (0, 0, 0), -1)  # Black rectangle with thickness=-1 for filling

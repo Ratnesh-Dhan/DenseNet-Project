@@ -9,9 +9,11 @@ import torchvision.transforms as T
 # image_path = r"D:\NML 2nd working directory\corrosion sample piece\dataset\images\IMG_20250425_104935.jpg"
 image_path = r"C:\Users\NDT Lab\Pictures\sir send\shortName.jpg"
 num_classes = 3
-device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+# device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+device = torch.device('cpu')
 model = get_model_instance_segmentation(num_classes)
-model.load_state_dict(torch.load(r"../models/mask_rcnn_july04_best_model_epoch_9.pth"))
+model.load_state_dict(torch.load(r"../working-model/mask_rcnn_july11_with_corrosion_best_model_epoch_11.pth",
+                                 map_location=torch.device('cpu')))
 model.to(device)
 model.eval()
 
@@ -55,11 +57,11 @@ for i in range(len(pred_masks)):
 
     # Draw bounding box
     rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2,
-                             edgecolor='color', facecolor='none')
+                             edgecolor=color, facecolor='none')
     ax.add_patch(rect)
     ax.text(xmin, ymin - 5, f"{label}: {score:.2f}", color='white',
             # bbox=dict(facecolor=color, alpha=0.7), fontsize=10)
-            bbox=dict(facecolor='color', alpha=0.7), fontsize=10)
+            bbox=dict(facecolor=color, alpha=0.7), fontsize=10)
 
 ax.axis("off")
 plt.tight_layout()
