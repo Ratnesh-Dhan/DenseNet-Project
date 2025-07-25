@@ -2,7 +2,7 @@ import cv2, os
 from tqdm import tqdm
 import sys
 
-folder_name = 'C12'
+folder_name = 'C2'
 folderPath = fr"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\final\{folder_name}"
 files = os.listdir(folderPath)
 files_full_path = []
