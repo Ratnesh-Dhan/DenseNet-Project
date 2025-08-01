@@ -8,7 +8,8 @@ import numpy as np
 from model import create_model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 import seaborn as sns
-from dataset_loader import load_dataset
+# from dataset_loader import load_dataset
+from auto_spliter_dataset_loader import load_dataset
 import tensorflow as tf
 
 
