@@ -8,8 +8,8 @@ import numpy as np
 from model import create_model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 import seaborn as sns
-# from dataset_loader import load_dataset
-from auto_spliter_dataset_loader import load_dataset
+from dataset_loader import load_dataset
+# from auto_spliter_dataset_loader import load_dataset
 import tensorflow as tf
 
 
@@ -49,7 +49,9 @@ for name , optimizer in optimizers.items():
     )
 
     model = create_model(optimizer)
-    lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
+    # lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
+    # Setting up minimum learning rate ( Trying to fix the fluctuation in the valdiation curve )
+    lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1, min_lr=1e-6 )
 
     # Training the model
     history = model.fit(

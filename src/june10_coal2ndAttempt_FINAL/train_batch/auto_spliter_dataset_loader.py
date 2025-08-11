@@ -5,7 +5,7 @@ def load_dataset(batch_size):
 
     datagen = ImageDataGenerator(
         rescale=1./255,
-        validation_split=0.2, # 80% for training and 20 % for validation
+        validation_split=0.3, # 80% for training and 20 % for validation
     )
 
     train_generator = datagen.flow_from_directory(
@@ -23,7 +23,7 @@ def load_dataset(batch_size):
         batch_size=batch_size,
         class_mode='sparse',
         subset='validation',
-        shuffle=True
+        shuffle=False
     )
 
     return train_generator, validation_generator
