@@ -1,11 +1,15 @@
+import matplotlib
+matplotlib.use('Agg')  # Must be done before importing pyplot or seaborn
+
 import json, os, pandas as pd
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
 from model import create_model
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 import seaborn as sns
 from dataset_loader import load_dataset
+# from auto_spliter_dataset_loader import load_dataset
 import tensorflow as tf
 
 
@@ -45,6 +49,9 @@ for name , optimizer in optimizers.items():
     )
 
     model = create_model(optimizer)
+    # lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
+    # Setting up minimum learning rate ( Trying to fix the fluctuation in the valdiation curve )
+    lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1, min_lr=1e-6 )
 
     # Training the model
     history = model.fit(
@@ -53,7 +60,7 @@ for name , optimizer in optimizers.items():
         validation_data=validation_generator,
         validation_steps=len(validation_generator),
         epochs=100,
-        callbacks=[early_stop, model_checkpoint]
+        callbacks=[early_stop, model_checkpoint, lr_scheduler]
     )
     last_epoch = len(history.history['loss'])
     model.save(f'./models/{name}/{name}_with_epoch_{last_epoch}.keras')
