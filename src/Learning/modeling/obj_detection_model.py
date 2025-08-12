@@ -13,8 +13,15 @@ def object_detection_model(input_shape=(224,224,3), num_classes=2):
 
     # Flatten + Dense for bounding box coords
     x = layers.Flatten()(x)
-    bbox_output = layers.Dense(4, activation='sigmoid', name='bbox')(x)  # [x_min, y_min, x_max, y_max]
-    class_output = layers.Dense(num_classes, activation='softmax', name='class')(x)
+
+    bbox_branch = layers.Dense(128, activation='relu')(x)
+    bbox_branch = layers.Dropout(0.3)(bbox_branch)  # Drop 30% of neurons
+    bbox_output = layers.Dense(4, activation='sigmoid', name='bbox')(bbox_branch)
+
+    # --- Classification Branch ---
+    class_branch = layers.Dense(128, activation='relu')(x)
+    class_branch = layers.Dropout(0.5)(class_branch)  # Drop 50% of neurons for stronger regularization
+    class_output = layers.Dense(1, activation='sigmoid', name='class')(class_branch)
 
     model = tf.keras.Model(inputs, outputs=[bbox_output, class_output])
 
@@ -22,8 +29,10 @@ def object_detection_model(input_shape=(224,224,3), num_classes=2):
         optimizer = 'adam',
         loss={
             'bbox': 'mse', # bounding box regression
-            'class': 'categorical_crossentropy' # class prediction
-        }
+            'class': 'binary_crossentropy' # binary prediction
+            # 'class': 'categorical_crossentropy' # class prediction
+        },
+        loss_weights={'bbox': 2.0, 'class': 1.0}
     )
     return model
 
