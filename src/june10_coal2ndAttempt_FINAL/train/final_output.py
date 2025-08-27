@@ -82,10 +82,11 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
     return heatmap, cavity_green, cavity_filled_blue, inertinte_red, mineral_yellow, vitrinite_purple
 
 
-model = tf.keras.models.load_model("../models/CNNmodelJUNE24.keras") # This is best
+# model = tf.keras.models.load_model("../models/CNNmodelJUNE24.keras") # This is best
+model = tf.keras.models.load_model("../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adam/Adam_earlystopped_best_epoch40.keras")
 # For multiple images & multiple folders
 
-with open("../utils/final_coal_output_2.txt", 'w') as f:
+with open("../utils/final_coal_output_of_our_latest.txt", 'w') as f:
     path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save\SCALE_REMOVED"
     outer_folders = os.listdir(path_location)
     for outer_folder in outer_folders:
