@@ -84,17 +84,22 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
 
 # model = tf.keras.models.load_model("../models/CNNmodelJUNE24.keras") # This is best
 model = tf.keras.models.load_model("../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adam/Adam_earlystopped_best_epoch40.keras")
-# For multiple images & multiple folders
 
-with open("../utils/final_coal_output_of_our_latest.txt", 'w') as f:
-    path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save\SCALE_REMOVED"
+result_name = "Adam_early_stopped_epoch_40"
+result_folder = os.path.join("../results", result_name)
+os.makedirs(result_folder, exist_ok=True)
+
+# For multiple images & multiple folders
+# old txt file is in utils folder
+with open(os.path.join(result_folder, "final_output.txt"), 'w') as f:
+    path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\final"
     outer_folders = os.listdir(path_location)
     for outer_folder in outer_folders:
         total_mineral_percentage = 0
         total_images = 0
         folder_path = os.path.join(path_location, outer_folder)
         files = os.listdir(folder_path)
-        total_images = len(files)
+        total_images = len(files)  
         print("Total files : ", total_images)
 
         for file_name in files:
