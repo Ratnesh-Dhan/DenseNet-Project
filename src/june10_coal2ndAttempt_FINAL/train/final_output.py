@@ -83,49 +83,61 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
 
 
 # model = tf.keras.models.load_model("../models/CNNmodelJUNE24.keras") # This is best
-model = tf.keras.models.load_model("../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adam/Adam_earlystopped_best_epoch40.keras")
+# model = tf.keras.models.load_model("../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras")
+adam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adam/Adam_earlystopped_best_epoch40.keras"
+# rmsprop = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adagrad/Adagrad_earlystopped_best_epoch53.keras"
+# adagrad = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/RMSprop/RMSprop_earlystopped_best_epoch35.keras"
+# adadelta = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adadelta/Adadelta_earlystopped_best_epoch38.keras"
+# nadam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras"
+model_ary = [adam]
+# model_ary = [adam, rmsprop, adagrad, adadelta]
 
-result_name = "Adam_early_stopped_epoch_40"
-result_folder = os.path.join("../results", result_name)
-os.makedirs(result_folder, exist_ok=True)
+for model_name in model_ary:
+    model = tf.keras.models.load_model(model_name) 
+    # result_name = "TESTING_ON_REMOVED_SCALE"
+    result_name = model_name.split('/')[-1].split('.')[0]
+    print(f"Currently running on {result_name} model.")
+    result_folder = os.path.join("../results/LOST", result_name)
+    os.makedirs(result_folder, exist_ok=True)
 
-# For multiple images & multiple folders
-# old txt file is in utils folder
-with open(os.path.join(result_folder, "final_output.txt"), 'w') as f:
-    path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\final"
-    outer_folders = os.listdir(path_location)
-    for outer_folder in outer_folders:
-        total_mineral_percentage = 0
-        total_images = 0
-        folder_path = os.path.join(path_location, outer_folder)
-        files = os.listdir(folder_path)
-        total_images = len(files)  
-        print("Total files : ", total_images)
+    # For multiple images & multiple folders
+    # old txt file is in utils folder
+    with open(os.path.join(result_folder, "final_output.txt"), 'w') as f:
+        path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save"
+        outer_folders = os.listdir(path_location)
+        for outer_folder in outer_folders:
+            total_mineral_percentage = 0
+            total_images = 0
+            folder_path = os.path.join(path_location, outer_folder)
+            files = os.listdir(folder_path)
+            total_images = len(files)  
+            print("Total files : ", total_images)
 
-        for file_name in files:
-            img = plt.imread(os.path.join(folder_path, file_name))
-            img = np.array(img, copy=True)  # Make it writable
-            img = cv2.rectangle(img, (2146, 30), (2572, 162), (0, 0, 0), -1)  # Black rectangle with thickness=-1 for filling
-            heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img, class_num=5)
+            for file_name in files:
+                img = plt.imread(os.path.join(folder_path, file_name))
+                img = np.array(img, copy=True)  # Make it writable
+                img = cv2.rectangle(img, (2146, 30), (2572, 162), (0, 0, 0), -1)  # Black rectangle with thickness=-1 for filling
+                heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img, class_num=5)
 
-            total_number = cavity + cavity_filled + inertinite + minerals + vitrinite
-            cavity_percentage = round((cavity/total_number)*100, 2)
-            cavity_filled_percentage = round((cavity_filled/total_number)*100, 2)
-            inertinite_percentage = round((inertinite/total_number)*100, 2)
-            minerals_percentage = round((minerals/total_number)*100, 2)
-            vitrinite_percentage = round((vitrinite/total_number)*100, 2)
+                total_number = cavity + cavity_filled + inertinite + minerals + vitrinite
+                cavity_percentage = round((cavity/total_number)*100, 2)
+                cavity_filled_percentage = round((cavity_filled/total_number)*100, 2)
+                inertinite_percentage = round((inertinite/total_number)*100, 2)
+                minerals_percentage = round((minerals/total_number)*100, 2)
+                vitrinite_percentage = round((vitrinite/total_number)*100, 2)
 
-            # Adding mineral % 
-            total_mineral_percentage = total_mineral_percentage + minerals_percentage + cavity_filled_percentage
+                # Adding mineral % 
+                total_mineral_percentage = total_mineral_percentage + minerals_percentage + cavity_filled_percentage
 
-        # Average ash % .
-        print(f'Folder name = {outer_folder}')
-        print("Total miniral % = ", total_mineral_percentage)
-        average = total_mineral_percentage/total_images
-        print("Average mineral % = ", average)
-        print("Average ash % = ", average/1.1)
+            # Average ash % .
+            print(f'Folder name = {outer_folder}')
+            print("Total miniral % = ", total_mineral_percentage)
+            average = total_mineral_percentage/total_images
+            print("Average mineral % = ", average)
+            print("Average ash % = ", average/1.1)
 
-        f.write(f'{outer_folder} Total mineral %: {total_mineral_percentage}\n')
-        f.write(f'{outer_folder} Average mineral %: {average}\n')
-        f.write(f'{outer_folder} Average ash %: {average/1.1}\n')
-        f.write('-' * 40 + '\n')
+            f.write(f'{outer_folder} Total mineral %: {total_mineral_percentage}\n')
+            f.write(f'{outer_folder} Average mineral %: {average}\n')
+            f.write(f'{outer_folder} Average ash %: {average/1.1}\n')
+            f.write('-' * 40 + '\n')
+    tf.keras.backend.clear_session()

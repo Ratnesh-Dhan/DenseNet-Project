@@ -2,7 +2,7 @@ import cv2, os
 from tqdm import tqdm
 import sys
 
-folder_name = 'C2'
+folder_name = 'DBM2'
 folderPath = fr"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\final\{folder_name}"
 files = os.listdir(folderPath)
 files_full_path = []
@@ -21,7 +21,7 @@ for f in files:
 base_path = fr"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\final\{folder_name}"
 # location_path = os.path.join(base_path, 'final')
 # save_path = os.path.join(base_path, 'save')
-save_path = fr"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save\{folder_name}"
+save_path = fr"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\grand_final\{folder_name}"
 os.makedirs(save_path, exist_ok=True)
 all_files = os.listdir(base_path)
 for file in tqdm(all_files, total=len(all_files)):
@@ -29,6 +29,11 @@ for file in tqdm(all_files, total=len(all_files)):
         # This is traial
         # Assume 'image' is already loaded
         height, width = image.shape[:2]
+
+        # FOR UPPER SCALE
+        
+        
+        # FOR LOWER SCALE
 
         # Rectangle defined as percentages of width and height
         # horizontal distance of rectangle / image width, vertical distance of rectangle / image height

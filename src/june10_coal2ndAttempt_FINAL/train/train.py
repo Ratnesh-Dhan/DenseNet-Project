@@ -10,7 +10,8 @@ import seaborn as sns
 
 train_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16"
 validation_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\VALIDATION"
-model_name = "CNNmodelJUNE24"
+# model_name = "CNNmodelJUNE24"
+model_name = "September08"
 batch_size = 64
 train_datagen = keras.preprocessing.image.ImageDataGenerator(
     rescale=1./255,
