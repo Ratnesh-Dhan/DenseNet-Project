@@ -5,8 +5,9 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tqdm import tqdm
+import gc
 
-def sliding_window_inference(model, image, window_size=16, stride=8, center_patch_size=16, class_num=5):
+def sliding_window_inference(model, image, window_size=16, stride=16, center_patch_size=16, class_num=5):
     cavity_green = 0
     cavity_filled_blue = 0
     inertinte_red = 0
@@ -21,9 +22,27 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
     patches = []
     coords = []
 
+    def skip_scale(h, w, x, y)-> bool:
+        upper_x = 78
+        upper_y = 9
+        lower_x = 83
+        lower_y = 96
+        if round((y/h)*100) < upper_y:
+            if round((x/w)*100) >= upper_x:
+                return True
+        
+        elif round((y/h)*100) >= lower_y:
+            if round((x/w)*100) >= lower_x:
+                return True
+        
+        return False
+
     for y in range(0, h - window_size + 1, stride):
         for x in range(0, w - window_size + 1, stride):
             patch = image[y:y+window_size, x:x+window_size].astype(np.float32) / 255.0
+            flag = skip_scale(h, w, x, y)
+            if flag:
+                break
             patches.append(patch)
             coords.append((x, y))
 
@@ -55,7 +74,7 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
 
         else:
             if pred_class == 0:
-                color = (0, 0, 0)  # Cavity GREEN
+                color = (0, 255, 0)  # Cavity GREEN
                 cavity_green = cavity_green + 1
             elif pred_class == 1:
                 color = (0, 0, 255)  # Cavity filled BLUE
@@ -84,12 +103,13 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
 
 # model = tf.keras.models.load_model("../models/CNNmodelJUNE24.keras") # This is best
 # model = tf.keras.models.load_model("../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras")
-adam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adam/Adam_earlystopped_best_epoch40.keras"
+# adam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adam/Adam_earlystopped_best_epoch40.keras"
 # rmsprop = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adagrad/Adagrad_earlystopped_best_epoch53.keras"
-# adagrad = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/RMSprop/RMSprop_earlystopped_best_epoch35.keras"
-# adadelta = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adadelta/Adadelta_earlystopped_best_epoch38.keras"
-# nadam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras"
-model_ary = [adam]
+adagrad = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/RMSprop/RMSprop_earlystopped_best_epoch35.keras"
+adadelta = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adadelta/Adadelta_earlystopped_best_epoch38.keras"
+nadam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras"
+# adam = "../models/CNNmodelJUNE24.keras"
+model_ary = [adagrad, adadelta, nadam]
 # model_ary = [adam, rmsprop, adagrad, adadelta]
 
 for model_name in model_ary:
@@ -97,15 +117,25 @@ for model_name in model_ary:
     # result_name = "TESTING_ON_REMOVED_SCALE"
     result_name = model_name.split('/')[-1].split('.')[0]
     print(f"Currently running on {result_name} model.")
-    result_folder = os.path.join("../results/LOST", result_name)
+    result_folder = os.path.join("../results/septmber12", result_name)
     os.makedirs(result_folder, exist_ok=True)
 
+    count = 0
+    image_folder = os.path.join(result_folder, "images")
+    os.makedirs(image_folder, exist_ok=True)
     # For multiple images & multiple folders
     # old txt file is in utils folder
-    with open(os.path.join(result_folder, "final_output.txt"), 'w') as f:
-        path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save"
+    with open(os.path.join(result_folder, "final_output_new.txt"), 'w') as f:
+        # path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save"
+        # path_location = r"/mnt/d/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
+        path_location = r"D:/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
         outer_folders = os.listdir(path_location)
-        for outer_folder in outer_folders:
+        half = []
+        for i in outer_folders:
+            if i.startswith('C'):
+                half.append(i)
+        print("Half: ", half)
+        for outer_folder in half:
             total_mineral_percentage = 0
             total_images = 0
             folder_path = os.path.join(path_location, outer_folder)
@@ -128,6 +158,27 @@ for model_name in model_ary:
 
                 # Adding mineral % 
                 total_mineral_percentage = total_mineral_percentage + minerals_percentage + cavity_filled_percentage
+                # saving the image
+                # plt.figure(figsize=(24, 12))
+                # plt.subplot(1, 2, 1)
+                # plt.imshow(img)
+                # plt.title("Input Petrography Image", fontsize=16)
+                # plt.axis('off')
+                # plt.subplot(1, 2, 2)
+                # plt.imshow(heatmap)
+                # plt.title("Sequential CNN", fontsize=16)
+                # plt.axis('off')
+
+                # # Add text below the plots
+                # plt.figtext(0.5, 0.12, 
+                #     f"Cavity Green: {cavity_percentage} % |  Cavity Filled Blue: {cavity_filled_percentage} %  |  Inertinite Red: {inertinite_percentage} %  |  Minerals Yellow: {minerals_percentage} %  |  Vitrinite Purple: {vitrinite_percentage} %", 
+                #     wrap=True, horizontalalignment='center', fontsize=20)
+                # plt.savefig(f"/mnt/d/NML 2nd working directory/MY_test_result/hello/{file_name}_{count}_comparison.png" )
+                # plt.savefig(f"D:/NML 2nd working directory/MY_test_result/hello/{file_name}_{count}_comparison.png" )
+                # plt.close()
+                count = count + 1
+                del img, heatmap
+                
 
             # Average ash % .
             print(f'Folder name = {outer_folder}')
@@ -141,3 +192,4 @@ for model_name in model_ary:
             f.write(f'{outer_folder} Average ash %: {average/1.1}\n')
             f.write('-' * 40 + '\n')
     tf.keras.backend.clear_session()
+    gc.collect()
