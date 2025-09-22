@@ -1,5 +1,6 @@
 import tensorflow as tf
-import keras_cv
+from tensorflow import keras
+from tensorflow.keras import layers
 
 # --- Dataset loader ---
 def parse_tfrecord_fn(example):
@@ -48,10 +49,42 @@ train_ds = load_dataset("train.tfrecord", batch_size=8)
 val_ds   = load_dataset("val.tfrecord", batch_size=8, shuffle=False)
 
 # --- Model ---
-model = keras_cv.models.EfficientDet.from_preset(
-    "efficientdet_lite0",  # small + fast
-    num_classes=6,         # <-- your dataset classes
+NUM_CLASSES = 6
+backbone = keras.application.EfficientNetB0(
+    include_top=False,
+    input_shape=(224,224,3),
+    weights="imagenet"
 )
+backbone.trainable = False
+
+inputs = keras.Inputs(shape=(224,224,3))
+x = backbone(inputs, training=False)
+x = layers.GlobalAveragePooling2D()(x)
+
+# Classificatoin branch
+cls_output = layers.Dense(NUM_CLASSES, activation="sigmoid", name="cls_output")(x)
+
+# Box regression branch (4 values: [xmin, ymin, xmax, ymax])
+box_output = layers.Dense(4, activation="sigmoid", name="box_output")(x)
+
+model = keras.Model(inputs, outputs=[cls_output, box_output])
+
+losses = {
+    "cls_output": "categorical_crossentropy",
+    "box_output": "mse",  # or smooth L1 if you want custom
+}
+
+model.compile(
+    optimizer=keras.optimizers.Adam(1e-3),
+    loss=losses,
+    metrics={"cls_output": "accuracy"}
+)
+
+
+# model = keras_cv.models.EfficientDet.from_preset(
+#     "efficientdet_lite0",  # small + fast
+#     num_classes=6,         # <-- your dataset classes
+# )
 
 # Compile
 model.compile(
