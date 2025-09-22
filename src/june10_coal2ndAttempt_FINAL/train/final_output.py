@@ -105,11 +105,11 @@ def sliding_window_inference(model, image, window_size=16, stride=16, center_pat
 # model = tf.keras.models.load_model("../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras")
 # adam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adam/Adam_earlystopped_best_epoch40.keras"
 # rmsprop = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adagrad/Adagrad_earlystopped_best_epoch53.keras"
-adagrad = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/RMSprop/RMSprop_earlystopped_best_epoch35.keras"
-adadelta = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adadelta/Adadelta_earlystopped_best_epoch38.keras"
+# adagrad = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/RMSprop/RMSprop_earlystopped_best_epoch35.keras"
+# adadelta = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adadelta/Adadelta_earlystopped_best_epoch38.keras"
 nadam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras"
-# adam = "../models/CNNmodelJUNE24.keras"
-model_ary = [adagrad, adadelta, nadam]
+CNNmodelJUNE24 = "../models/CNNmodelJUNE24.keras"
+model_ary = [nadam, CNNmodelJUNE24]
 # model_ary = [adam, rmsprop, adagrad, adadelta]
 
 for model_name in model_ary:
@@ -125,20 +125,21 @@ for model_name in model_ary:
     os.makedirs(image_folder, exist_ok=True)
     # For multiple images & multiple folders
     # old txt file is in utils folder
-    with open(os.path.join(result_folder, "final_output_new.txt"), 'w') as f:
+    with open(os.path.join(result_folder, "final_output_new_2.txt"), 'w') as f:
         # path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save"
-        # path_location = r"/mnt/d/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
         path_location = r"D:/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
+        # path_location = r"/mnt/d/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
         outer_folders = os.listdir(path_location)
         half = []
         for i in outer_folders:
-            if i.startswith('C'):
+            if i.startswith('DBM'):
                 half.append(i)
         print("Half: ", half)
         for outer_folder in half:
             total_mineral_percentage = 0
             total_images = 0
             folder_path = os.path.join(path_location, outer_folder)
+            files = []
             files = os.listdir(folder_path)
             total_images = len(files)  
             print("Total files : ", total_images)

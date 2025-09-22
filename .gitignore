@@ -25,6 +25,9 @@
 *.csv
 *.json
 
+# xl files
+*.xlsx
+
 # Igonre cache files
 *.pyc
 *.pyo
