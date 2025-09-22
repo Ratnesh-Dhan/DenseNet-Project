@@ -27,6 +27,7 @@
 
 # xl files
 *.xlsx
+*.record
 
 # Igonre cache files
 *.pyc

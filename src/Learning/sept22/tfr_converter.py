@@ -66,5 +66,6 @@ def convert(images_dir, ann_dir, output_path):
 
 if __name__ == "__main__":
     # Example usage:
-    convert("data/images/train", "data/ann/train", "train.record")
-    convert("data/images/val", "data/ann/val", "val.record")
+    # /mnt/d/DATASETS/vehicle-dataset-for-yolo
+    convert("/mnt/d/DATASETS/vehicle-dataset-for-yolo/train/img", "/mnt/d/DATASETS/vehicle-dataset-for-yolo/train/ann", "train.record")
+    convert("/mnt/d/DATASETS/vehicle-dataset-for-yolo/valid/img", "/mnt/d/DATASETS/vehicle-dataset-for-yolo/valid/ann", "val.record")
