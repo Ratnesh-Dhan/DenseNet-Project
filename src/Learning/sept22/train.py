@@ -50,7 +50,7 @@ val_ds   = load_dataset("val.tfrecord", batch_size=8, shuffle=False)
 
 # --- Model ---
 NUM_CLASSES = 6
-backbone = keras.application.EfficientNetB0(
+backbone = keras.applications.EfficientNetB0(
     include_top=False,
     input_shape=(224,224,3),
     weights="imagenet"
@@ -100,4 +100,4 @@ model.fit(
     epochs=20
 )
 
-model.save("new.keras")
+model.save("./model/new.keras")
