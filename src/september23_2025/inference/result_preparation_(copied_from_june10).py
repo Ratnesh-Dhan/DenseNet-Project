@@ -4,7 +4,8 @@ import pandas as pd
 base_path = "../results/septmber25"
 # model_names = os.listdir(base_path)
 # print(model_names)
-model_names = ['EarlyStoppedBestSeptmber24', 'Septmber24']
+#EarlyStoppedBest
+model_names = ['EarlyStoppedBestadagrad']
 for model_name in model_names:
     file = os.path.join(base_path, model_name,"final_output.txt")
 
@@ -38,11 +39,39 @@ for model_name in model_names:
                 row.append(row_data)
                 row_data = {}
 
-    for i in row:
-        print(i) 
-    # ✅ Sort by Sample number (numerical order)
-    # row.sort(key=lambda r: int(r['Sample'][1:])) # FROM C
-    row.sort(key=lambda r: int(r['Sample'][3:])) # FOR DBM
+    # for i in row:
+    #     print(i['Sample']) 
+    # # ✅ Sort by Sample number (numerical order)
+    # if i['Sample'].startswith('C'):
+    #     row.sort(key=lambda r: int(r['Sample'][1:])) # FROM C
+    # else:
+    #     row.sort(key=lambda r: int(r['Sample'][3:])) # FOR DBM
+
+    # # ✅ Sort by Sample number (handles both C* and DBM*)
+    # def sample_sort_key(r):
+    #     s = r['Sample']
+    #     if s.startswith("C"):
+    #         return int(s[1:])  # "C8" -> 8
+    #     elif s.startswith("DBM"):
+    #         return int(s[3:])  # "DBM19" -> 19
+    #     else:
+    #         return float("inf")  # put anything else at the end
+
+    # row.sort(key=sample_sort_key)
+
+    # ✅ Sort Cs first, then DBMs
+    def sample_sort_key(r):
+        s = r['Sample']
+        if s.startswith("C"):
+            return (0, int(s[1:]))   # group 0 → all C's
+        elif s.startswith("DBM"):
+            return (1, int(s[3:]))   # group 1 → all DBM's
+        else:
+            return (2, float("inf"))  # unknown samples go last
+
+    row.sort(key=sample_sort_key)
+
+
 
     df = pd.DataFrame(row)
     output_file = "../results/Excel_Files"

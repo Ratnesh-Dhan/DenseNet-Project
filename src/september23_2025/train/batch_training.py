@@ -2,6 +2,7 @@ from random import shuffle
 from tensorflow import keras
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from model import LVGG16_16x16
+from model32 import battis_x_battis
 import json
 from matplotlib import pyplot as plt
 import seaborn as sns
@@ -14,13 +15,16 @@ import tensorflow as tf
 absl.logging.set_verbosity(absl.logging.ERROR)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'   # 0 = all logs, 1 = INFO, 2 = WARNING, 3 = ERROR
 
-train_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/TRAINING 16"
-validation_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/VALIDATION"
-model_names = ['rmsprop', 'adadelta', 'adagrad', 'nadam']
+# train_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/TRAINING 16"
+# validation_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/VALIDATION"
+train_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/31/TRAINING 31"
+validation_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/31/VALIDATION"
+model_names = ['adadelta', 'adagrad']
 
 # batch_size = 64 # for sparse categorical
 batch_size=64
-img_size=(16,16)
+# img_size=(16,16)
+img_size=(30, 30)
 
 for model_name in model_names:
     train_ds = keras.utils.image_dataset_from_directory(
@@ -52,7 +56,7 @@ for model_name in model_names:
         # verbose=1
     )
 
-    model_path_with_name = os.path.join("../models", model_name)
+    model_path_with_name = os.path.join("../models","32", model_name)
     os.makedirs(model_path_with_name, exist_ok=True)
     model_checkpoint=ModelCheckpoint(
         filepath=os.path.join(model_path_with_name,f"EarlyStoppedBest{model_name}.keras"),
@@ -62,7 +66,9 @@ for model_name in model_names:
         mode='auto'
     )
 
-    model = LVGG16_16x16(num_classes=5, optimizer=model_name)
+    # model = LVGG16_16x16(num_classes=5, optimizer=model_name)
+    model = battis_x_battis(num_classes=5, optimizer=model_name)
+
     history = model.fit(
         train_ds,
         validation_data=val_ds,
@@ -93,7 +99,7 @@ for model_name in model_names:
     plt.ylim(0)       # Start y-axis at 0
 
     plt.tight_layout()
-    results_folder = os.path.join("../results", "batch_train", model_name)
+    results_folder = os.path.join("../results", "batch_train_for_32", model_name)
     os.makedirs(results_folder, exist_ok=True)
     plt.savefig(os.path.join(results_folder, f"{model_name}.png"), bbox_inches="tight")
 
