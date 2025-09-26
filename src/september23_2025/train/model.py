@@ -1,7 +1,7 @@
 from tensorflow.keras import layers, models
 import tensorflow as tf
 
-def LVGG16_16x16(num_classes=5):
+def LVGG16_16x16(num_classes=5, optimizer='adam', lr=1e-4):
     model = models.Sequential()
 
     # Block 1
@@ -25,8 +25,21 @@ def LVGG16_16x16(num_classes=5):
     model.add(layers.Dropout(0.5))
     model.add(layers.Dense(num_classes, activation='softmax'))
 
+    # Choose optimizer on the go
+    optimizers = {
+        "adam": tf.keras.optimizers.Adam(learning_rate=lr),
+        "rmsprop": tf.keras.optimizers.RMSprop(learning_rate=lr),
+        "adadelta": tf.keras.optimizers.Adadelta(learning_rate=lr),
+        "adagrad": tf.keras.optimizers.Adagrad(learning_rate=lr),
+        "nadam": tf.keras.optimizers.Nadam(learning_rate=lr),
+    }
+
+    if optimizer not in optimizers:
+        raise ValueError(f"Unsupported optimizer: {optimizer}. Choose from {list(optimizers.keys())}")
+
+
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+        optimizer=optimizers[optimizer],
         # loss='categorical_crossentropy',
         loss='sparse_categorical_crossentropy',
         metrics=['accuracy']

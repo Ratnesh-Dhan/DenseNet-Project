@@ -17,7 +17,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'   # 0 = all logs, 1 = INFO, 2 = WARNING
 train_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/TRAINING 16"
 validation_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/VALIDATION"
 
-model_name = "Septmber23"
+model_name = "Septmber24"
 # batch_size = 64 # for sparse categorical
 batch_size=64
 img_size=(16,16)
@@ -44,29 +44,29 @@ AUTOTUNE = tf.data.AUTOTUNE
 train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
 val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-# train_datagen = keras.preprocessing.image.ImageDataGenerator(
-#     rescale=1./255,
-# )
-# validation_datagen = keras.preprocessing.image.ImageDataGenerator(
-#     rescale=1./255,
-# )
+train_datagen = keras.preprocessing.image.ImageDataGenerator(
+    rescale=1./255,
+)
+validation_datagen = keras.preprocessing.image.ImageDataGenerator(
+    rescale=1./255,
+)
 
-# train_generator = train_datagen.flow_from_directory(
-#     train_dir,
-#     target_size=(16,16),
-#     batch_size=batch_size,
-#     # class_mode='sparse', # for sparse categorical entropy
-#     class_mode='categorical'
-# )
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(16,16),
+    batch_size=batch_size,
+    # class_mode='sparse', # for sparse categorical entropy
+    class_mode='categorical'
+)
 
-# validation_generator = validation_datagen.flow_from_directory(
-#     validation_dir,
-#     target_size=(16,16),
-#     batch_size=batch_size,
-#     # class_mode='sparse',
-#     class_mode='categorical',
-#     shuffle=False
-# )
+validation_generator = validation_datagen.flow_from_directory(
+    validation_dir,
+    target_size=(16,16),
+    batch_size=batch_size,
+    # class_mode='sparse',
+    class_mode='categorical',
+    shuffle=False
+)
 
 early_stop=EarlyStopping(
     monitor='val_loss',
