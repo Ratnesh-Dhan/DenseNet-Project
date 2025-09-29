@@ -1,8 +1,10 @@
 from tensorflow import keras
 
 def load_dataset(batch_size):
-    train_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16"
-    validation_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\VALIDATION"
+    train_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/TRAINING 16"
+    validation_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/VALIDATION"
+    # train_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16"
+    # validation_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\VALIDATION"
 
     train_datagen = keras.preprocessing.image.ImageDataGenerator(
         rescale=1./255,

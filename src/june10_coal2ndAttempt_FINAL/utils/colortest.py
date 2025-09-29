@@ -1,6 +1,22 @@
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+# import matplotlib.patches as mpatches
+import sys, os
 
+
+folderPath = fr"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\final\C3"
+files = os.listdir(folderPath)
+
+for file in files:
+    image = plt.imread(os.path.join(folderPath, file))
+    print(f"{file} : {image.shape}")
+
+
+
+
+
+
+
+sys.exit(0)
 # Your data
 cavity_percentage = 10
 cavity_filled_percentage = 20
@@ -20,7 +36,7 @@ legend_patches = [
 # Create your plot (placeholder example)
 fig, ax = plt.subplots()
 ax.plot([0, 1], [0, 1])  # Dummy plot
-
+q
 # Add legend at bottom center
 plt.legend(
     handles=legend_patches,

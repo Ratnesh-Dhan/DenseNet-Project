@@ -4,13 +4,14 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tqdm import tqdm
-
-def sliding_window_inference(model, image, window_size=16, stride=8, center_patch_size=16, class_num=5):
+# Default stride = 8
+def sliding_window_inference(model, image, window_size=16, stride=16, center_patch_size=16, class_num=5):
     cavity_green = 0
     cavity_filled_blue = 0
     inertinte_red = 0
     mineral_yellow = 0
     vitrinite_purple = 0
+    unknown = 0
     h, w, _ = image.shape
     heatmap = np.zeros((h, w, 3), dtype=np.uint8)
 
@@ -19,10 +20,28 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
 
     patches = []
     coords = []
+    def skip_scale(h, w, x, y)-> bool:
+        upper_x = 78
+        upper_y = 9
+        lower_x = 83
+        lower_y = 96
+        if round((y/h)*100) < upper_y:
+            if round((x/w)*100) >= upper_x:
+                return True
+        
+        elif round((y/h)*100) >= lower_y:
+            if round((x/w)*100) >= lower_x:
+                return True
+        
+        return False
+        
 
     for y in range(0, h - window_size + 1, stride):
         for x in range(0, w - window_size + 1, stride):
             patch = image[y:y+window_size, x:x+window_size].astype(np.float32) / 255.0
+            flag = skip_scale(h, w, x, y)
+            if flag:
+                break
             patches.append(patch)
             coords.append((x, y))
 
@@ -54,7 +73,7 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
 
         else:
             if pred_class == 0:
-                color = (0, 0, 0)  # Cavity GREEN
+                color = (0, 255, 0)  # Cavity GREEN
                 cavity_green = cavity_green + 1
             elif pred_class == 1:
                 color = (0, 0, 255)  # Cavity filled BLUE
@@ -66,9 +85,12 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
             elif pred_class == 3:
                 color = (255, 255, 0)  # Minerals YELLOW
                 mineral_yellow = mineral_yellow + 1
-            else:  # pred_class == 4
+            elif  pred_class == 4:
                 color = (128, 0, 128)  # Vitrinite PURPLE
                 vitrinite_purple = vitrinite_purple + 1
+            else:
+                color = (255, 255, 255)
+                unknown = unknown + 1
 
         cv2.rectangle(
             heatmap,
@@ -78,29 +100,30 @@ def sliding_window_inference(model, image, window_size=16, stride=8, center_patc
             thickness=-1
         )
 
-    return heatmap, cavity_green, cavity_filled_blue, inertinte_red, mineral_yellow, vitrinite_purple
+    return heatmap, cavity_green, cavity_filled_blue, inertinte_red, mineral_yellow, vitrinite_purple, unknown
 
 
-# model = tf.keras.models.load_model("../models/newCnnEpoch25.keras")
+model = tf.keras.models.load_model("../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adam/Adam_earlystopped_best_epoch40.keras")
 # model = tf.keras.models.load_model("../models/newCNNjune13Epoch_100.keras")
 # model = tf.keras.models.load_model("../models/EarlyStoppedBest11June.keras") # This is good
 # model = tf.keras.models.load_model("../models/modelJUNE11.keras") # This is better
-model = tf.keras.models.load_model("../models/CNNmodelJUNE24.keras") # This is best
+# model = tf.keras.models.load_model("../models/CNNmodelJUNE24.keras") # This is best
 # model = tf.keras.models.load_model("../models/newCnnEpoch25.keras") # This is not best
 
 # For single image
-file_name = "030"
+file_name = "003"
 add_name = "CNN"
 # file = f"D:/NML ML Works/Coal_Lebels/{file_name}.jpg"
 # file = f"D:/NML ML Works/Deep bhaiya/TESTING2-20250611T124336Z-1-001/TESTING2/{file_name}.jpg"
 # file = f"D:/NML ML Works/Coal photomicrographs/{file_name}.jpg"
 # file = f"C:/Users/NDT Lab/Documents/DATA-20250609T100339Z-1-001/DATA/TESTING/{file_name}.jpg"
-file = f"D:/NML 2nd working directory/testing/{file_name}.jpg"
+# file = f"D:/NML 2nd working directory/testing/{file_name}.jpg"
+file = f"/mnt/d/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32/C17/{file_name}.jpg"
 img = plt.imread(file)
 img = np.array(img, copy=True)  # Make it writable
 img = cv2.rectangle(img, (2146, 30), (2572, 162), (0, 0, 0), -1)  # Black rectangle with thickness=-1 for filling
 
-heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite = sliding_window_inference(model, img, class_num=5)
+heatmap, cavity, cavity_filled, inertinite, minerals, vitrinite, unknown = sliding_window_inference(model, img, class_num=5)
 
 total_number = cavity + cavity_filled + inertinite + minerals + vitrinite
 cavity_percentage = round((cavity/total_number)*100, 2)
@@ -109,7 +132,9 @@ inertinite_percentage = round((inertinite/total_number)*100, 2)
 minerals_percentage = round((minerals/total_number)*100, 2)
 vitrinite_percentage = round((vitrinite/total_number)*100, 2)
 
-cv2.imwrite(f"./results/{file_name}_{add_name}_heatmap.png", cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
+location1 = "./results_september12"
+os.makedirs(location1, exist_ok=True)
+# cv2.imwrite(f"{location1}/{file_name}_{add_name}_heatmap.png", cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB))
 plt.figure(figsize=(24, 12))
 plt.subplot(1, 2, 1)
 plt.imshow(img)
@@ -127,11 +152,11 @@ plt.figtext(0.5, 0.12,
 
 # Organic and Inorganic text 
 plt.figtext(0.5, 0.06,
-            f"Organic: {round(inertinite_percentage+vitrinite_percentage, 2)} % | Inorganic: {round(minerals_percentage+cavity_filled_percentage,2)} %",
+            f"Organic: {round(inertinite_percentage+vitrinite_percentage, 2)} % | Inorganic: {round(minerals_percentage+cavity_filled_percentage,2)} % | Unknown patches: {unknown}",
             wrap=True, horizontalalignment='center', fontsize=20)
 plt.tight_layout(rect=[0, 0.03, 1, 1])  # Leave space at bottom for the text
 
-plt.savefig(f"../results/{file_name}_{add_name}_comparison.png" )
+plt.savefig(f"{location1}/{file_name}_{add_name}_comparison.png" )
 plt.show()
 
 sys.exit(0)
