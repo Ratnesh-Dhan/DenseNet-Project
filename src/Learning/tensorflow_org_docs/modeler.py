@@ -113,4 +113,75 @@ plt.ylabel('Cross Entropy')
 plt.ylim([0,1.0])
 plt.title('Training and Validation Loss')
 plt.xlabel('epoch')
-plt.show()
+plt.savefig("training_and_validation_loss_before_fine_tuning.png")
+
+# Fine-tuning
+base_model.trainable = True
+# Let's take a look to see how many layers are in the base model
+print("Number of layers in the base model: ", len(base_model.layers))
+
+# Fine-tune from this layer onwards
+fine_tune_at = 100
+
+# Freeze all the layers before the `fine_tune_at` layer
+for layer in base_model.layers[:fine_tune_at]:
+  layer.trainable = False
+
+model.compile(loss=tf.keras.losses.BinaryCrossentropy(),
+              optimizer = tf.keras.optimizers.RMSprop(learning_rate=base_learning_rate/10),
+              metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0.5, name='accuracy')])
+            
+fine_tune_epochs = 10
+total_epochs =  initial_epochs + fine_tune_epochs
+
+history_fine = model.fit(train_dataset,
+                         epochs=total_epochs,
+                         initial_epoch=len(history.epoch),
+                         validation_data=validation_dataset)
+
+acc += history_fine.history['accuracy']
+val_acc += history_fine.history['val_accuracy']
+
+loss += history_fine.history['loss']
+val_loss += history_fine.history['val_loss']
+
+plt.figure(figsize=(8, 8))
+plt.subplot(2, 1, 1)
+plt.plot(acc, label='Training Accuracy')
+plt.plot(val_acc, label='Validation Accuracy')
+plt.ylim([0.8, 1])
+plt.plot([initial_epochs-1,initial_epochs-1],
+          plt.ylim(), label='Start Fine Tuning')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(2, 1, 2)
+plt.plot(loss, label='Training Loss')
+plt.plot(val_loss, label='Validation Loss')
+plt.ylim([0, 1.0])
+plt.plot([initial_epochs-1,initial_epochs-1],
+         plt.ylim(), label='Start Fine Tuning')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.xlabel('epoch')
+plt.savefig("training_and_validation_loss_after_fine_tuning.png")
+
+loss, accuracy = model.evaluate(test_dataset)
+print('Test accuracy :', accuracy)
+
+# Retrieve a batch of images from the test set
+image_batch, label_batch = test_dataset.as_numpy_iterator().next()
+predictions = model.predict_on_batch(image_batch).flatten()
+predictions = tf.where(predictions < 0.5, 0, 1)
+
+print('Predictions:\n', predictions.numpy())
+print('Labels:\n', label_batch)
+
+plt.figure(figsize=(10, 10))
+for i in range(9):
+  ax = plt.subplot(3, 3, i + 1)
+  plt.imshow(image_batch[i].astype("uint8"))
+  plt.title(class_names[predictions[i]])
+  plt.axis("off")
+
+plt.savefig("predictoins.png")
