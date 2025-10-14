@@ -14,22 +14,24 @@ EPOCHS = 20
 MODEL_NAME = "ssd_model"
 
 TRAIN_ANN = "../../../../Datasets/NEU-DET/train/annotations"
-VAL_ANN = "../../../../Datasets/NEU-DET/validation/annotations"
+VAL_ANN = "../../../../Datasets/NEU-DET/val/annotations"
 TEST_ANN = "../../../../Datasets/NEU-DET/test/annotatioas"
 TRAIN_IMG_DIR = "../../../../Datasets/NEU-DET/train/images"
-VAL_IMG_DIR = "../../../../Datasets/NEU-DET/validation/images"
+VAL_IMG_DIR = "../../../../Datasets/NEU-DET/val/images"
 TEST_IMG_DIR = "../../../../Datasets/NEU-DET/test/images"
 RESULTS_DIR = f"../results/{MODEL_NAME}"
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 def tf_load(xml_file, img_dir):
-    img, labels = tf.py_function(
+    img, boxes, labels = tf.py_function(
         func=load_image_and_labels,
         inp=[xml_file, img_dir],
         Tout=[tf.float32, tf.float32, tf.int32]
     )
     img.set_shape([*IMG_SIZE, 3])
-    return img, {"bboxes": labels[0], "class_probs": labels[1]}
+    boxes.set_shape([None, 4])
+    labels.set_shape([None])
+    return img, {"bboxes": boxes, "class_probs": labels}
 
 def prepare_dataset(xml_glob, img_dir):
     xml_files = glob.glob(xml_glob)

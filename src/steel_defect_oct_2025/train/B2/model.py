@@ -10,13 +10,13 @@ def build_ssd_model(num_classes, max_boxes=10, input_shape=(200,200,3)):
     x = layers.GlobalAveragePooling2D()(base_model.output)
 
     # Predict boxes: shape (max_boxes, 4)
-    bbox_output = layers.Dense(max_boxes*4, name="bboxes")(x)
-    bbox_output = layers.Reshape((max_boxes, 4))(bbox_output)
+    bbox_output = layers.Dense(max_boxes*4)(x)
+    bbox_output = layers.Reshape((max_boxes, 4), name="bboxes")(bbox_output)
 
     # Predict classes: shape (max_boxes, num_classes)
-    class_output = layers.Dense(max_boxes*num_classes, name="class_probs")(x)
+    class_output = layers.Dense(max_boxes*num_classes)(x)
     class_output = layers.Reshape((max_boxes, num_classes))(class_output)
-    class_output = layers.Activation("softmax")(class_output)
+    class_output = layers.Activation("softmax", name="class_probs")(class_output)
 
     model = tf.keras.Model(inputs=base_model.input, outputs=[bbox_output, class_output])
 
