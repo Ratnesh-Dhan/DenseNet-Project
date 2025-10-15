@@ -13,23 +13,49 @@ CLASS_MAP = {
 }
 
 def parse_voc_annotation(xml_file):
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
-    size = root.find("size")
-    width, height = int(size.find("width").text), int(size.find("height").text)
+    try:
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+        size = root.find("size")
+        width, height = int(size.find("width").text), int(size.find("height").text)
 
-    boxes, labels = [], []
-    for obj in root.findall("object"):
-        label = obj.find("name").text
-        bndbox = obj.find("bndbox")
-        xmin = int(bndbox.find("xmin").text) / width
-        ymin = int(bndbox.find("ymin").text) / height
-        xmax = int(bndbox.find("xmax").text) / width
-        ymax = int(bndbox.find("ymax").text) / height
-        boxes.append([xmin, ymin, xmax, ymax])
-        labels.append(CLASS_MAP[label])
+        boxes, labels = [], []
+        for obj in root.findall("object"):
+            label = obj.find("name").text
+            bndbox = obj.find("bndbox")
+            xmin = int(bndbox.find("xmin").text) / width
+            ymin = int(bndbox.find("ymin").text) / height
+            xmax = int(bndbox.find("xmax").text) / width
+            ymax = int(bndbox.find("ymax").text) / height
+            boxes.append([xmin, ymin, xmax, ymax])
+            labels.append(CLASS_MAP[label])
 
-    return np.array(boxes, dtype=np.float32), np.array(labels, dtype=np.int32)
+        return np.array(boxes, dtype=np.float32), np.array(labels, dtype=np.int32)
+    except Exception as e:
+        print(f"[ERROR] parse_voc_annotation failed for {xml_file}: {e}")
+        return np.zeros((0, 4), dtype=np.float32), np.zeros((0,), dtype=np.int32)
+
+def load_image_and_labels(xml_file, img_dir, img_size=(200,200)):
+    # Decode from TensorFlow tensors to normal Python strings
+    try: 
+        xml_file = xml_file.numpy().decode("utf-8") if isinstance(xml_file, tf.Tensor) else xml_file
+        img_dir = img_dir.numpy().decode("utf-8") if isinstance(img_dir, tf.Tensor) else img_dir
+
+        filename = os.path.splitext(os.path.basename(xml_file))[0]
+        img_path = os.path.join(img_dir, filename + ".jpg")
+
+        if not os.path.exists(img_path):
+            raise FileNotFoundError(f"Image not found: {img_path}")
+
+        # Load image
+        img = tf.io.read_file(img_path)
+        img = tf.image.decode_jpeg(img, channels=3)
+        img = tf.image.resize(img, img_size) / 255.0
+        boxes, labels = parse_voc_annotation(xml_file)
+        return img, boxes, labels
+    except Exception as e:
+        print(f"[ERROR] load_image_and_labels failed for {xml_file}: {e}")
+        return np.zeros((*img_size, 3), dtype=np.float32), np.zeros((0, 4), dtype=np.float32), np.zeros((0,), dtype=np.int32)
 
 # def load_image_and_labels(xml_file, img_dir, img_size=(200,200)):
 #     # filename = os.path.splitext(os.path.basename(xml_file))[0]
@@ -81,23 +107,3 @@ def parse_voc_annotation(xml_file):
 #     boxes, labels = parse_voc_annotation(xml_file)
 
 #     return img, boxes, labels
-def load_image_and_labels(xml_file, img_dir, img_size=(200,200)):
-    # Decode from TensorFlow tensors to normal Python strings
-    xml_file = xml_file.numpy().decode("utf-8") if isinstance(xml_file, tf.Tensor) else xml_file
-    img_dir = img_dir.numpy().decode("utf-8") if isinstance(img_dir, tf.Tensor) else img_dir
-
-    filename = os.path.splitext(os.path.basename(xml_file))[0]
-    print("xml file : ", xml_file)
-    print("file name : ", filename)
-    img_path = os.path.join(img_dir, filename + ".jpg")
-
-    if not os.path.exists(img_path):
-        raise FileNotFoundError(f"Image not found: {img_path}")
-
-    # Load image
-    img = tf.io.read_file(img_path)
-    img = tf.image.decode_jpeg(img, channels=3)
-    img = tf.image.resize(img, img_size) / 255.0
-
-    boxes, labels = parse_voc_annotation(xml_file)
-    return img, boxes, labels
