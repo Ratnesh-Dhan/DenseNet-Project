@@ -1,4 +1,7 @@
 import glob
+import tensorflow as tf
+from dataset_loader import load_image_and_labels
+
 
 train_xml_files = glob.glob("train/annotations/*.xml")
 img_dir = "train/images"

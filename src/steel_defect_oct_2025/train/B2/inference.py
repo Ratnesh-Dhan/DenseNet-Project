@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+from dataset_loader import load_image_and_labels
 
 def run_inference_ssd(model, image_path, max_boxes=10, threshold=0.3):
     img, _ = load_image_and_labels(image_path, "train/images")

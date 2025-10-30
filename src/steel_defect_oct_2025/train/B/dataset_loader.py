@@ -31,29 +31,6 @@ def parse_voc_annotation(xml_file):
         labels.append(CLASS_MAP[label])
     return filename, boxes, labels
 
-def load_image_and_label_old(xml_file, img_dir):
-    filename, boxes, labels = parse_voc_annotation(xml_file)
-    crop_name = filename.split("_")[0]
-    if crop_name == "pitted":
-        insider_folder_name = "pitted_surface"
-    elif crop_name == "rolled-in":
-        insider_folder_name = "rolled-in_scale"
-    else:
-        insider_folder_name = crop_name
-    print("filename : ", filename)
-    if filename.endswith(".jpg"):
-        img_path = os.path.join(img_dir, insider_folder_name, filename)
-    else:
-        print(filename)
-        img_path = os.path.join(img_dir, insider_folder_name, f'{filename}.jpg')
-
-    img = tf.io.read_file(img_path)
-    img = tf.image.decode_jpeg(img, channels=3)
-    img = tf.image.resize(img, (200,200)) / 255.0
-
-    # For simplicity, take only the first object per image
-    return img, {"bbox": boxes[0], "class": labels[0]}
-
 def load_image_and_label(xml_path, img_dir):
     """
     This version is wrapped with tf.py_function to work inside Dataset.map()
@@ -64,17 +41,11 @@ def load_image_and_label(xml_path, img_dir):
         filename, boxes, labels = parse_voc_annotation(xml_path_str)
 
         crop_name = filename.split("_")[0]
-        if crop_name == "pitted":
-            insider_folder_name = "pitted_surface"
-        elif crop_name == "rolled-in":
-            insider_folder_name = "rolled-in_scale"
-        else:
-            insider_folder_name = crop_name
 
         if filename.endswith(".jpg"):
-            img_path = os.path.join(img_dir, insider_folder_name, filename)
+            img_path = os.path.join(img_dir, filename)
         else:
-            img_path = os.path.join(img_dir, insider_folder_name, f"{filename}.jpg")
+            img_path = os.path.join(img_dir, f"{filename}.jpg")
 
         img = tf.io.read_file(img_path)
         img = tf.image.decode_jpeg(img, channels=3)
@@ -95,3 +66,29 @@ def load_image_and_label(xml_path, img_dir):
     label.set_shape(())
 
     return img, {"bbox": bbox, "class": label}
+
+
+# def load_image_and_label_old(xml_file, img_dir):
+#     filename, boxes, labels = parse_voc_annotation(xml_file)
+#     crop_name = filename.split("_")[0]
+#     # if crop_name == "pitted":
+#     #     insider_folder_name = "pitted_surface"
+#     # elif crop_name == "rolled-in":
+#     #     insider_folder_name = "rolled-in_scale"
+#     # else:
+#     #     insider_folder_name = crop_name
+#     print("filename : ", filename)
+#     if filename.endswith(".jpg"):
+#         img_path = os.path.join(img_dir, filename)
+#     else:
+#         print(filename)
+#         # img_path = os.path.join(img_dir, insider_folder_name, f'{filename}.jpg')
+#         img_path = os.path.join(img_dir, f'{filename}.jpg')
+
+#     img = tf.io.read_file(img_path)
+#     img = tf.image.decode_jpeg(img, channels=3)
+#     img = tf.image.resize(img, (200,200)) / 255.0
+
+#     # For simplicity, take only the first object per image
+#     return img, {"bbox": boxes[0], "class": labels[0]}
+
