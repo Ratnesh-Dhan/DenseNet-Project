@@ -101,19 +101,28 @@ if __name__ == "__main__":
     epochs = 20
 
     # === Dataset ===
-    xml_files = glob("../../../../Datasets/NEU-DET/train/annotations/*.xml")
-    img_dir = "../../../../Datasets/NEU-DET/train/images"
-
+    xml_files = glob("/mnt/d/Code/DenseNet-Project/Datasets/NEU-DET/train/annotations/*.xml")
+    img_dir = "/mnt/d/Code/DenseNet-Project/Datasets/NEU-DET/train/images"
+    assert len(xml_files) > 0, "No train XML files found — check path!"
     dataset = tf.data.Dataset.from_tensor_slices(xml_files)
     dataset = dataset.map(lambda x: load_image_and_label(x, img_dir))
     train_dataset = dataset.batch(16).prefetch(tf.data.AUTOTUNE)
 
-    val_xml_files = glob("../../../../Datasets/NEU-DET/validation/annotations/*.xml")
-    val_img_dir = "../../../../Datasets/NEU-DET/validation/images"
-
+    val_xml_files = glob("/mnt/d/Code/DenseNet-Project/Datasets/NEU-DET/val/annotations/*.xml")
+    val_img_dir = "/mnt/d/Code/DenseNet-Project/Datasets/NEU-DET/val/images"
+    assert len(val_xml_files) > 0, "No val XML files found — check path!"
     val_dataset = tf.data.Dataset.from_tensor_slices(val_xml_files)
     val_dataset = val_dataset.map(lambda x: load_image_and_label(x, val_img_dir))
     val_dataset = val_dataset.batch(16).prefetch(tf.data.AUTOTUNE)
+
+    # === TEST DATASET ===
+    test_xml_files = glob("/mnt/d/Code/DenseNet-Project/Datasets/NEU-DET/test/annotations/*.xml")
+    test_img_dir = "/mnt/d/Code/DenseNet-Project/Datasets/NEU-DET/test/images"
+    assert len(test_xml_files) > 0, "No test XML files found — check path!"
+    test_dataset = tf.data.Dataset.from_tensor_slices(test_xml_files)
+    test_dataset = test_dataset.map(lambda x: load_image_and_label(x, test_img_dir))
+    test_dataset = test_dataset.batch(16).prefetch(tf.data.AUTOTUNE)
+
 
     # # Train / validation split
     # train_size = int(0.8 * len(xml_files))
@@ -135,3 +144,22 @@ if __name__ == "__main__":
         true_classes = labels["class"].numpy()
         preds = model.predict(images, verbose=0)[1]
         pred_classes = np.argmax(preds, axis=1) 
+    
+    # === Evaluate on Test Set ===
+    print("\nEvaluating on test dataset...")
+    test_results = model.evaluate(test_dataset)
+    print("Test Results:", test_results)
+
+    # Optionally — Confusion Matrix & Classification Report for Test Set
+    plot_confusion_matrix_and_classification_report(
+        model,
+        test_dataset,
+        CLASS_NAMES,
+        NUM_CLASSES,
+        f"{model_name}_test"
+    )
+    with open(f"../results/{model_name}_test_metrics.txt", "w") as f:
+        for name, val in zip(model.metrics_names, test_results):
+            f.write(f"{name}: {val}\n")
+
+    print(f"Test results saved to ../results/{model_name}_test_confusion_matrix.png")
