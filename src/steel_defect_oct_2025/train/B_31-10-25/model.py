@@ -58,11 +58,17 @@ def get_model(CLASS_NAMES, CLASS_MAP):
     # The `classification_loss` and `box_loss` arguments are not standard.
     
     # We pass the losses as a dictionary to the `loss` argument.
+    # model.compile(
+    #     optimizer=tf.keras.optimizers.Adam(1e-4),
+    #     loss={
+    #         "classification_loss": keras_cv.losses.FocalLoss(from_logits=True),
+    #         "box_loss": keras_cv.losses.CIoULoss(bounding_box_format="yxyx"), # format depends on your data
+    #     }
+    # )
     model.compile(
         optimizer=tf.keras.optimizers.Adam(1e-4),
-        loss={
-            "classification_loss": keras_cv.losses.FocalLoss(from_logits=True),
-            "box_loss": keras_cv.losses.CIoULoss(bounding_box_format="yxyx"), # format depends on your data
-        }
+        classification_loss= keras_cv.losses.FocalLoss(from_logits=True),
+        box_loss= keras_cv.losses.CIoULoss(bounding_box_format="yxyx"), # format depends on your data
+        
     )
     return model
