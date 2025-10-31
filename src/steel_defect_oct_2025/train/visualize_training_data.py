@@ -59,9 +59,9 @@ for cls in os.listdir(images_dir):
                 all_images.append(os.path.join(cls_folder, img_file))
 
 # === Show random samples ===
-sample_images = random.sample(all_images, 5)
+# sample_images = random.random(all_images
 
-for img_path in sample_images:
+for img_path in all_images:
     filename = os.path.splitext(os.path.basename(img_path))[0]
     ann_path = os.path.join(annotations_dir, filename + ".xml")
     if os.path.exists(ann_path):

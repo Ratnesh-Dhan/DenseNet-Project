@@ -5,7 +5,6 @@ import sys
 import os
 
 # === Your classes ===
-CLASS_NAMES = ["crazing", "inclusion", "patches", "pitted_surface", "rolled-in_scale", "scratches"]
 # CLASS_MAP = {
 #     "crazing": 0,
 #     "inclusion": 1,
@@ -14,6 +13,7 @@ CLASS_NAMES = ["crazing", "inclusion", "patches", "pitted_surface", "rolled-in_s
 #     "rolled-in_scale": 4,
 #     "scratches": 5
 # }
+CLASS_NAMES = ["crazing", "inclusion", "patches", "pitted_surface", "rolled-in_scale", "scratches"]
 
 def load_and_preprocess_image(image_path, target_size=(200, 200)):
     """Load and normalize image for inference."""
@@ -78,35 +78,24 @@ def run_inference(model_path, image_path, save_output):
     img_cv = cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB)
 
     output = draw_boxes(img_cv, bbox_pred, labels, scores, threshold=0.4)
-    save_path = save_output + os.path.basename(image_path)
+    save_path = os.path.join(save_output, os.path.basename(image_path))
     cv2.imwrite(save_path, cv2.cvtColor(output, cv2.COLOR_RGB2BGR))
     print(f"✅ Saved detected image at: {save_path}")
-    # if save_output:
-    #     save_path = os.path.splitext(image_path)[0] + "_detected.jpg"
 
-    #     cv2.imwrite(save_path, cv2.cvtColor(output, cv2.COLOR_RGB2BGR))
-    #     print(f"✅ Saved detected image at: {save_path}")
-    # else:
-    #     cv2.imshow("Detections", cv2.cvtColor(output, cv2.COLOR_RGB2BGR))
-    #     cv2.waitKey(0)
-    #     cv2.destroyAllWindows()
 
-# === CLI ===
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(description="Run multi-object detection")
-    # parser.add_argument("--image", required=True, help="Path to image")
-    # parser.add_argument("--model", required=True, help="Path to saved model directory")
-    # parser.add_argument("--save", action="store_true", help="Save output instead of showing it")
-    # args = parser.parse_args()
     model_name="custom_mobilenet_detector.keras"
 
     # for multiple 
-    images = "../../../../Datasets/NEU-DET/validation/images"
+    images = "/mnt/d/Code/DenseNet-Project/Datasets/NEU-DET/test/images"
+    # images = "../../../../Datasets/NEU-DET/test/images"
+    save_path = "/mnt/d/Code/DenseNet-Project/src/steel_defect_oct_2025/train/B/inference_result"
+    os.makedirs(save_path, exist_ok=True)
+
     images_all = os.listdir(images)
-    for folder in images_all:
-        imgs = os.listdir(os.path.join(images, folder))
-        for i in range(8):
-            run_inference(model_name, os.path.join(images, folder, imgs[i]), "../../results")
+    for img in images_all:
+        img_path = os.path.join(images, img)
+        run_inference(model_name, img_path, save_path)
 
     sys.exit(0)
     image_path="../../../../Datasets/NEU-DET/validation/images/inclusion/inclusion_241.jpg"
