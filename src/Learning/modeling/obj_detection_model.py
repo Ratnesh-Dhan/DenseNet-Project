@@ -28,7 +28,7 @@ def object_detection_model(input_shape=(224,224,3), num_classes=2):
     model.compile(
         optimizer = 'adam',
         loss={
-            'bbox': 'mse', # bounding box regression
+            'bbox': 'mse', # bounding box regression . use 'mae' for bounding box centers
             'class': 'binary_crossentropy' # binary prediction
             # 'class': 'categorical_crossentropy' # class prediction
         },

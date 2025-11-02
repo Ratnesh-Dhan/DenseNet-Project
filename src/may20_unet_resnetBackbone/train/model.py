@@ -12,6 +12,7 @@ def conv_block(inputs, filters):
     x = layers.ReLU()(x)
     return x
 
+
 def build_unet(input_shape=(256, 256, 3)):
     inputs = layers.Input(shape=input_shape)
 
