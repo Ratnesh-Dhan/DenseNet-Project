@@ -9,6 +9,7 @@
 
 # venv file
 /venv
+/venvWindows
 /.spyproject
 .spyproject
 
