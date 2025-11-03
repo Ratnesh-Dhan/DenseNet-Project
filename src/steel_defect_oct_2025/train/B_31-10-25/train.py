@@ -23,6 +23,21 @@ test_records = load_dataset("/mnt/d/Code/DenseNet-Project/Datasets/NEU-DET/test/
 #         ds = ds.shuffle(100)
 #     ds = ds.batch(4)
 #     return ds
+##
+# def make_dataset(records, shuffle=False):
+#     ds = tf.data.Dataset.from_generator(
+#         lambda: iter(records),
+#         output_signature=(
+#             tf.TensorSpec(shape=(), dtype=tf.string),
+#             tf.TensorSpec(shape=(None, 4), dtype=tf.float32),
+#             tf.TensorSpec(shape=(None,), dtype=tf.int32),
+#         ),
+#     )
+#     ds = ds.map(lambda x, y, z: preprocess(x, y, z))
+#     if shuffle:
+#         ds = ds.shuffle(100)
+#     ds = ds.batch(4).prefetch(tf.data.AUTOTUNE)
+#     return ds
 def make_dataset(records, shuffle=False):
     ds = tf.data.Dataset.from_generator(
         lambda: iter(records),
@@ -32,10 +47,19 @@ def make_dataset(records, shuffle=False):
             tf.TensorSpec(shape=(None,), dtype=tf.int32),
         ),
     )
-    ds = ds.map(lambda x, y, z: preprocess(x, y, z))
+
+    # Preprocess images and annotations
+    ds = ds.map(lambda x, y, z: preprocess(x, y, z), num_parallel_calls=tf.data.AUTOTUNE)
+
+    # Shuffle only if required
     if shuffle:
-        ds = ds.shuffle(100)
-    ds = ds.batch(4).prefetch(tf.data.AUTOTUNE)
+        ds = ds.shuffle(buffer_size=100)
+
+    # ✅ Use ragged batching instead of normal batching
+    ds = ds.apply(tf.data.experimental.dense_to_ragged_batch(4))
+
+    # Prefetch for better performance
+    ds = ds.prefetch(tf.data.AUTOTUNE)
     return ds
 train_ds = make_dataset(train_records, shuffle=True)
 val_ds = make_dataset(val_records)
