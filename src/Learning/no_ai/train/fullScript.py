@@ -23,7 +23,7 @@ class_ids = [
     "car",
     "number_plate",
     "blur_number_plate",
-    "tow_wheelers",
+    "two_wheelers",
     "auto",
     "bus",
     "truck",
