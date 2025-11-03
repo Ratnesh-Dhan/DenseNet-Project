@@ -1,3 +1,6 @@
+# pip install torch torchvision torchaudio
+# pip install opencv-python matplotlib scikit-learn tqdm
+
 import os
 import torch
 import torch.nn as nn
