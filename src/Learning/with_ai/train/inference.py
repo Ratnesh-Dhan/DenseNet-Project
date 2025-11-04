@@ -11,11 +11,11 @@ from torchvision.models.detection import ssd300_vgg16
 from torchvision.models.detection.ssd import SSDClassificationHead
 
 # ====================== CONFIG ======================
-MODEL_PATH = "../models/ssd_model_fixed.pth"
-CLASSES_FILE = "../../../../Datasets/Traffic_Dataset/classes.txt"
+MODEL_PATH = "/mnt/d/Codes/DenseNet-Project/src/Learning/with_ai/models/ssd_model_fixed.pth"
+CLASSES_FILE = "/mnt/d/Codes/DenseNet-Project/Datasets/Traffic_Dataset/classes.txt"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 SCORE_THRESHOLD = 0.5  # Confidence threshold for predictions
-OUTPUT_DIR = "../results/predictions"
+OUTPUT_DIR = "../results/predictions2"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -275,7 +275,8 @@ if __name__ == "__main__":
     print("=" * 60)
     
     # Replace with your folder path
-    test_folder = "../../../../Datasets/Traffic_Dataset/images/test"
+    # test_folder = "../../../../Datasets/Traffic_Dataset/images/test"
+    test_folder = "/mnt/d/Codes/DenseNet-Project/Datasets/Traffic_Dataset/testing/test"
     
     if os.path.exists(test_folder):
         all_predictions = predict_on_folder(
@@ -283,7 +284,7 @@ if __name__ == "__main__":
             test_folder, 
             classes, 
             SCORE_THRESHOLD,
-            max_images=20  # Limit to first 20 images (remove for all)
+            max_images=50  # Limit to first 20 images (remove for all)
         )
         
         print_detection_summary(all_predictions)
