@@ -1,4 +1,5 @@
-from torchvision.models.detection import ssd300_vgg16, SSDClassificationHead
+from torchvision.models.detection import ssd300_vgg16
+from torchvision.models.detection.ssd import SSDClassificationHead
 
 # ====================== MODEL ======================
 def get_model(num_classes):

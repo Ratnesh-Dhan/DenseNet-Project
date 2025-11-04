@@ -9,7 +9,6 @@ from torch.utils.data import Dataset, DataLoader
 import torchvision
 from torchvision.transforms import functional as F
 from torchvision.models.detection import ssd300_vgg16
-from torchvision.models.detection.ssd import SSDClassificationHead
 from tqdm import tqdm
 from utils import evaluate_comprehensive, calculate_iou, inspect_dataset, plot_training_curves, calculate_accuracy
 from sklearn.metrics import confusion_matrix, accuracy_score
@@ -20,14 +19,15 @@ from earlystopping import EarlyStopping
 
 # ====================== CONFIG ======================
 NAME = "ssd_model_fixed"
-ROOT_DIR = "../../../../Datasets/Traffic_Dataset/"
+# ROOT_DIR = "../../../../Datasets/Traffic_Dataset/"
+ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
 CLASSES_FILE = os.path.join(ROOT_DIR, "classes.txt")
 BATCH_SIZE = 8  # Increased from 4
 NUM_EPOCHS = 25  # Increased from 10
 LR = 0.0005  # Reduced from 0.001
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-SAVE_PATH = f"../models/{NAME}.pth"
-RESULTS_DIR = "../results"
+SAVE_PATH = f"/mnt/d/Codes/DenseNet-Project/src/steel_defect_oct_2025/train/pytorch/models/{NAME}.pth"
+RESULTS_DIR = "/mnt/d/Codes/DenseNet-Project/src/steel_defect_oct_2025/train/pytorch/results"
 SCORE_THRESHOLD = 0.3  # Reduced from 0.5
 IOU_THRESHOLD = 0.5
 
