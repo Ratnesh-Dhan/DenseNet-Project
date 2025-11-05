@@ -18,16 +18,17 @@ from model import get_model
 from earlystopping import EarlyStopping
 
 # ====================== CONFIG ======================
-NAME = "ssd_model_fixed"
-# ROOT_DIR = "../../../../Datasets/Traffic_Dataset/"
-ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
+NAME = "ssd_model_better_early_stopping"
+ROOT_DIR = "../../../../Datasets/NEU-DET/"
+# ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
 CLASSES_FILE = os.path.join(ROOT_DIR, "classes.txt")
 BATCH_SIZE = 8  # Increased from 4
 NUM_EPOCHS = 25  # Increased from 10
 LR = 0.0005  # Reduced from 0.001
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-SAVE_PATH = f"/mnt/d/Codes/DenseNet-Project/src/steel_defect_oct_2025/train/pytorch/models/{NAME}.pth"
-RESULTS_DIR = "/mnt/d/Codes/DenseNet-Project/src/steel_defect_oct_2025/train/pytorch/results"
+# SAVE_PATH = f"/mnt/d/Codes/DenseNet-Project/src/steel_defect_oct_2025/train/pytorch/models/{NAME}.pth"
+SAVE_PATH = f"models/{NAME}.pth"
+RESULTS_DIR = "results"
 SCORE_THRESHOLD = 0.3  # Reduced from 0.5
 IOU_THRESHOLD = 0.5
 
@@ -48,7 +49,7 @@ def train_model(model, train_loader, val_loader, optimizer, num_epochs):
     )
 
     # Adding early stopping
-    early_stopping = EarlyStopping(patience=7, min_delta=0.01)
+    early_stopping = EarlyStopping(patience=3, min_delta=0.01)
     best_val_loss = float('inf')
     best_epoch = 0
 
@@ -251,11 +252,11 @@ if __name__ == "__main__":
     print("EVALUATING ON VALIDATION SET")
     print("="*70)
     evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, trained_model, val_loader, num_classes, 
-                          train_dataset.classes, "Validation")
+                          train_dataset.classes, "Validation", RESULTS_DIR)
 
     # Comprehensive evaluation on test set
     print("\n" + "="*70)
     print("EVALUATING ON TEST SET")
     print("="*70)
     evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, trained_model, test_loader, num_classes, 
-                          train_dataset.classes, "Test")
+                          train_dataset.classes, "Test", RESULTS_DIR)

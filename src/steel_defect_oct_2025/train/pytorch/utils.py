@@ -182,7 +182,7 @@ def print_classification_report(y_true, y_pred, class_names, split_name, RESULTS
     print(f"✅ Classification report saved to {report_path}")
 
 # ====================== COMPREHENSIVE EVALUATION ======================
-def evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, model, dataloader, num_classes, class_names, split_name="Test"):
+def evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, model, dataloader, num_classes, class_names, split_name="Test", RESULTS_DIR="results"):
     """Complete evaluation with confusion matrix, classification report, and metrics"""
     model.eval()
     y_true, y_pred = [], []
@@ -253,7 +253,7 @@ def evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, model, datalo
 
     # Plot percentage confusion matrix
     plot_percentage_confusion_matrix(y_true, y_pred, class_names, accuracy, 
-                                     precision, recall, f1, split_name)
+                                     precision, recall, f1, split_name, RESULTS_DIR)
     
     # Print classification report
-    print_classification_report(y_true, y_pred, class_names, split_name)
+    print_classification_report(y_true, y_pred, class_names, split_name, RESULTS_DIR)
