@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from torchvision.models.detection import ssd300_vgg16
 from torchvision.models.detection.ssd import SSDClassificationHead
-
+from sklearn.metrics import accuracy_score
 from dataset_loader import get_dataset
 from utils import evaluate_comprehensive
 
@@ -221,7 +221,6 @@ def evaluate_model(model, test_loader, num_classes, class_names):
     if len(y_true) == 0:
         return {'accuracy': 0, 'precision': 0, 'recall': 0, 'f1': 0}
     
-    from sklearn.metrics import accuracy_score
     accuracy = accuracy_score(y_true, y_pred) * 100
     recall = matched / total_gt * 100 if total_gt > 0 else 0
     precision = matched / total_pred * 100 if total_pred > 0 else 0
