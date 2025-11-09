@@ -13,11 +13,11 @@ import numpy as np
 from torchvision.models.detection import ssd300_vgg16
 from torchvision.models.detection.ssd import SSDClassificationHead
 from sklearn.metrics import accuracy_score
-from dataset_loader import get_dataset
+from xmldataset import XMLDataset
 from utils import evaluate_comprehensive
 
 # ====================== CONFIG ======================
-ROOT_DIR = "../../../../Datasets/Traffic_Dataset/"
+ROOT_DIR = "../../../../Datasets/NEU-DET/"
 CLASSES_FILE = os.path.join(ROOT_DIR, "classes.txt")
 DATASET_FORMAT = "yolo"  # or "xml"
 BATCH_SIZE = 8
@@ -98,7 +98,7 @@ def train_with_optimizer(model, train_loader, val_loader, optimizer,
     
     # Learning rate scheduler
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.5, patience=3, verbose=True
+        optimizer, mode='min', factor=0.5, patience=3
     )
     
     best_val_loss = float('inf')
@@ -362,9 +362,9 @@ if __name__ == "__main__":
     
     # Load datasets
     print("\nLoading datasets...")
-    train_dataset = get_dataset(DATASET_FORMAT, "train", ROOT_DIR, CLASSES_FILE)
-    val_dataset = get_dataset(DATASET_FORMAT, "val", ROOT_DIR, CLASSES_FILE)
-    test_dataset = get_dataset(DATASET_FORMAT, "test", ROOT_DIR, CLASSES_FILE)
+    train_dataset = XMLDataset("train", ROOT_DIR, CLASSES_FILE)
+    val_dataset = XMLDataset("val", ROOT_DIR, CLASSES_FILE)
+    test_dataset = XMLDataset("test", ROOT_DIR, CLASSES_FILE)
     
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, 
                              shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
