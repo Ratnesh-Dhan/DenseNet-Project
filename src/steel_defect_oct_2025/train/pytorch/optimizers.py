@@ -1,3 +1,4 @@
+# https://www.youtube.com/watch?v=6EJaHBJhwDs&list=PLKnIA16_Rmvboy8bmDCjwNHgTaYH2puK7
 """
 optimizer_comparison.py
 
@@ -10,20 +11,21 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
-from torchvision.models.detection import ssd300_vgg16
-from torchvision.models.detection.ssd import SSDClassificationHead
+from model import get_model
 from sklearn.metrics import accuracy_score
-from dataset_loader import get_dataset
-from utils import evaluate_comprehensive
+from utils import evaluate_comprehensive, calculate_iou, calculate_accuracy, plot_training_curves
+from earlystopping import EarlyStopping
+from xmldataset import XMLDataset
 
 # ====================== CONFIG ======================
-ROOT_DIR = "../../../../Datasets/Traffic_Dataset/"
+# ROOT_DIR = "../../../../Datasets/NEU-DET/"
+ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
 CLASSES_FILE = os.path.join(ROOT_DIR, "classes.txt")
-DATASET_FORMAT = "yolo"  # or "xml"
+# DATASET_FORMAT = "yolo"  # or "xml"
 BATCH_SIZE = 8
-NUM_EPOCHS = 25
+NUM_EPOCHS = 1
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-RESULTS_DIR = "../results/optimizer_comparison"
+RESULTS_DIR = "./results/optimizer_comparison"
 SCORE_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 
@@ -63,44 +65,27 @@ OPTIMIZER_CONFIGS = {
     }
 }
 
-# ====================== MODEL ======================
-def get_model(num_classes):
-    model = ssd300_vgg16(weights="DEFAULT")
-    in_channels = [512, 1024, 512, 256, 256, 256]
-    num_anchors = [4, 6, 6, 6, 4, 4]
-    model.head.classification_head = SSDClassificationHead(
-        in_channels=in_channels, 
-        num_anchors=num_anchors, 
-        num_classes=num_classes
-    )
-    return model
-
-# ====================== UTILS ======================
-def calculate_iou(box1, box2):
-    x1 = max(box1[0], box2[0])
-    y1 = max(box1[1], box2[1])
-    x2 = min(box1[2], box2[2])
-    y2 = min(box1[3], box2[3])
-    intersection = max(0, x2 - x1) * max(0, y2 - y1)
-    area1 = (box1[2] - box1[0]) * (box1[3] - box1[1])
-    area2 = (box2[2] - box2[0]) * (box2[3] - box2[1])
-    union = area1 + area2 - intersection
-    return intersection / union if union > 0 else 0
-
 # ====================== TRAINING ======================
 def train_with_optimizer(model, train_loader, val_loader, optimizer, 
                          optimizer_name, num_epochs):
     """Train model with specific optimizer and return metrics"""
     model.to(DEVICE)
+
+    result_save_path = os.path.join(RESULTS_DIR, optimizer_name)
+    os.makedirs(result_save_path, exist_ok=True)
     
     train_loss_history = []
     val_loss_history = []
+    train_acc_history = []
+    val_acc_history = []
     
     # Learning rate scheduler
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.5, patience=3, verbose=True
+        optimizer, mode='min', factor=0.5, patience=3
     )
     
+    # Adding early stopping
+    early_stopping = EarlyStopping(patience=3, min_delta=0.01)
     best_val_loss = float('inf')
     best_epoch = 0
     
@@ -129,9 +114,13 @@ def train_with_optimizer(model, train_loader, val_loader, optimizer,
 
         avg_train_loss = running_loss / len(train_loader)
         train_loss_history.append(avg_train_loss)
+
+        # Calculate training accuracy
+        train_acc = calculate_accuracy(model, train_loader, DEVICE, SCORE_THRESHOLD)
+        train_acc_history.append(train_acc)
         
         # Validation
-        model.train()
+        model.eval() # validation loop uses model.train() instead of model.eval(). That should be changed to prevent layers like dropout or batchnorm from updating during validation:
         val_running_loss = 0.0
         with torch.no_grad():
             for images, targets in val_loader:
@@ -143,13 +132,16 @@ def train_with_optimizer(model, train_loader, val_loader, optimizer,
         
         avg_val_loss = val_running_loss / len(val_loader)
         val_loss_history.append(avg_val_loss)
+
+        val_acc = calculate_accuracy(model, val_loader, DEVICE, SCORE_THRESHOLD)
+        val_acc_history.append(val_acc)
         
         # Track best model
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
             best_epoch = epoch + 1
             # Save best model
-            save_path = os.path.join(RESULTS_DIR, f"best_model_{optimizer_name}.pth")
+            save_path = os.path.join(result_save_path, f"best_model_{optimizer_name}.pth")
             torch.save(model.state_dict(), save_path)
         
         scheduler.step(avg_val_loss)
@@ -157,9 +149,30 @@ def train_with_optimizer(model, train_loader, val_loader, optimizer,
         print(f"Epoch [{epoch+1}/{num_epochs}] "
               f"Train: {avg_train_loss:.4f} | Val: {avg_val_loss:.4f} "
               f"{'⭐' if epoch+1 == best_epoch else ''}")
-    
+
+        # Check early stopping
+        if early_stopping(avg_val_loss, model):
+            print(f"\n🛑 Early stopping triggered at epoch {epoch+1}")
+            print(f"📊 Best validation loss: {early_stopping.best_loss:.4f}")
+            # Restore best model
+            model.load_state_dict(early_stopping.best_model)
+            break
     print(f"\n✅ Best epoch: {best_epoch} with val loss: {best_val_loss:.4f}")
     
+    # Plotings 
+    print("\n" + "="*70)
+    print("EVALUATING ON VALIDATION SET")
+    print("="*70)
+    evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, model, val_loader, num_classes, 
+                          train_dataset.classes, "Validation", result_save_path)
+
+    # Comprehensive evaluation on test set
+    print("\n" + "="*70)
+    print("EVALUATING ON TEST SET")
+    print("="*70)
+    evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, model, test_loader, num_classes, 
+                          train_dataset.classes, "Test", result_save_path)
+    plot_training_curves(train_loss_history, val_loss_history, train_acc_history, val_acc_history, best_epoch, result_save_path)   
     return {
         'train_loss': train_loss_history,
         'val_loss': val_loss_history,
@@ -168,6 +181,7 @@ def train_with_optimizer(model, train_loader, val_loader, optimizer,
     }
 
 # ====================== EVALUATION METRICS ======================
+
 def evaluate_model(model, test_loader, num_classes, class_names):
     """Quick evaluation to get accuracy, precision, recall"""
     model.eval()
@@ -362,10 +376,10 @@ if __name__ == "__main__":
     
     # Load datasets
     print("\nLoading datasets...")
-    train_dataset = get_dataset(DATASET_FORMAT, "train", ROOT_DIR, CLASSES_FILE)
-    val_dataset = get_dataset(DATASET_FORMAT, "val", ROOT_DIR, CLASSES_FILE)
-    test_dataset = get_dataset(DATASET_FORMAT, "test", ROOT_DIR, CLASSES_FILE)
-    
+    train_dataset = XMLDataset("train", ROOT_DIR, CLASSES_FILE)
+    val_dataset = XMLDataset("val", ROOT_DIR, CLASSES_FILE)
+    test_dataset = XMLDataset("test", ROOT_DIR, CLASSES_FILE)
+
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, 
                              shuffle=True, collate_fn=lambda x: tuple(zip(*x)))
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, 
@@ -399,7 +413,7 @@ if __name__ == "__main__":
         )
         
         # Load best model for evaluation
-        best_model_path = os.path.join(RESULTS_DIR, f"best_model_{opt_name}.pth")
+        best_model_path = os.path.join(RESULTS_DIR, opt_name, f"best_model_{opt_name}.pth")
         model.load_state_dict(torch.load(best_model_path))
         
         # Evaluate on test set

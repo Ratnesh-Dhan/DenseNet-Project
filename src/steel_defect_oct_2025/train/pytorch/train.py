@@ -79,7 +79,7 @@ def train_model(model, train_loader, val_loader, optimizer, num_epochs):
         train_acc_list.append(train_acc)
         
         # Validation
-        model.train()
+        model.eval() # validation loop uses model.train() instead of model.eval(). That should be changed to prevent layers like dropout or batchnorm from updating during validation:
         val_running_loss = 0.0
         with torch.no_grad():
             for images, targets in tqdm(val_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Val]"):
