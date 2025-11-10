@@ -23,7 +23,7 @@ ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
 CLASSES_FILE = os.path.join(ROOT_DIR, "classes.txt")
 # DATASET_FORMAT = "yolo"  # or "xml"
 BATCH_SIZE = 8
-NUM_EPOCHS = 25
+NUM_EPOCHS = 1
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 RESULTS_DIR = "./results/optimizer_comparison"
 SCORE_THRESHOLD = 0.3
@@ -120,7 +120,7 @@ def train_with_optimizer(model, train_loader, val_loader, optimizer,
         train_acc_history.append(train_acc)
         
         # Validation
-        model.train()
+        model.eval() # validation loop uses model.train() instead of model.eval(). That should be changed to prevent layers like dropout or batchnorm from updating during validation:
         val_running_loss = 0.0
         with torch.no_grad():
             for images, targets in val_loader:
@@ -158,6 +158,20 @@ def train_with_optimizer(model, train_loader, val_loader, optimizer,
             model.load_state_dict(early_stopping.best_model)
             break
     print(f"\n✅ Best epoch: {best_epoch} with val loss: {best_val_loss:.4f}")
+    
+    # Plotings 
+    print("\n" + "="*70)
+    print("EVALUATING ON VALIDATION SET")
+    print("="*70)
+    evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, model, val_loader, num_classes, 
+                          train_dataset.classes, "Validation", result_save_path)
+
+    # Comprehensive evaluation on test set
+    print("\n" + "="*70)
+    print("EVALUATING ON TEST SET")
+    print("="*70)
+    evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, model, test_loader, num_classes, 
+                          train_dataset.classes, "Test", result_save_path)
     plot_training_curves(train_loss_history, val_loss_history, train_acc_history, val_acc_history, best_epoch, result_save_path)   
     return {
         'train_loss': train_loss_history,
@@ -399,7 +413,7 @@ if __name__ == "__main__":
         )
         
         # Load best model for evaluation
-        best_model_path = os.path.join(RESULTS_DIR, f"best_model_{opt_name}.pth")
+        best_model_path = os.path.join(RESULTS_DIR, opt_name, f"best_model_{opt_name}.pth")
         model.load_state_dict(torch.load(best_model_path))
         
         # Evaluate on test set
