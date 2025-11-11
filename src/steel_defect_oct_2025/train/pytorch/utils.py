@@ -1,5 +1,5 @@
 import os, matplotlib.pyplot as plt, numpy as np
-from sklearn.metrics import confusion_matrix,accuracy_score, classification_report
+from sklearn.metrics import precision_score, recall_score, f1_score,confusion_matrix, accuracy_score, classification_report
 import torch
 from tqdm import tqdm
 
@@ -238,9 +238,13 @@ def evaluate_comprehensive(DEVICE, SCORE_THRESHOLD, IOU_THRESHOLD, model, datalo
 
     # Calculate metrics
     accuracy = accuracy_score(y_true, y_pred) * 100
-    recall = matched / total_gt * 100 if total_gt > 0 else 0
-    precision = matched / total_pred * 100 if total_pred > 0 else 0
-    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    precision = precision_score(y_true, y_pred, average='weighted')*100
+    recall = recall_score(y_true, y_pred, average='weighted')*100
+    f1 = f1_score(y_true, y_pred, average='weighted')*100
+
+    # recall = matched / total_gt * 100 if total_gt > 0 else 0
+    # precision = matched / total_pred * 100 if total_pred > 0 else 0
+    # f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
     print(f"\n{'='*70}")
     print(f"{split_name.upper()} SET RESULTS")
