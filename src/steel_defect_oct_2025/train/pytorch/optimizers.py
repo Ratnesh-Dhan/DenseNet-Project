@@ -21,7 +21,6 @@ from xmldataset import XMLDataset
 # ROOT_DIR = "../../../../Datasets/NEU-DET/"
 ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
 CLASSES_FILE = os.path.join(ROOT_DIR, "classes.txt")
-# DATASET_FORMAT = "yolo"  # or "xml"
 BATCH_SIZE = 8
 NUM_EPOCHS = 1
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -40,24 +39,24 @@ OPTIMIZER_CONFIGS = {
     },
     'AdamW': {
         'optimizer': optim.AdamW,
-        'params': {'lr': 0.0005, 'betas': (0.9, 0.999), 'weight_decay': 0.01},
+        'params': {'lr': 0.0005, 'betas': (0.9, 0.999), 'weight_decay': 0.001}, # Often 1e-3 or 1e-4 works better in weight decay.
         'color': 'green'
     },
     'SGD': {
         'optimizer': optim.SGD,
-        'params': {'lr': 0.001, 'momentum': 0.9, 'weight_decay': 0.0001},
+        'params': {'lr': 0.01, 'momentum': 0.9, 'weight_decay': 0.0001}, # decent, but LR 0.001 is too low for plain SGD. Try 0.01 or 0.1.
         'color': 'red'
     },
     'SGD_Nesterov': {
         'optimizer': optim.SGD,
-        'params': {'lr': 0.001, 'momentum': 0.9, 'weight_decay': 0.0001, 'nesterov': True},
+        'params': {'lr': 0.01, 'momentum': 0.9, 'weight_decay': 0.0001, 'nesterov': True},
         'color': 'orange'
     },
-    'RMSprop': {
-        'optimizer': optim.RMSprop,
-        'params': {'lr': 0.0005, 'alpha': 0.99, 'weight_decay': 0.0001},
-        'color': 'purple'
-    },
+    # 'RMSprop': {
+    #     'optimizer': optim.RMSprop,
+    #     'params': {'lr': 1e-4, 'alpha': 0.9, 'weight_decay': 1e-5},
+    #     'color': 'purple'
+    # },
     'Adagrad': {
         'optimizer': optim.Adagrad,
         'params': {'lr': 0.001, 'weight_decay': 0.0001},
@@ -69,7 +68,7 @@ OPTIMIZER_CONFIGS = {
 def train_with_optimizer(model, train_loader, val_loader, optimizer, 
                          optimizer_name, num_epochs):
     """Train model with specific optimizer and return metrics"""
-    model.to(DEVICE)
+    # model.to(DEVICE)
 
     result_save_path = os.path.join(RESULTS_DIR, optimizer_name)
     os.makedirs(result_save_path, exist_ok=True)
@@ -120,7 +119,7 @@ def train_with_optimizer(model, train_loader, val_loader, optimizer,
         train_acc_history.append(train_acc)
         
         # Validation
-        model.eval() # validation loop uses model.train() instead of model.eval(). That should be changed to prevent layers like dropout or batchnorm from updating during validation:
+        model.train() # validation loop uses model.train() instead of model.eval(). That should be changed to prevent layers like dropout or batchnorm from updating during validation:
         val_running_loss = 0.0
         with torch.no_grad():
             for images, targets in val_loader:
@@ -403,6 +402,7 @@ if __name__ == "__main__":
         
         # Create fresh model
         model = get_model(num_classes)
+        model = model.to(DEVICE)
         
         # Create optimizer
         optimizer = config['optimizer'](model.parameters(), **config['params'])
