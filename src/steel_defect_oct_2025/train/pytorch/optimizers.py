@@ -18,13 +18,13 @@ from earlystopping import EarlyStopping
 from xmldataset import XMLDataset
 
 # ====================== CONFIG ======================
-# ROOT_DIR = "../../../../Datasets/NEU-DET/"
-ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
+ROOT_DIR = "../../../../Datasets/NEU-DET/"
+# ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
 CLASSES_FILE = os.path.join(ROOT_DIR, "classes.txt")
 BATCH_SIZE = 8
-NUM_EPOCHS = 1
+NUM_EPOCHS = 25
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-RESULTS_DIR = "./results/optimizer_comparison"
+RESULTS_DIR = "./results/optimizer_comparison_20251111"
 SCORE_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 
@@ -52,11 +52,11 @@ OPTIMIZER_CONFIGS = {
         'params': {'lr': 0.01, 'momentum': 0.9, 'weight_decay': 0.0001, 'nesterov': True},
         'color': 'orange'
     },
-    # 'RMSprop': {
-    #     'optimizer': optim.RMSprop,
-    #     'params': {'lr': 1e-4, 'alpha': 0.9, 'weight_decay': 1e-5},
-    #     'color': 'purple'
-    # },
+    'RMSprop': {
+        'optimizer': optim.RMSprop,
+        'params': {'lr': 1e-4, 'alpha': 0.9, 'weight_decay': 1e-5},
+        'color': 'purple'
+    },
     'Adagrad': {
         'optimizer': optim.Adagrad,
         'params': {'lr': 0.001, 'weight_decay': 0.0001},
