@@ -12,17 +12,17 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
 from model import get_model
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from utils import evaluate_comprehensive, calculate_iou, calculate_accuracy, plot_training_curves
 from earlystopping import EarlyStopping
 from xmldataset import XMLDataset
 
 # ====================== CONFIG ======================
-ROOT_DIR = "../../../../Datasets/NEU-DET/"
-# ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
+# ROOT_DIR = "../../../../Datasets/NEU-DET/"
+ROOT_DIR = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
 CLASSES_FILE = os.path.join(ROOT_DIR, "classes.txt")
 BATCH_SIZE = 8
-NUM_EPOCHS = 25
+NUM_EPOCHS = 1
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 RESULTS_DIR = "./results/optimizer_comparison_20251111"
 SCORE_THRESHOLD = 0.3
@@ -176,7 +176,9 @@ def train_with_optimizer(model, train_loader, val_loader, optimizer,
         'train_loss': train_loss_history,
         'val_loss': val_loss_history,
         'best_val_loss': best_val_loss,
-        'best_epoch': best_epoch
+        'best_epoch': best_epoch,
+        'train_acc': train_acc_history,
+        'val_acc': val_acc_history
     }
 
 # ====================== EVALUATION METRICS ======================
@@ -235,9 +237,9 @@ def evaluate_model(model, test_loader, num_classes, class_names):
         return {'accuracy': 0, 'precision': 0, 'recall': 0, 'f1': 0}
     
     accuracy = accuracy_score(y_true, y_pred) * 100
-    recall = matched / total_gt * 100 if total_gt > 0 else 0
-    precision = matched / total_pred * 100 if total_pred > 0 else 0
-    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    precision = precision_score(y_true, y_pred, average='weighted')*100
+    recall = recall_score(y_true, y_pred, average='weighted')*100
+    f1 = f1_score(y_true, y_pred, average='weighted')*100
     
     return {
         'accuracy': accuracy,
@@ -264,17 +266,29 @@ def plot_optimizer_comparison(results):
     ax.legend()
     ax.grid(True, alpha=0.3)
     
-    # Plot 2: Validation Loss
+    # Plot 2 alternate: Training Accuracy 
     ax = axes[0, 1]
     for opt_name, metrics in results.items():
         config = OPTIMIZER_CONFIGS[opt_name]
-        ax.plot(metrics['val_loss'], label=opt_name, 
-               color=config['color'], marker='s', markersize=4)
+        ax.plot(metrics['train_acc'], label=opt_name,
+               color=config['color'], marker='^', markersize=4)
     ax.set_xlabel('Epoch', fontsize=12)
-    ax.set_ylabel('Validation Loss', fontsize=12)
-    ax.set_title('Validation Loss Comparison', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Training Accuracy', fontsize=12)
+    ax.set_title('Training Accuracy Comparison', fontsize=14, fontweight='bold')
     ax.legend()
     ax.grid(True, alpha=0.3)
+
+    # # Plot 2: Validation Loss
+    # ax = axes[0, 1]
+    # for opt_name, metrics in results.items():
+    #     config = OPTIMIZER_CONFIGS[opt_name]
+    #     ax.plot(metrics['val_loss'], label=opt_name, 
+    #            color=config['color'], marker='s', markersize=4)
+    # ax.set_xlabel('Epoch', fontsize=12)
+    # ax.set_ylabel('Validation Loss', fontsize=12)
+    # ax.set_title('Validation Loss Comparison', fontsize=14, fontweight='bold')
+    # ax.legend()
+    # ax.grid(True, alpha=0.3)
     
     # Plot 3: Best Validation Loss (Bar chart)
     ax = axes[1, 0]
