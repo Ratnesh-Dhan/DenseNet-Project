@@ -43,6 +43,3 @@ def build_efficientdet_like(num_classes):
     outputs = tf.concat([box_preds, cls_preds], axis=-1)
     return Model(inputs=base.input, outputs=outputs)
 
-# example
-model = build_efficientdet_like(num_classes=5)
-model.summary()
