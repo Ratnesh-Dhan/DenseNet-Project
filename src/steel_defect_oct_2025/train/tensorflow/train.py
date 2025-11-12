@@ -1,10 +1,11 @@
 import tensorflow as tf
 from dataset_loader import XMLDatasetTF
 from efficientdet import build_efficientdet_like
+import os
 
 # Config
-root_dir = "/path/to/dataset"
-classes_file = "/path/to/classes.txt"
+root_dir = "../../../../Datasets/NEU-DET/"
+classes_file = os.path.join(root_dir, "classes.txt")
 num_classes = len(open(classes_file).read().splitlines())
 batch_size = 4
 epochs = 20
