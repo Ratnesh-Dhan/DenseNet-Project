@@ -10,11 +10,12 @@ classes_file = os.path.join(root_dir, "classes.txt")
 num_classes = len(open(classes_file).read().splitlines())
 batch_size = 4
 epochs = 20
+img_size = 512
 
 # Data
-train_ds = XMLDatasetTF("train", root_dir, classes_file, batch_size)
-val_ds = XMLDatasetTF("val", root_dir, classes_file, batch_size)
-test_ds = XMLDatasetTF("test", root_dir, classes_file, batch_size)
+train_ds = XMLDatasetTF("train", root_dir, classes_file, batch_size, img_size)
+val_ds = XMLDatasetTF("val", root_dir, classes_file, batch_size, img_size)
+test_ds = XMLDatasetTF("test", root_dir, classes_file, batch_size, img_size)
 
 # Model
 model = build_efficientdet_like(num_classes)
