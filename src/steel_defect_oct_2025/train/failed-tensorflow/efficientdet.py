@@ -1,7 +1,19 @@
 import tensorflow as tf
 from tensorflow.keras import layers, Model
+import os
 
 def build_efficientdet_like(num_classes):
+    # Clear any cached weights that might be corrupted
+    cache_dir = os.path.expanduser('~/.keras/models/')
+    if os.path.exists(cache_dir):
+        for f in os.listdir(cache_dir):
+            if 'efficientnet' in f.lower():
+                try:
+                    os.remove(os.path.join(cache_dir, f))
+                    print(f"Removed cached file: {f}")
+                except:
+                    pass
+
     # EfficientNet backbone
     base = tf.keras.applications.EfficientNetB0(
         include_top=False, input_shape=(512, 512, 3), weights='imagenet'
@@ -43,6 +55,3 @@ def build_efficientdet_like(num_classes):
     outputs = tf.concat([box_preds, cls_preds], axis=-1)
     return Model(inputs=base.input, outputs=outputs)
 
-# example
-model = build_efficientdet_like(num_classes=5)
-model.summary()
