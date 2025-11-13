@@ -4,7 +4,8 @@ from efficientdet import build_efficientdet_like
 import os
 
 # Config
-root_dir = "../../../../Datasets/NEU-DET/"
+# root_dir = "../../../../Datasets/NEU-DET/"
+root_dir = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/"
 classes_file = os.path.join(root_dir, "classes.txt")
 num_classes = len(open(classes_file).read().splitlines())
 batch_size = 4

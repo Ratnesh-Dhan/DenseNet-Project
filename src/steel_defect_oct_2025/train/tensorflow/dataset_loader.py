@@ -29,21 +29,13 @@ class XMLDatasetTF(tf.keras.utils.Sequence):
             img_path = os.path.join(self.img_dir, name)
             xml_path = os.path.join(self.ann_dir, os.path.splitext(name)[0] + ".xml")
 
-            img = cv2.imread(img_path)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+            if len(img.shape) == 2:
+                img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+            else:
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             img = cv2.resize(img, (self.img_size, self.img_size))
             img = img.astype("float32") / 255.0
-
-            label_vec = np.zeros(len(self.classes), dtype="float32")
-
-            if os.path.exists(xml_path):
-                tree = ET.parse(xml_path)
-                for obj in tree.findall("object"):
-                    cname = obj.find("name").text
-                    if cname in self.class_to_idx:
-                        label_vec[self.class_to_idx[cname]] = 1.0
-
             images.append(img)
-            labels.append(label_vec)
 
-        return np.stack(images), np.stack(labels)
+        return np.stack(images)
