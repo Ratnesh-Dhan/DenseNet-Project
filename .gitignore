@@ -36,6 +36,8 @@
 __pycache__/
 
 # Ignoring some additional files and directories
+pretrained_models/
+/pretrained_models
 /TrainedModel
 /Dataset_downloader_scripts
 /pre-Trained_model
