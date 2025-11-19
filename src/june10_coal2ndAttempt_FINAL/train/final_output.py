@@ -106,9 +106,15 @@ def sliding_window_inference(model, image, window_size=16, stride=16, center_pat
 # rmsprop = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adagrad/Adagrad_earlystopped_best_epoch53.keras"
 # adagrad = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/RMSprop/RMSprop_earlystopped_best_epoch35.keras"
 # adadelta = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adadelta/Adadelta_earlystopped_best_epoch38.keras"
-nadam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras"
+# nadam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras"
+adadelta = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adadelta/checkpoint_best_weights.keras"
+adagrad =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adagrad/checkpoint_best_weights.keras"
+adam =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adam/checkpoint_best_weights.keras"
+adamw =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/AdamW/checkpoint_best_weights.keras"
+nadam =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Nadam/checkpoint_best_weights.keras"
+rmsprop =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/RMSprop/checkpoint_best_weights.keras"
 # CNNmodelJUNE24 = "../models/CNNmodelJUNE24.keras"
-model_ary = [nadam,]
+model_ary = [adadelta, adagrad, adam, adamw, nadam, rmsprop]
 # model_ary = [adam, rmsprop, adagrad, adadelta]
 
 for model_name in model_ary:
@@ -126,8 +132,8 @@ for model_name in model_ary:
     # old txt file is in utils folder
     with open(os.path.join(result_folder, "final_output_new_2.txt"), 'w') as f:
         # path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save"
-        path_location = r"D:/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
-        # path_location = r"/mnt/d/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
+        # path_location = r"D:/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
+        path_location = r"/mnt/d/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
         outer_folders = os.listdir(path_location)
         half = []
         for i in outer_folders:
