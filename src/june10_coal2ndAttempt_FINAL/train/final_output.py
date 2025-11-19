@@ -1,7 +1,6 @@
 
 import numpy as np
-import cv2, os, sys
-from PIL import Image
+import cv2, os
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tqdm import tqdm
@@ -108,8 +107,8 @@ def sliding_window_inference(model, image, window_size=16, stride=16, center_pat
 # adagrad = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/RMSprop/RMSprop_earlystopped_best_epoch35.keras"
 # adadelta = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adadelta/Adadelta_earlystopped_best_epoch38.keras"
 nadam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras"
-CNNmodelJUNE24 = "../models/CNNmodelJUNE24.keras"
-model_ary = [nadam, CNNmodelJUNE24]
+# CNNmodelJUNE24 = "../models/CNNmodelJUNE24.keras"
+model_ary = [nadam,]
 # model_ary = [adam, rmsprop, adagrad, adadelta]
 
 for model_name in model_ary:
