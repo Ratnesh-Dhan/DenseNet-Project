@@ -72,9 +72,21 @@ for name , optimizer in optimizers.items():
     )
     last_epoch = len(history.history['loss'])
     model.save(f'./models_nov18/{name}/{name}_with_epoch_{last_epoch}.keras')
-    # Also save a copy of the best model (early stopped) with epoch info
+    # # Also save a copy of the best model (early stopped) with epoch info
+    # best_epoch = np.argmin(history.history['val_loss']) + 1
+    # model.save(f'./models_nov18/{name}/{name}_earlystopped_best_epoch{best_epoch}.keras')
+    
+    # REAL best epoch
     best_epoch = np.argmin(history.history['val_loss']) + 1
-    model.save(f'./models_nov18/{name}/{name}_earlystopped_best_epoch{best_epoch}.keras')
+
+    # Load the best checkpoint BEFORE saving it with the epoch number
+    best_model = tf.keras.models.load_model(
+        f"./models_nov18/{name}/checkpoint_best_weights.keras"
+    )
+
+    best_model.save(
+        f'./models_nov18/{name}/{name}_earlystopped_best_epoch{best_epoch}.keras'
+    )
 
     with open(f'./results_nov18/{name}/class_indices.json', 'w') as f:
         json.dump(train_generator.class_indices, f)
