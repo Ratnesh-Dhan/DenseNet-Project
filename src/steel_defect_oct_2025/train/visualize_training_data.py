@@ -3,11 +3,16 @@ import cv2
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 import random, sys
+from pathlib import Path
 
 # === Paths ===
-images_dir = "../../../Datasets/NEU-DET/train/images"
-annotations_dir = "../../../Datasets/NEU-DET/train/annotations"
-base_dir = "../../../Datasets/NEU-DET/train"
+images_dir = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/images/train"
+annotations_dir = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/anntations/train"
+base_dir = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET"
+if Path(images_dir).is_dir():
+    print("Image directory exsits.")
+else:
+    print("Image directory does not exsits.")
 # === Helper to Parse VOC XML ===
 def parse_voc_annotation(xml_file):
     tree = ET.parse(xml_file)
@@ -29,6 +34,7 @@ def parse_voc_annotation(xml_file):
 
 # === Visualization Function ===
 def visualize_sample(image_path, annotation_path):
+    print("we are in visualization.")
     image = cv2.imread(image_path)
     if image is None:
         print(f"Could not read {image_path}")
@@ -51,6 +57,7 @@ def visualize_sample(image_path, annotation_path):
 
 # === Collect all images with full paths ===
 all_images = []
+print("all images gathered : ", all_images)
 for cls in os.listdir(images_dir):
     cls_folder = os.path.join(images_dir, cls)
     if os.path.isdir(cls_folder):
