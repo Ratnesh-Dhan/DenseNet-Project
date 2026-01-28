@@ -7,12 +7,14 @@ from pathlib import Path
 
 # === Paths ===
 images_dir = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/images/train"
-annotations_dir = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/anntations/train"
+annotations_dir = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET/annotations/train"
 base_dir = "/mnt/d/Codes/DenseNet-Project/Datasets/NEU-DET"
 if Path(images_dir).is_dir():
     print("Image directory exsits.")
 else:
     print("Image directory does not exsits.")
+
+
 # === Helper to Parse VOC XML ===
 def parse_voc_annotation(xml_file):
     tree = ET.parse(xml_file)
@@ -57,7 +59,6 @@ def visualize_sample(image_path, annotation_path):
 
 # === Collect all images with full paths ===
 all_images = []
-print("all images gathered : ", all_images)
 for cls in os.listdir(images_dir):
     cls_folder = os.path.join(images_dir, cls)
     if os.path.isdir(cls_folder):
@@ -65,16 +66,28 @@ for cls in os.listdir(images_dir):
             if img_file.lower().endswith((".jpg", ".png", ".jpeg")):
                 all_images.append(os.path.join(cls_folder, img_file))
 
+images = os.listdir(images_dir)
+for i in images:
+    if i.startswith("rolled-in_scale"):
+        all_images.append(os.path.join(images_dir, i))
+
+# print("all images gathered : ", all_images)
+
+
 # === Show random samples ===
 # sample_images = random.random(all_images
-
+count = 0
 for img_path in all_images:
     filename = os.path.splitext(os.path.basename(img_path))[0]
     ann_path = os.path.join(annotations_dir, filename + ".xml")
+    print(ann_path)
+    if count >= 20:
+        break
+    count = count + 1
     if os.path.exists(ann_path):
         visualize_sample(img_path, ann_path)
-    else:
-        print(f"Annotation missing for {filename}")
+    # else:
+    #     print(f"Annotation missing for {filename}")
 sys.exit(0)
 # === Helper to Parse Annotations ===
 def parse_voc_annotation(xml_file):
