@@ -1,12 +1,14 @@
 import os
 import pandas as pd 
 
-base_path = "../results/septmber12"
+# base_path = "../results/septmber12"
+base_path = "/mnt/d/RESULTS/november20_coal_classification/november18"
 # model_names = os.listdir(base_path)
 # print(model_names)
-model_names = ['CNNmodelJUNE24', 'Nadam_earlystopped_best_epoch30']
+# model_names = ['CNNmodelJUNE24', 'Nadam_earlystopped_best_epoch30']
+model_names = ['Adam', 'AdamW', 'Adadelta', 'Adagrad', 'Nadam', 'RMSprop']
 for model_name in model_names:
-    file = os.path.join(base_path, model_name,"final_output_new_2.txt")
+    file = os.path.join(base_path, model_name,"final_output_new_1.txt")
 
     count = 0
     count2 = 3
@@ -40,12 +42,13 @@ for model_name in model_names:
 
     for i in row:
         print(i) 
-    # ✅ Sort by Sample number (numerical order)
-    # row.sort(key=lambda r: int(r['Sample'][1:])) # FROM C
-    row.sort(key=lambda r: int(r['Sample'][3:])) # FOR DBM
+    #✅ Sort by Sample number (numerical order)
+    row.sort(key=lambda r: int(r['Sample'][1:])) # FROM C
+    # row.sort(key=lambda r: int(r['Sample'][3:])) # FOR DBM
 
     df = pd.DataFrame(row)
-    output_file = "../results/Excel_Files/Sample_DBM"
+    # output_file = "../results/Excel_Files/Sample_DBM"
+    output_file = "/mnt/d/RESULTS/november20_coal_classification/november18/Excel_Files/C"
     os.makedirs(output_file, exist_ok=True)
     df.to_excel(os.path.join(output_file, f'{model_name}.xlsx'), index=False)
     
