@@ -7,7 +7,7 @@ import os
 MODEL_PATH = "./model/best.pt"
 SOURCE = "./images"          # image path OR folder
 IMG_SIZE = 896
-CONF = 0.25 #0.25
+CONF = 0.23 #0.25
 DEVICE = 0
 CLASS_NAMES = {
     0: "ingot",
@@ -66,6 +66,39 @@ def nms(boxes, iou_thresh=0.45):
         ]
 
     return kept
+def merge_side_faces(boxes, x_gap_thresh=0.25, y_iou_thresh=0.5):
+    merged = []
+
+    for b in boxes:
+        x1, y1, x2, y2 = b['coordinates']
+        h = y2 - y1
+
+        matched = False
+        for m in merged:
+            mx1, my1, mx2, my2 = m['coordinates']
+
+            # vertical alignment (same height band)
+            y_inter = min(y2, my2) - max(y1, my1)
+            y_union = max(y2, my2) - min(y1, my1)
+            y_iou = y_inter / y_union if y_union > 0 else 0
+
+            # horizontal gap
+            gap = max(mx1 - x2, x1 - mx2, 0)
+
+            if y_iou > y_iou_thresh and gap < x_gap_thresh * h:
+                # merge
+                m['coordinates'] = [
+                    min(x1, mx1), min(y1, my1),
+                    max(x2, mx2), max(y2, my2)
+                ]
+                m['conf'] = max(m['conf'], b['conf'])
+                matched = True
+                break
+
+        if not matched:
+            merged.append(b)
+
+    return merged
 
 
 for r in results:
@@ -96,6 +129,7 @@ for r in results:
     # Apply class-wise NMS
     ingots = nms(ingots, iou_thresh=0.4)
     side_face = nms(side_face, iou_thresh=0.4)
+    # side_face = merge_side_faces(side_face)
 
     print("INGOTS")                       
     for ingot in ingots:
@@ -108,7 +142,7 @@ for r in results:
     no_of_side_faces = 0
 
     for i in ingots:
-        if i['conf'] > 0.42: 
+        if i['conf']: # > 0.42
             # draw box and label
             x1, y1, x2, y2 = i['coordinates']
             cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
@@ -122,19 +156,19 @@ for r in results:
                 (0, 255, 0),
                 1
             )
-    for s in side_face:
-        x1, y1, x2, y2 = s['coordinates']
-        cv2.rectangle(img, (x1, y1), (x2, y2), (252, 23, 3), 2)
-        no_of_side_faces = no_of_side_faces + 1
-        cv2.putText(
-            img,
-            f'side_face {round(s['conf'],2)}',
-            (x1, max(y1 - 10, 10)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.3,
-            (252, 23, 3),
-            1
-        )
+    # for s in side_face:
+    #     x1, y1, x2, y2 = s['coordinates']
+    #     cv2.rectangle(img, (x1, y1), (x2, y2), (252, 23, 3), 2)
+    #     no_of_side_faces = no_of_side_faces + 1
+    #     cv2.putText(
+    #         img,
+    #         f'side_face {round(s['conf'],2)}',
+    #         (x1, max(y1 - 10, 10)),
+    #         cv2.FONT_HERSHEY_SIMPLEX,
+    #         0.3,
+    #         (252, 23, 3),
+    #         1
+    #     )
 
     # show image
     plt.imshow( img)
