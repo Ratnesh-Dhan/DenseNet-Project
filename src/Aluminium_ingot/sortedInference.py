@@ -142,7 +142,7 @@ for r in results:
     no_of_side_faces = 0
 
     for i in ingots:
-        if i['conf']: # > 0.42
+        if i['conf'] > 0.44: # > 0.42
             # draw box and label
             x1, y1, x2, y2 = i['coordinates']
             cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
