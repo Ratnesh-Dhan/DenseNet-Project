@@ -1,7 +1,8 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 def load_dataset(batch_size):
-    data_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16_noSplit"
+    # data_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16_noSplit"
+    data_dir = r"/mnt/d/DATASETS/coal2026/"
 
     datagen = ImageDataGenerator(
         rescale=1./255,

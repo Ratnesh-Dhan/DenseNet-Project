@@ -1,6 +1,16 @@
 import matplotlib
 matplotlib.use('Agg')  # Must be done before importing pyplot or seaborn
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+# os.environ["TF_XLA_FLAGS"] = "--tf_xla_enable_xla_devices=false"
+# os.environ["XLA_FLAGS"] = "--xla_gpu_strict_conv_algorithm_picker=false"
+
+import tensorflow as tf
+# gpus = tf.config.experimental.list_physical_devices('GPU')
+# for gpu in gpus:
+#     tf.config.experimental.set_memory_growth(gpu, True)
+
 import json, os, pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
@@ -8,9 +18,8 @@ import numpy as np
 from model import create_model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 import seaborn as sns
-from dataset_loader import load_dataset
-# from auto_spliter_dataset_loader import load_dataset
-import tensorflow as tf
+# from dataset_loader import load_dataset
+from auto_spliter_dataset_loader import load_dataset
 
 
 train_generator, validation_generator = load_dataset(batch_size = 64)
@@ -24,11 +33,11 @@ train_generator, validation_generator = load_dataset(batch_size = 64)
 # }
 optimizers = {
     "Adam": tf.keras.optimizers.Adam(),
-    "Adagrad": tf.keras.optimizers.Adagrad(),
-    "RMSprop": tf.keras.optimizers.RMSprop(),
-    "Adadelta": tf.keras.optimizers.Adadelta(),
-    "Nadam": tf.keras.optimizers.Nadam(),
-    "AdamW": tf.keras.optimizers.AdamW()
+    # "Adagrad": tf.keras.optimizers.Adagrad(),
+    # "RMSprop": tf.keras.optimizers.RMSprop(),
+    # "Adadelta": tf.keras.optimizers.Adadelta(),
+    # "Nadam": tf.keras.optimizers.Nadam(),
+    # "AdamW": tf.keras.optimizers.AdamW()
 }
 
 early_stop = EarlyStopping(
@@ -45,11 +54,11 @@ for name , optimizer in optimizers.items():
 
     print(f"\n🔧 Training with {name} optimizer\n")
 
-    os.makedirs(f"./results_nov18/{name}", exist_ok=True)
-    os.makedirs(f"./models_nov18/{name}", exist_ok=True)
+    os.makedirs(f"./models_feb23_2026/{name}", exist_ok=True)
+    os.makedirs(f"./models_feb23_2026/{name}", exist_ok=True)
 
     model_checkpoint = ModelCheckpoint(
-        filepath=f"./models_nov18/{name}/checkpoint_best_weights.keras",
+        filepath=f"./models_feb23_2026/{name}/checkpoint_best_weights.keras",
         monitor = 'val_loss',
         verbose = 1,
         save_best_only=True,
@@ -71,28 +80,28 @@ for name , optimizer in optimizers.items():
         callbacks=[early_stop, model_checkpoint, lr_scheduler]
     )
     last_epoch = len(history.history['loss'])
-    model.save(f'./models_nov18/{name}/{name}_with_epoch_{last_epoch}.keras')
+    model.save(f'./models_feb23_2026/{name}/{name}_with_epoch_{last_epoch}.keras')
     # # Also save a copy of the best model (early stopped) with epoch info
     # best_epoch = np.argmin(history.history['val_loss']) + 1
-    # model.save(f'./models_nov18/{name}/{name}_earlystopped_best_epoch{best_epoch}.keras')
+    # model.save(f'./models_feb23_2026/{name}/{name}_earlystopped_best_epoch{best_epoch}.keras')
     
     # REAL best epoch
     best_epoch = np.argmin(history.history['val_loss']) + 1
 
     # Load the best checkpoint BEFORE saving it with the epoch number
     best_model = tf.keras.models.load_model(
-        f"./models_nov18/{name}/checkpoint_best_weights.keras"
+        f"./models_feb23_2026/{name}/checkpoint_best_weights.keras"
     )
 
     best_model.save(
-        f'./models_nov18/{name}/{name}_earlystopped_best_epoch{best_epoch}.keras'
+        f'./models_feb23_2026/{name}/{name}_earlystopped_best_epoch{best_epoch}.keras'
     )
-
-    with open(f'./results_nov18/{name}/class_indices.json', 'w') as f:
+    os.makedirs(f"./results_feb23_2026/{name}", exist_ok=True)
+    with open(f'./results_feb23_2026/{name}/class_indices.json', 'w') as f:
         json.dump(train_generator.class_indices, f)
 
     # Save training history to CSV
-    pd.DataFrame(history.history).to_csv(f'./results_nov18/{name}/training_history.csv', index=False)
+    pd.DataFrame(history.history).to_csv(f'./results_feb23_2026/{name}/training_history.csv', index=False)
 
     # Plot Accuracy
     plt.figure()
@@ -103,7 +112,7 @@ for name , optimizer in optimizers.items():
     plt.ylabel('Accuracy')
     plt.legend()
     plt.grid()
-    plt.savefig(f'./results_nov18/{name}/accuracy_vs_epochs.png', bbox_inches="tight")
+    plt.savefig(f'./results_feb23_2026/{name}/accuracy_vs_epochs.png', bbox_inches="tight")
     plt.close()
 
     # Plot Loss
@@ -115,7 +124,7 @@ for name , optimizer in optimizers.items():
     plt.ylabel('Loss')
     plt.legend()
     plt.grid()
-    plt.savefig(f'./results_nov18/{name}/loss_vs_epochs.png', bbox_inches="tight")
+    plt.savefig(f'./results_feb23_2026/{name}/loss_vs_epochs.png', bbox_inches="tight")
     plt.close()
 
     # Evaluate
@@ -131,7 +140,7 @@ for name , optimizer in optimizers.items():
     cm = confusion_matrix(true_labels, predicted_classes)
 
     # Save raw classification report and confusion matrix
-    with open(f'./results_nov18/{name}/classification_report.txt', 'w') as f:
+    with open(f'./results_feb23_2026/{name}/classification_report.txt', 'w') as f:
         f.write("Classification Report:\n")
         f.write(report)
         f.write("\n\nConfusion Matrix:\n")
@@ -146,14 +155,14 @@ for name , optimizer in optimizers.items():
     plt.ylabel('Actual')
     plt.title('Confusion Matrix (Counts)')
     plt.tight_layout()
-    plt.savefig(f'./results_nov18/{name}/confusion_matrix_counts.png')
+    plt.savefig(f'./results_feb23_2026/{name}/confusion_matrix_counts.png')
     plt.close()
 
     # Confusion Matrix Percent
     cm_percent = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis] * 100
     np.set_printoptions(precision=2)
 
-    with open(f'./results_nov18/{name}/confusion_matrix_percent.txt', 'w') as f:
+    with open(f'./results_feb23_2026/{name}/confusion_matrix_percent.txt', 'w') as f:
         f.write(str(cm_percent))
 
     plt.figure(figsize=(6, 5))
@@ -164,7 +173,7 @@ for name , optimizer in optimizers.items():
     plt.ylabel('Actual')
     plt.title('Confusion Matrix (%)')
     plt.tight_layout()
-    plt.savefig(f'./results_nov18/{name}/confusion_matrix_percent.png')
+    plt.savefig(f'./results_feb23_2026/{name}/confusion_matrix_percent.png')
     plt.close()
 
     # Save summary result
@@ -174,7 +183,7 @@ for name , optimizer in optimizers.items():
     }
 
 # Save final summary JSON
-with open("./results_nov18/summary.json", "w") as f:
+with open("./results_feb23_2026/summary.json", "w") as f:
     json.dump(summary, f, indent=4)
 
 # Print comparison table

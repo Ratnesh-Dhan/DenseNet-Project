@@ -51,6 +51,7 @@ pretrained_models/
 *.tflite
 *.keras
 *.tfrecord
+*.onnx
 
 # Ignoring "image" folders
 /src/img
