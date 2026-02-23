@@ -114,7 +114,11 @@ adamw =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/m
 nadam =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Nadam/checkpoint_best_weights.keras"
 rmsprop =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/RMSprop/checkpoint_best_weights.keras"
 # CNNmodelJUNE24 = "../models/CNNmodelJUNE24.keras"
-model_ary = [adadelta, adagrad, adam, adamw, nadam, rmsprop]
+Adam_earlystopped_best_epoch21 = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/Adam_earlystopped_best_epoch21.keras"
+Adam_with_epoch_26 = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/Adam_with_epoch_26.keras"
+checkpoint_best_weights = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/checkpoint_best_weights.keras"
+model_ary = [Adam_earlystopped_best_epoch21, Adam_with_epoch_26, checkpoint_best_weights]
+# model_ary = [adadelta, adagrad, adam, adamw, nadam, rmsprop]
 # model_ary = [adam, rmsprop, adagrad, adadelta]
 
 for model_name in model_ary:
@@ -122,7 +126,8 @@ for model_name in model_ary:
     # result_name = "TESTING_ON_REMOVED_SCALE"
     result_name = model_name.split('/')[-1].split('.')[0]
     print(f"Currently running on {result_name} model.")
-    result_folder = os.path.join("../results/septmber12", result_name)
+    # result_folder = os.path.join("../results/septmber12", result_name)
+    result_folder = os.path.join("../train_batch/results/feb23_26", result_name)
     os.makedirs(result_folder, exist_ok=True)
 
     count = 0
@@ -133,11 +138,11 @@ for model_name in model_ary:
     with open(os.path.join(result_folder, "final_output_new_2.txt"), 'w') as f:
         # path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save"
         # path_location = r"D:/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
-        path_location = r"/mnt/d/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
+        path_location = r"/mnt/d/DATASETS/coal2026_Full_Images/"
         outer_folders = os.listdir(path_location)
         half = []
         for i in outer_folders:
-            if i.startswith('DBM'):
+            if i.startswith('D'):
                 half.append(i)
         print("Half: ", half)
         for outer_folder in half:
