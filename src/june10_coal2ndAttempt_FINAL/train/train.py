@@ -11,8 +11,8 @@ import seaborn as sns
 
 # train_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\TRAINING 16"
 # validation_dir = r"D:\NML ML Works\newCoalByDeepBhaiya\16\VALIDATION"
-train_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/TRAINING 16"
-validation_dir = r"/mnt/d/NML ML Works/newCoalByDeepBhaiya/16/VALIDATION"
+train_dir = r"/media/zumbie/New Volume/DATASETS/16/TRAINING 16"
+validation_dir = r"/media/zumbie/New Volume/DATASETS/16/VALIDATION"
 model_name = "CNNmodelJUNE24"
 # model_name = "September08"
 batch_size = 64

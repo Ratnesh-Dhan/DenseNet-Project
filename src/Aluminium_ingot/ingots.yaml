@@ -1,0 +1,7 @@
+path: /media/zumbie/6CA45A53A45A203E/semiFinal_dataset
+train: images/train
+val: images/val
+
+names:
+  0: ingot
+  1: side_face

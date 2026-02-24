@@ -45,6 +45,7 @@ pretrained_models/
 /Datasets
 /runs
 *.pth
+*.pt
 *.h5
 *.tflite
 *.keras

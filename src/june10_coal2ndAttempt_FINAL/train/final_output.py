@@ -107,12 +107,12 @@ def sliding_window_inference(model, image, window_size=16, stride=16, center_pat
 # adagrad = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/RMSprop/RMSprop_earlystopped_best_epoch35.keras"
 # adadelta = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adadelta/Adadelta_earlystopped_best_epoch38.keras"
 # nadam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras"
-adadelta = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adadelta/checkpoint_best_weights.keras"
-adagrad =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adagrad/checkpoint_best_weights.keras"
-adam =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adam/checkpoint_best_weights.keras"
-adamw =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/AdamW/checkpoint_best_weights.keras"
-nadam =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Nadam/checkpoint_best_weights.keras"
-rmsprop =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/RMSprop/checkpoint_best_weights.keras"
+adadelta = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adadelta/checkpoint_best_weights.keras"
+adagrad =  "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adagrad/checkpoint_best_weights.keras"
+adam =     "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adam/checkpoint_best_weights.keras"
+adamw =    "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/AdamW/checkpoint_best_weights.keras"
+nadam =    "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Nadam/checkpoint_best_weights.keras"
+rmsprop =  "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/RMSprop/checkpoint_best_weights.keras"
 # CNNmodelJUNE24 = "../models/CNNmodelJUNE24.keras"
 model_ary = [adadelta, adagrad, adam, adamw, nadam, rmsprop]
 # model_ary = [adam, rmsprop, adagrad, adadelta]
@@ -120,9 +120,10 @@ model_ary = [adadelta, adagrad, adam, adamw, nadam, rmsprop]
 for model_name in model_ary:
     model = tf.keras.models.load_model(model_name) 
     # result_name = "TESTING_ON_REMOVED_SCALE"
-    result_name = model_name.split('/')[-1].split('.')[0]
+    # result_name = model_name.split('/')[-1].split('.')[0]
+    result_name = model_name.split('/')[-2]
     print(f"Currently running on {result_name} model.")
-    result_folder = os.path.join("../results/septmber12", result_name)
+    result_folder = os.path.join("../results/november18", result_name)
     os.makedirs(result_folder, exist_ok=True)
 
     count = 0
@@ -130,14 +131,15 @@ for model_name in model_ary:
     os.makedirs(image_folder, exist_ok=True)
     # For multiple images & multiple folders
     # old txt file is in utils folder
-    with open(os.path.join(result_folder, "final_output_new_2.txt"), 'w') as f:
+    with open(os.path.join(result_folder, "final_output_new_1.txt"), 'w') as f:
         # path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save"
         # path_location = r"D:/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
-        path_location = r"/mnt/d/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
+        # path_location = r"/mnt/d/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
+        path_location = r"/media/zumbie/New Volume1/DATASETS/final32New"
         outer_folders = os.listdir(path_location)
         half = []
         for i in outer_folders:
-            if i.startswith('DBM'):
+            if i.startswith('C'):
                 half.append(i)
         print("Half: ", half)
         for outer_folder in half:
