@@ -89,13 +89,14 @@ def sliding_window_inference(model, image, window_size=16, stride=16, center_pat
                 color = (128, 0, 128)  # Vitrinite PURPLE
                 vitrinite_purple = vitrinite_purple + 1
 
-        cv2.rectangle(
-            heatmap,
-            (center_x - half_center, center_y - half_center),
-            (center_x + half_center, center_y + half_center),
-            color,
-            thickness=-1
-        )
+        # Commenting this because it is not needed right now and it was slowing down the process
+        # cv2.rectangle(
+        #     heatmap,
+        #     (center_x - half_center, center_y - half_center),
+        #     (center_x + half_center, center_y + half_center),
+        #     color,
+        #     thickness=-1
+        # )
 
     return heatmap, cavity_green, cavity_filled_blue, inertinte_red, mineral_yellow, vitrinite_purple
 
@@ -107,17 +108,26 @@ def sliding_window_inference(model, image, window_size=16, stride=16, center_pat
 # adagrad = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/RMSprop/RMSprop_earlystopped_best_epoch35.keras"
 # adadelta = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Adadelta/Adadelta_earlystopped_best_epoch38.keras"
 # nadam = "../train_batch/result_of_sheduler_with_min_lr_1e-6/models/Nadam/Nadam_earlystopped_best_epoch30.keras"
-adadelta = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adadelta/checkpoint_best_weights.keras"
-adagrad =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adagrad/checkpoint_best_weights.keras"
-adam =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adam/checkpoint_best_weights.keras"
-adamw =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/AdamW/checkpoint_best_weights.keras"
-nadam =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Nadam/checkpoint_best_weights.keras"
-rmsprop =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/RMSprop/checkpoint_best_weights.keras"
+
+# adadelta = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adadelta/checkpoint_best_weights.keras"
+# adagrad =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adagrad/checkpoint_best_weights.keras"
+# adam =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Adam/checkpoint_best_weights.keras"
+# adamw =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/AdamW/checkpoint_best_weights.keras"
+# nadam =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/Nadam/checkpoint_best_weights.keras"
+# rmsprop =  "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/models/models_nov18/RMSprop/checkpoint_best_weights.keras"
+
 # CNNmodelJUNE24 = "../models/CNNmodelJUNE24.keras"
-Adam_earlystopped_best_epoch21 = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/Adam_earlystopped_best_epoch21.keras"
-Adam_with_epoch_26 = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/Adam_with_epoch_26.keras"
-checkpoint_best_weights = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/checkpoint_best_weights.keras"
-model_ary = [Adam_earlystopped_best_epoch21, Adam_with_epoch_26, checkpoint_best_weights]
+
+# Adam_earlystopped_best_epoch21 = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/Adam_earlystopped_best_epoch21.keras"
+# Adam_with_epoch_26 = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/Adam_with_epoch_26.keras"
+# checkpoint_best_weights = "/mnt/d/Codes/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/checkpoint_best_weights.keras"
+adam = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adam/checkpoint_best_weights.keras"
+adadelta = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adadelta/checkpoint_best_weights.keras"
+adagrad = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Adagrad/checkpoint_best_weights.keras"
+adamw = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/AdamW/checkpoint_best_weights.keras"
+nadam = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Nadam/checkpoint_best_weights.keras"
+rmsprop = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/RMSprop/checkpoint_best_weights.keras"
+model_ary = [adam , adadelta, adagrad, adamw, nadam, rmsprop]
 # model_ary = [adadelta, adagrad, adam, adamw, nadam, rmsprop]
 # model_ary = [adam, rmsprop, adagrad, adadelta]
 
@@ -135,17 +145,18 @@ for model_name in model_ary:
     os.makedirs(image_folder, exist_ok=True)
     # For multiple images & multiple folders
     # old txt file is in utils folder
-    with open(os.path.join(result_folder, "final_output_new_2.txt"), 'w') as f:
+    with open(os.path.join(result_folder, "final_output_new_full.txt"), 'w') as f:
         # path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save"
         # path_location = r"D:/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
-        path_location = r"/mnt/d/DATASETS/coal2026_Full_Images/"
-        outer_folders = os.listdir(path_location)
-        half = []
-        for i in outer_folders:
-            if i.startswith('D'):
-                half.append(i)
-        print("Half: ", half)
-        for outer_folder in half:
+        # path_location = r"/mnt/d/DATASETS/coal2026_Full_Images/"
+        path_location = r"/media/zumbie/6CA45A53A45A203E/2026-coal_samples/Himanshu Coal Samples 2026"
+        outer_folders = sorted(os.listdir(path_location))
+        # half = []
+        # for i in outer_folders:
+        #     if i.startswith('D'):
+        #         half.append(i)
+        # print("Half: ", half)
+        for outer_folder in outer_folders:
             total_mineral_percentage = 0
             total_images = 0
             folder_path = os.path.join(path_location, outer_folder)
