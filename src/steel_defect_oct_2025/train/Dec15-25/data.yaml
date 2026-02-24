@@ -1,0 +1,14 @@
+path: /mnt/d/DATASETS/NEU-DET
+
+train: images/train
+val: images/val
+test: images/test # optional – only used for metrics
+
+nc: 6
+names:
+  - crazing
+  - inclusion
+  - patches
+  - pitted_surface
+  - rolled-in_scale
+  - scratches
