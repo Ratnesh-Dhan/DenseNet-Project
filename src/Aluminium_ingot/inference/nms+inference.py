@@ -94,94 +94,95 @@ def dominance_suppression(boxes, overlap_thresh=0.4, area_ratio=1.8):
     return kept
 
 
+if __name__ == "__main__":
+    base_path = "/mnt/d/Codes/DenseNet-Project/src/Aluminium_ingot"
+    all_images = os.listdir(os.path.join(base_path, "dataset_kanika"))
+    for image in all_images:
+        img_path = os.path.join(base_path, "dataset_kanika", image)
+        # img_path = f"/mnt/d/Codes/DenseNet-Project/src/Aluminium_ingot/images/1.jpg"
+        img_bgr = cv2.imread(img_path)
+        h, w = img_bgr.shape[:2]
 
-for i in range(1, 2):
-# for i in range(1, 6):
-    img_path = f"/mnt/d/Codes/DenseNet-Project/src/Aluminium_ingot/images/{i}.jpg"
-    img_path = f"/mnt/d/Codes/DenseNet-Project/src/Aluminium_ingot/images/1.jpg"
-    img_bgr = cv2.imread(img_path)
-    h, w = img_bgr.shape[:2]
+        new_w = 800
+        scale = new_w / w
+        new_h = int(h * scale)
 
-    new_w = 800
-    scale = new_w / w
-    new_h = int(h * scale)
+        img_bgr = cv2.resize(img_bgr, (new_w, new_h))
 
-    img_bgr = cv2.resize(img_bgr, (new_w, new_h))
+        # img_bgr = cv2.resize(img_bgr, (1200, 1200))
+        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
 
-    # img_bgr = cv2.resize(img_bgr, (1200, 1200))
-    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+        img_tensor = T.ToTensor()(img_rgb).to(device)
 
-    img_tensor = T.ToTensor()(img_rgb).to(device)
+        with torch.no_grad():
+            output = model([img_tensor])[0]
 
-    with torch.no_grad():
-        output = model([img_tensor])[0]
+        boxes = output["boxes"].cpu().numpy()
+        scores = output["scores"].cpu().numpy()
+        labels = output["labels"].cpu().numpy()
 
-    boxes = output["boxes"].cpu().numpy()
-    scores = output["scores"].cpu().numpy()
-    labels = output["labels"].cpu().numpy()
+        SCORE_THRESH = 0.55
 
-    SCORE_THRESH = 0.55
+        ingots = []
+        for box, score, label in zip(boxes, scores, labels):
+            if score < SCORE_THRESH:
+                continue
 
-    ingots = []
-    for box, score, label in zip(boxes, scores, labels):
-        if score < SCORE_THRESH:
-            continue
+            x1, y1, x2, y2 = map(int, box)
 
-        x1, y1, x2, y2 = map(int, box)
+            color = (0, 255, 0) if label == 1 else (255, 0, 0)
+            # name = "ingot" if label == 1 else "side_face"
+            if label == 1:
+                name = "ingot"
+                ingots.append({'coordinates': [x1, y1, x2, y2],
+                                        'conf': score})
+            else:
+                continue
 
-        color = (0, 255, 0) if label == 1 else (255, 0, 0)
-        # name = "ingot" if label == 1 else "side_face"
-        if label == 1:
-            name = "ingot"
-            ingots.append({'coordinates': [x1, y1, x2, y2],
-                                    'conf': score})
-        else:
-            continue
+        # Containment Supression
+        filtered = []
+        # Dominance Suppression (Bigger boxes suppress smaller boxes)
+        # ingots = dominance_suppression(ingots, overlap_thresh=0.4, area_ratio=1.8)
+        # for i, a in enumerate(ingots):
+        #     keep = True
+        #     for j, b in enumerate(ingots):
+        #         if i == j:
+        #             continue
 
-    # Containment Supression
-    filtered = []
-    # Dominance Suppression (Bigger boxes suppress smaller boxes)
-    # ingots = dominance_suppression(ingots, overlap_thresh=0.4, area_ratio=1.8)
-    # for i, a in enumerate(ingots):
-    #     keep = True
-    #     for j, b in enumerate(ingots):
-    #         if i == j:
-    #             continue
+        #         # a is small, b is big, and a lies inside b
+        #         if containment_ratio(a["coordinates"], b["coordinates"]) > 0.8:
+        #             if a["conf"] < b["conf"]:
+        #                 keep = False
+        #                 break
 
-    #         # a is small, b is big, and a lies inside b
-    #         if containment_ratio(a["coordinates"], b["coordinates"]) > 0.8:
-    #             if a["conf"] < b["conf"]:
-    #                 keep = False
-    #                 break
+        #     if keep:
+        #         filtered.append(a)
 
-    #     if keep:
-    #         filtered.append(a)
+        # filtered = nms(filtered, iou_thresh=0.5)
+        for ingot in ingots:
+            x1, y1, x2, y2 = ingot['coordinates']
+            cv2.rectangle(img_bgr, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(
+                img_bgr,
+                # f"ingot {ingot['conf']:.2f}",
+                f"{ingot['conf']:.2f}",
+                (x2-30, y1 - 5),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.3, (0, 255, 0), 1)
 
-    # filtered = nms(filtered, iou_thresh=0.5)
-    for ingot in ingots:
-        x1, y1, x2, y2 = ingot['coordinates']
-        cv2.rectangle(img_bgr, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(
-            img_bgr,
-            # f"ingot {ingot['conf']:.2f}",
-            f"{ingot['conf']:.2f}",
-            (x2-30, y1 - 5),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.3, (0, 255, 0), 1)
+        count = len(ingots)
 
-    count = len(ingots)
+        save_filename = f"{os.path.basename(img_path).split('.')[0]}_count:_{count}.jpg"
+        save_filename = os.path.join("../bbox_results", save_filename)
+        print(save_filename)
+        # cv2.imwrite("image.jpg" ,img_bgr)
+        # cv2.imshow(f"Ingots: {count}", img_bgr)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
-    save_filename = f"{os.path.basename(img_path).split('.')[0]}_count:_{count}.jpg"
-    save_filename = os.path.join("../bbox_results", save_filename)
-    print(save_filename)
-    # cv2.imwrite("image.jpg" ,img_bgr)
-    # cv2.imshow(f"Ingots: {count}", img_bgr)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-    plt.imshow(img_bgr)
-    plt.title(f"Ingot count: {count}")
-    plt.axis("off") 
-    plt.savefig(save_filename, bbox_inches='tight', dpi=300)
-    plt.show()
-    print("Ingot count:", count)
+        plt.imshow(img_bgr)
+        plt.title(f"Ingot count: {count}")
+        plt.axis("off") 
+        plt.savefig(save_filename, bbox_inches='tight', dpi=300)
+        plt.show()
+        print("Ingot count:", count)
