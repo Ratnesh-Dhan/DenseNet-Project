@@ -1,15 +1,15 @@
 import matplotlib
 matplotlib.use('Agg')  # Must be done before importing pyplot or seaborn
 
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 # os.environ["TF_XLA_FLAGS"] = "--tf_xla_enable_xla_devices=false"
 # os.environ["XLA_FLAGS"] = "--xla_gpu_strict_conv_algorithm_picker=false"
 
 import tensorflow as tf
-# gpus = tf.config.experimental.list_physical_devices('GPU')
-# for gpu in gpus:
-#     tf.config.experimental.set_memory_growth(gpu, True)
+gpus = tf.config.experimental.list_physical_devices('GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
 
 import json, os, pandas as pd
 from sklearn.metrics import classification_report, confusion_matrix
@@ -33,11 +33,11 @@ train_generator, validation_generator = load_dataset(batch_size = 64)
 # }
 optimizers = {
     "Adam": tf.keras.optimizers.Adam(),
-    # "Adagrad": tf.keras.optimizers.Adagrad(),
-    # "RMSprop": tf.keras.optimizers.RMSprop(),
-    # "Adadelta": tf.keras.optimizers.Adadelta(),
-    # "Nadam": tf.keras.optimizers.Nadam(),
-    # "AdamW": tf.keras.optimizers.AdamW()
+    "Adagrad": tf.keras.optimizers.Adagrad(),
+    "RMSprop": tf.keras.optimizers.RMSprop(),
+    "Adadelta": tf.keras.optimizers.Adadelta(),
+    "Nadam": tf.keras.optimizers.Nadam(),
+    "AdamW": tf.keras.optimizers.AdamW()
 }
 
 early_stop = EarlyStopping(
@@ -66,9 +66,9 @@ for name , optimizer in optimizers.items():
     )
 
     model = create_model(optimizer)
-    # lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
+    lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
     # Setting up minimum learning rate ( Trying to fix the fluctuation in the valdiation curve )
-    lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1, min_lr=1e-6 )
+    # lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1, min_lr=1e-6 )
 
     # Training the model
     history = model.fit(
