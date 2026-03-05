@@ -34,7 +34,7 @@ class FringeDataset(Dataset):
         img = cv2.imread(os.path.join(self.img_dir,file),0)
         img = img.astype(np.float32)/255.0
 
-        height = np.load(os.path.join(self.height_dir,file.replace(".bmp",".npy")))
+        height = np.load(os.path.join(self.height_dir,file.replace(".bmp","_height_map.npy")))
 
         # normalize height
         height = (height - height.mean())/height.std()
