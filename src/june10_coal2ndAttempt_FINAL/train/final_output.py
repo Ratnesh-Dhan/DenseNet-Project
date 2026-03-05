@@ -127,17 +127,18 @@ adagrad = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FIN
 adamw = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/AdamW/checkpoint_best_weights.keras"
 nadam = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/Nadam/checkpoint_best_weights.keras"
 rmsprop = "/home/zumbie/Codes/NML/DenseNet-Project/src/june10_coal2ndAttempt_FINAL/train_batch/models_feb23_2026/RMSprop/checkpoint_best_weights.keras"
-model_ary = [adam , adadelta, adagrad, adamw, nadam, rmsprop]
-# model_ary = [adadelta, adagrad, adam, adamw, nadam, rmsprop]
-# model_ary = [adam, rmsprop, adagrad, adadelta]
+# model_ary = [adam , adadelta, adagrad, adamw, nadam, rmsprop]
+new_adam = "/mnt/d/Models/models_feb23_2026/Adam/checkpoint_best_weights.keras"
+model_ary = [new_adam]
 
 for model_name in model_ary:
     model = tf.keras.models.load_model(model_name) 
     # result_name = "TESTING_ON_REMOVED_SCALE"
-    result_name = model_name.split('/')[-1].split('.')[0]
+    result_name = model_name.split('/')[-2]
     print(f"Currently running on {result_name} model.")
     # result_folder = os.path.join("../results/septmber12", result_name)
-    result_folder = os.path.join("../train_batch/results/feb23_26", result_name)
+    # result_folder = os.path.join("../train_batch/results/feb23_26", result_name)
+    result_folder = os.path.join("../Himanshu_results/feb23_26", result_name)
     os.makedirs(result_folder, exist_ok=True)
 
     count = 0
@@ -149,8 +150,11 @@ for model_name in model_ary:
         # path_location = r"D:\NML 2nd working directory\DEEP SOUMYA 14-july-25\save"
         # path_location = r"D:/NML 2nd working directory/DEEP SOUMYA 14-july-25/final32New"
         # path_location = r"/mnt/d/DATASETS/coal2026_Full_Images/"
-        path_location = r"/media/zumbie/6CA45A53A45A203E/2026-coal_samples/Himanshu Coal Samples 2026"
+        path_location = r"/mnt/d/NML ML Works/2026-coal_samples/Himanshu_2026"
         outer_folders = sorted(os.listdir(path_location))
+        outer_folders = outer_folders[1:]
+        print("Outer folders: ", outer_folders)
+        outer_folders = ['B1']
         # half = []
         # for i in outer_folders:
         #     if i.startswith('D'):
@@ -180,24 +184,24 @@ for model_name in model_ary:
 
                 # Adding mineral % 
                 total_mineral_percentage = total_mineral_percentage + minerals_percentage + cavity_filled_percentage
-                # saving the image
-                # plt.figure(figsize=(24, 12))
-                # plt.subplot(1, 2, 1)
-                # plt.imshow(img)
-                # plt.title("Input Petrography Image", fontsize=16)
-                # plt.axis('off')
-                # plt.subplot(1, 2, 2)
-                # plt.imshow(heatmap)
-                # plt.title("Sequential CNN", fontsize=16)
-                # plt.axis('off')
+                #saving the image
+                plt.figure(figsize=(24, 12))
+                plt.subplot(1, 2, 1)
+                plt.imshow(img)
+                plt.title("Input Petrography Image", fontsize=16)
+                plt.axis('off')
+                plt.subplot(1, 2, 2)
+                plt.imshow(heatmap)
+                plt.title("Sequential CNN", fontsize=16)
+                plt.axis('off')
 
-                # # Add text below the plots
-                # plt.figtext(0.5, 0.12, 
-                #     f"Cavity Green: {cavity_percentage} % |  Cavity Filled Blue: {cavity_filled_percentage} %  |  Inertinite Red: {inertinite_percentage} %  |  Minerals Yellow: {minerals_percentage} %  |  Vitrinite Purple: {vitrinite_percentage} %", 
-                #     wrap=True, horizontalalignment='center', fontsize=20)
-                # plt.savefig(f"/mnt/d/NML 2nd working directory/MY_test_result/hello/{file_name}_{count}_comparison.png" )
-                # plt.savefig(f"D:/NML 2nd working directory/MY_test_result/hello/{file_name}_{count}_comparison.png" )
-                # plt.close()
+                # Add text below the plots
+                plt.figtext(0.5, 0.12, 
+                    f"Cavity Green: {cavity_percentage} % |  Cavity Filled Blue: {cavity_filled_percentage} %  |  Inertinite Red: {inertinite_percentage} %  |  Minerals Yellow: {minerals_percentage} %  |  Vitrinite Purple: {vitrinite_percentage} %", 
+                    wrap=True, horizontalalignment='center', fontsize=20)
+                plt.savefig(f"/mnt/d/NML 2nd working directory/MY_test_result/hello/{file_name}_{count}_comparison.png" )
+                plt.savefig(f"D:/NML 2nd working directory/MY_test_result/hello/{file_name}_{count}_comparison.png" )
+                plt.close()
                 count = count + 1
                 del img, heatmap
                 

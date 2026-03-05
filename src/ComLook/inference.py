@@ -18,7 +18,7 @@ model.load_state_dict(torch.load("./model/best_model.pth", map_location=device))
 model.to(device)
 model.eval()
 
-img_path = "./images/25.webp"
+img_path = "./images/manga2.jpg"
 
 img_bgr = cv2.imread(img_path)
 img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)

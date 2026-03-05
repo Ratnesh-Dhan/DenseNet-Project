@@ -23,10 +23,9 @@
 *.mp4
 *.webp
 *.avi
-*.txt
 *.csv
 *.json
-
+*.txt
 # xl files
 *.xlsx
 *.record
