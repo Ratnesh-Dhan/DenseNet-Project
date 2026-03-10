@@ -7,7 +7,8 @@ from torch.utils.data import random_split
 from matplotlib import pyplot as plt
 from sklearn.metrics import r2_score
 
-dataset = FringeDataset("/home/zumbie/Codes/NML/Datasets/bmp","/home/zumbie/Codes/NML/Datasets/heightmaps")
+# dataset = FringeDataset("/home/zumbie/Codes/NML/Datasets/bmp","/home/zumbie/Codes/NML/Datasets/heightmaps")
+dataset = FringeDataset("/mnt/d/DATASETS/mntFiles/bmp","/mnt/d/DATASETS/mntFiles/heightmaps", patch=512)
 train_losses = []
 val_losses = []
 train_rmse_list = []
@@ -99,41 +100,48 @@ plt.ylabel("Loss")
 plt.legend()
 plt.title("Training vs Validation Loss")
 plt.savefig("loss.png")
-plt.show()
+plt.close()
 
 plt.plot(train_rmse_list,label="Train RMSE")
 plt.plot(val_rmse_list,label="Val RMSE")
 plt.legend()
 plt.title("RMSE per Epoch")
 plt.savefig("rmse.png")
+plt.close()
 
 plt.subplot(1,2,1)
 plt.title("Ground Truth")
 plt.imshow(height.cpu()[0,0],cmap="jet")
-
 plt.subplot(1,2,2)
 plt.title("Prediction")
 plt.imshow(pred.cpu()[0,0],cmap="jet")
 plt.savefig("Predictoin vs ground truth.png")
+plt.close()
 
 error = (pred-height).cpu()[0,0]
 plt.imshow(error,cmap="bwr")
 plt.colorbar()
 plt.title("Prediction Error")
 plt.savefig("Error map.png")
+plt.close()
 
 err = error.numpy().flatten()
 plt.hist(err,bins=100)
 plt.title("Error Distribution")
 plt.savefig("Histogram_of_errors.png")
+plt.close()
 
 gt = height.cpu().numpy().flatten()
 pd = pred.cpu().detach().numpy().flatten()
 r2 = r2_score(gt,pd)
 print("R2:",r2)
+with open ("r_square.txt", 'w') as f:
+    f.write(f"R2: {r2}")
+f.close()
 
 plt.scatter(gt,pd,s=1)
 plt.xlabel("True Height")
 plt.ylabel("Predicted Height")
 plt.title("Prediction vs True")
 plt.savefig("Scatter_plot.png")
+plt.close()
