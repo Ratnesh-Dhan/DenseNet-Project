@@ -25,7 +25,13 @@ val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
 
 model = UNet().cuda()
 
-optimizer = torch.optim.Adam(model.parameters(),lr=1e-4)
+# optimizer = torch.optim.Adam(model.parameters(),lr=1e-4)
+optimizers = {
+    "adam": torch.optim.Adam(model.parameters(), lr=1e-4),
+    "adamw": torch.optim.AdamW(model.parameters(), lr=1e-4),
+    "sgd": torch.optim.SGD(model.parameters(), lr=1e-3, momentum=0.9),
+    "rmsprop": torch.optim.RMSprop(model.parameters(), lr=1e-4)
+}
 loss_fn = torch.nn.L1Loss()
 
 best_val_loss = float("inf")

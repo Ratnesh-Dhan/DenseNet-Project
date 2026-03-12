@@ -25,6 +25,11 @@ class FringeDataset(Dataset):
             img = np.flip(img,0)
             height = np.flip(height,0)
 
+        if random.random() > 0.5:
+            k = random.randint(1,3)
+            img = np.rot90(img, k)
+            height = np.rot90(height, k)
+
         return img.copy(), height.copy()
 
     def __getitem__(self, idx):
