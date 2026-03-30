@@ -8,15 +8,15 @@ from matplotlib import pyplot as plt
 from tqdm import tqdm
 import os
 
-base_path = "/mnt/g/DATASETS/FringeDataset"
+base_path = "/mnt/z/DATASETS/Fringe"
 model_path = "./batch_results"
 optimizers = os.listdir(model_path)
 
-images = os.listdir(os.path.join(base_path, "test_bmp"))
-heigths = os.listdir(os.path.join(base_path, "test_height"))
+images = os.listdir(os.path.join(base_path, "bmp_save"))
+heigths = os.listdir(os.path.join(base_path, "height_save"))
 
 for optimizer in tqdm(optimizers):
-    saving_folder = os.path.join("./final_result", optimizer)
+    saving_folder = os.path.join("./final_result_sixFigure", optimizer)
     os.makedirs(saving_folder, exist_ok=True)
 
     model = UNet()
@@ -26,8 +26,8 @@ for optimizer in tqdm(optimizers):
 
     for bmpImg in images:    
         i = bmpImg.split('.')[0]
-        filepath = os.path.join(base_path, f"test_height/{i}_height_map.npy")
-        img = cv2.imread(os.path.join(base_path, "test_bmp", bmpImg),0)
+        filepath = os.path.join(base_path, f"height_save/{i}_height_map.npy")
+        img = cv2.imread(os.path.join(base_path, "bmp_save", bmpImg),0)
         # img = img/255.0
         img = img.astype(np.float32) / 255.0
 
