@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import os
 
-excel_dir = "/mnt/d/Codes/OLE-sai_kamal/excel_files"
-save_dir = "/mnt/d/Codes/OLE-sai_kamal/heightmaps"
+excel_dir = "/mnt/d/Codes/OLE-sai_kamal/Dataset/excel_files"
+save_dir = "/mnt/d/Codes/OLE-sai_kamal/Dataset/heightmaps"
 os.makedirs(save_dir, exist_ok=True)
 
 for file in os.listdir(excel_dir):

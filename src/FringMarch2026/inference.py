@@ -6,12 +6,12 @@ from matplotlib import pyplot as plt
 from tqdm import tqdm
 
 model = UNet()
-model.load_state_dict(torch.load(os.path.join("/mnt/d/Models/Batch_models_Fringes/batch_results/adam","best_model.pth")))
+model.load_state_dict(torch.load(os.path.join("/mnt/d/Models/Batch_models_Fringes/batch_results/adamw","best_model.pth")))
 model.eval()
 model.cuda()
 
 # for i in tqdm(range(10,31)):
-i = 4
+i = 98
 img = cv2.imread(f"/mnt/d/DATASETS/mntFiles/bmp/{i}.bmp",0)
 # img = img/255.0
 img = img.astype(np.float32) / 255.0
@@ -33,4 +33,4 @@ plt.savefig(f"./ForRA/{i}_adam.png")
 # exit(0)
 # np.save("pred_height.npy",height)
 # or
-np.savetxt(f"./ForRA/{i}_pred_height_adam.csv",height,delimiter=",")
+np.savetxt(f"./ForRA/{i}_pred_height_adamw.csv",height,delimiter=",")

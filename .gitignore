@@ -9,6 +9,7 @@
 
 # venv file
 /venv
+/.venv
 /venvWindows
 /venvTensorflow
 /.spyproject
