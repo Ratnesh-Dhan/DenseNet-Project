@@ -26,6 +26,19 @@ def load_image_mask(image_path, mask_path):
 
     return image, mask
 
+
+
+def get_dataset(image_dir, mask_dir, batch_size=16):
+    image_paths = sorted([os.path.join(image_dir, fname) for fname in os.listdir(image_dir)])
+    mask_paths = sorted([os.path.join(mask_dir, fname) for fname in os.listdir(mask_dir)])
+    
+    dataset = tf.data.Dataset.from_tensor_slices((image_paths, mask_paths))
+    dataset = dataset.map(load_image_mask, num_parallel_calls=tf.data.AUTOTUNE)
+    dataset = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    
+    return dataset
+
+
 # BELOW ONE IS FOR LEARNING FROM SCRATCH
 # def load_image_mask(image_path, mask_path):
 #     # Load and preprocess image
@@ -46,13 +59,3 @@ def load_image_mask(image_path, mask_path):
 #     mask = tf.expand_dims(mask, axis=-1)  # Add channel dimension
 
 #     return image, mask
-
-def get_dataset(image_dir, mask_dir, batch_size=16):
-    image_paths = sorted([os.path.join(image_dir, fname) for fname in os.listdir(image_dir)])
-    mask_paths = sorted([os.path.join(mask_dir, fname) for fname in os.listdir(mask_dir)])
-    
-    dataset = tf.data.Dataset.from_tensor_slices((image_paths, mask_paths))
-    dataset = dataset.map(load_image_mask, num_parallel_calls=tf.data.AUTOTUNE)
-    dataset = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
-    
-    return dataset
