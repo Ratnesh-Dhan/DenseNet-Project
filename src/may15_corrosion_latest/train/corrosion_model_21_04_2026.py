@@ -28,6 +28,12 @@ def conv_block(x, filters):
     x = layers.ReLU()(x)
     return x
 
+def improved_loss(y_true, y_pred):
+    bce = tf.keras.losses.BinaryCrossentropy()(y_true, y_pred)
+    focal = tf.keras.losses.BinaryFocalCrossentropy(gamma=2)(y_true, y_pred)
+    dice = dice_loss(y_true, y_pred)
+    return bce + focal + dice
+    
 def build_unet_with_resnet50(input_shape=(512, 512, 3)):
     inputs = layers.Input(shape=input_shape)
 
@@ -67,16 +73,22 @@ def build_unet_with_resnet50(input_shape=(512, 512, 3)):
     d5 = conv_block(d5, 32)
 
     # Final binary segmentation output (1 channel + sigmoid)
-    outputs = layers.Conv2D(1, 1, activation='sigmoid')(d5)
+    outputs = layers.Conv2D(1, 1, activation='sigmoid', dtype='float32')(d5)
 
     model = Model(inputs, outputs)
 
     # Loss: Binary Crossentropy + Dice Loss
-    def combined_loss(y_true, y_pred):
-        return tf.keras.losses.BinaryCrossentropy()(y_true, y_pred) + dice_loss(y_true, y_pred)
+    # def combined_loss(y_true, y_pred):
+    #     return tf.keras.losses.BinaryCrossentropy()(y_true, y_pred) + dice_loss(y_true, y_pred)
+
+    def improved_losss(y_true, y_pred):
+        bce = tf.keras.losses.BinaryCrossentropy()(y_true, y_pred)
+        focal = tf.keras.losses.BinaryFocalCrossentropy(gamma=2)(y_true, y_pred)
+        dice = dice_loss(y_true, y_pred)
+        return bce + focal + dice
 
     model.compile(optimizer=tf.keras.optimizers.Adam(1e-4),
-                  loss=combined_loss,
-                  metrics=[iou_metric])
+                  loss=improved_losss,
+                  metrics=[iou_metric, tf.keras.metrics.Recall(), tf.keras.metrics.Precision()])
 
     return model
