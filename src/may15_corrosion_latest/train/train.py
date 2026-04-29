@@ -19,7 +19,7 @@ from data_loader import get_dataset
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
 # model = unet_model()
-model = build_unet_with_resnet50()
+model = build_unet_with_resnet50(input_shape=(256, 256, 3))
 
 # model.summary()
 
@@ -28,6 +28,7 @@ os.makedirs(model_path, exist_ok=True)
 plot_save_path = "./plots"
 os.makedirs(plot_save_path, exist_ok=True)
 
+new_dataset = "/mnt/z/DATASETS/Corrosion_Condition_State_Classification" # multi class dataset which will be used later for training
 base_dir = r"/mnt/z/DATASETS/kaggle_semantic_segmentation_CORROSION_dataset"
 # base_dir = r"D:\NML ML Works\kaggle_semantic_segmentation_CORROSION_dataset"
 train_ds = get_dataset(os.path.join(base_dir, "train/images"), os.path.join(base_dir, "train/masks"), batch_size=4)
@@ -38,7 +39,7 @@ val_ds_finetuning = get_dataset(os.path.join(base_dir, "validate/images"), os.pa
 
 callbacks = [
     EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
-    ModelCheckpoint(os.path.join(model_path, 'best_model_transferLearning_test.keras'), monitor='val_loss', save_best_only=True),
+    ModelCheckpoint(os.path.join(model_path, 'best_model_transferLearning.keras'), monitor='val_loss', save_best_only=True),
     ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=3, min_lr=1e-6, verbose=1)
 ]
 
@@ -63,8 +64,8 @@ history1 = model.fit(train_ds,
 #FINE TUNING
 tf.keras.backend.clear_session() # Clear the session to free up memory
 
-model = build_unet_with_resnet50()
-model.load_weights(os.path.join(model_path, 'best_model_transferLearning_test.keras'))
+model = build_unet_with_resnet50(input_shape=(256, 256, 3))
+model.load_weights(os.path.join(model_path, 'best_model_transferLearning.keras'))
 
 for layer in model.layers:
     # if isinstance(layer, tf.keras.Model):
@@ -80,7 +81,8 @@ for layer in model.layers:
 model.compile(
     optimizer=tf.keras.optimizers.Adam(1e-5),
     loss=improved_loss,
-    metrics=[iou_metric, tf.keras.metrics.Recall(), tf.keras.metrics.Precision()]
+    metrics=['accuracy']
+    # metrics=[iou_metric, tf.keras.metrics.Recall(), tf.keras.metrics.Precision()]
 )
 history2 = model.fit(
     train_ds_finetuning,
@@ -88,7 +90,7 @@ history2 = model.fit(
     epochs=15,  # fine-tuning phase
     callbacks=callbacks_ft
 )
-model.save(os.path.join(model_path, "best_model_transferLearning_test.keras"))
+model.save(os.path.join(model_path, "best_model_after_finetuning.keras"))
 print('\nModel saved successfully..!\n')
 
 # PLOTTING 
@@ -130,7 +132,7 @@ def plot_history(history, name):
     elif 'accuracy' in history.history:
         plt.plot(history.history['accuracy'], label='Train Acc')
         if 'val_accuracy' in history.history:
-            plt.plot(history.history['val_accuray'], label="Val Acc")
+            plt.plot(history.history['val_accuracy'], label="Val Acc")
         plt.title('Accuracy over epochs')
         plt.ylabel('Accuracy')
     else:

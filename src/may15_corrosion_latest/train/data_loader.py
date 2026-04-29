@@ -2,7 +2,7 @@ import tensorflow as tf
 import os
 
 # IMG_SIZE = (512, 512)
-IMG_SIZE = (512, 512)
+IMG_SIZE = (256, 256)
 
 # ---------------------------
 # Load image + mask

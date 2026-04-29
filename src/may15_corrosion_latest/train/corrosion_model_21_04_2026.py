@@ -17,6 +17,13 @@ def iou_metric(y_true, y_pred):
     union = tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) - intersection
     return intersection / (union + 1e-6)
 
+
+def improved_loss(y_true, y_pred):
+    bce = tf.keras.losses.BinaryCrossentropy()(y_true, y_pred)
+    focal = tf.keras.losses.BinaryFocalCrossentropy(gamma=2)(y_true, y_pred)
+    dice = dice_loss(y_true, y_pred)
+    return bce + focal + dice
+    
 # Conv Block
 def conv_block(x, filters):
     x = layers.Conv2D(filters, 3, padding='same')(x)
@@ -28,18 +35,11 @@ def conv_block(x, filters):
     x = layers.ReLU()(x)
     return x
 
-def improved_loss(y_true, y_pred):
-    bce = tf.keras.losses.BinaryCrossentropy()(y_true, y_pred)
-    focal = tf.keras.losses.BinaryFocalCrossentropy(gamma=2)(y_true, y_pred)
-    dice = dice_loss(y_true, y_pred)
-    return bce + focal + dice
-    
 def build_unet_with_resnet50(input_shape=(512, 512, 3)):
     inputs = layers.Input(shape=input_shape)
 
     x = preprocess_input(inputs)
     base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=x)
-
     # Optional: Freeze base_model layers initially
     for layer in base_model.layers:
         layer.trainable = False  # Set False if you want to freeze initially
@@ -86,9 +86,20 @@ def build_unet_with_resnet50(input_shape=(512, 512, 3)):
         focal = tf.keras.losses.BinaryFocalCrossentropy(gamma=2)(y_true, y_pred)
         dice = dice_loss(y_true, y_pred)
         return bce + focal + dice
-
-    model.compile(optimizer=tf.keras.optimizers.Adam(1e-4),
-                  loss=improved_losss,
-                  metrics=[iou_metric, tf.keras.metrics.Recall(), tf.keras.metrics.Precision()])
+    
+    # KEEPING IT BASIC SO CHANSES OF FALIURE WOULD BE MINIMUM
+    model.compile(optimizer=tf.keras.optimizers.Adam(),
+                #   loss=tf.keras.losses.BinaryFocalCrossentropy(alpha=0.25, gamma=2.0),
+                  loss=tf.keras.losses.BinaryCrossentropy(),
+                  metrics=['accuracy'])
+    # PREVIOUS COMPILED VERSION
+    # model.compile(optimizer=tf.keras.optimizers.Adam(1e-4),
+    #               loss=improved_losss,
+    #               metrics=[iou_metric, tf.keras.metrics.Recall(), tf.keras.metrics.Precision()])
 
     return model
+
+
+if __name__ == "__main__":
+    model = build_unet_with_resnet50()
+    # model.summary()

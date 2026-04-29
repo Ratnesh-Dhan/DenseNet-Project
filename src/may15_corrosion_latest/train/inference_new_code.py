@@ -10,7 +10,7 @@ import shutil
 # CONFIG
 # ---------------------------
 IMG_SIZE = (512, 512)
-MODEL_PATH = "./model/best_model_transferLearning_test.keras"
+MODEL_PATH = "./model_new/best_model_transferLearning.keras"
 OUTPUT_DIR = "./inference_outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
