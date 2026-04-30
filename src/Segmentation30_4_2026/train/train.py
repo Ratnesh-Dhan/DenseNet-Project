@@ -1,6 +1,9 @@
 import tensorflow as tf
 from dataloader import load_image, get_array_with_path
 from model import setup
+import os
+import datetime
+from plotter import plot_history
 
 image_path = "/mnt/z/DATASETS/kaggle_semantic_segmentation_CORROSION_dataset/train/images"
 mask_path = "/mnt/z/DATASETS/kaggle_semantic_segmentation_CORROSION_dataset/train/masks"
@@ -32,3 +35,9 @@ history = model.fit(
     ],
     verbose=1
 )
+
+save_path = "../Models"
+os.makedirs(save_path, exist_ok=True)
+model.save(os.path.join(save_path, f"Corrosion_segmentation_1{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.keras"))
+
+plot_history(history)
