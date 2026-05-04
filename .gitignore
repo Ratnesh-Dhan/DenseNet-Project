@@ -34,6 +34,7 @@
 # Igonre cache files
 *.pyc
 *.pyo
+*.v2
 __pycache__/
 
 # Ignoring some additional files and directories
